@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador Educativo: Criptoanálisis de Ransomware y Detección con IA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              dark: '#0a0d14',
+              card: '#111726',
+              border: '#1f293d',
+              accent: '#38bdf8',
+              crimson: '#f43f5e',
+              emerald: '#10b981',
+              warning: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars and pulse effects */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0d14; }
+    ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+    .glow-cyan { box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); }
+    .glow-red { box-shadow: 0 0 20px rgba(244, 63, 94, 0.35); }
+  </style>
+</head>
+
+<body class="bg-cyber-dark text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+  <header class="border-b border-cyber-border bg-cyber-card/80 backdrop-blur-md sticky top-0 z-30 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-mono font-bold text-white shadow-lg shadow-cyan-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            RansomSim & AI Defender
+            <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">Maestría IA</span>
+          </h1>
+          <p class="text-xs text-slate-400">Simulación pedagógica de cifrado híbrido, entropía de Shannon y telemetría defensiva</p>
+        </div>
+      </div>
+
+      <!-- Action buttons & Controls -->
+      <div class="flex flex-wrap items-center gap-2">
+        <a href="../../../index.html" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Repositorio Docente
+        </a>
+        <button id="btnStep" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+          Paso a Paso
+        </button>
+        <button id="btnStartAttack" class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-mono font-semibold transition flex items-center gap-1.5 shadow-md shadow-rose-900/30">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Ejecutar Ataque
+        </button>
+        <button id="btnReset" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono border border-slate-700 transition flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Reiniciar
+        </button>
+        <div class="h-6 w-px bg-slate-800 mx-1"></div>
+        <button id="btnToggleTheory" class="px-3 py-1.5 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-800 text-xs font-mono transition flex items-center gap-1">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Teoría & Métricas
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="systemBanner" class="hidden transition-all duration-300 py-2 px-4 text-center text-xs font-mono font-medium border-b"></div>
+
+  <main class="max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+    
+    <!-- LEFT PANEL: Virtual File System (4 cols) -->
+    <section class="lg:col-span-4 flex flex-col gap-4">
+      <div class="bg-cyber-card border border-cyber-border rounded-xl p-4 shadow-sm flex flex-col flex-1">
+        <div class="flex items-center justify-between pb-3 border-b border-cyber-border mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <h2 class="text-sm font-semibold tracking-wide uppercase text-slate-300 font-mono">Directorio Víctima: /data/ia_lab/</h2>
+          </div>
+          <span id="fileCountBadge" class="text-xs font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">6 Archivos</span>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-3">
+          Monitorea en tiempo real el cálculo de la <strong class="text-slate-200">Entropía de Shannon ($H$)</strong>. Los archivos planos tienen baja entropía ($< 5.0$), mientras que los datos cifrados con AES se aproximan a $8.0$ bits/byte.
+        </p>
+
+        <!-- File List -->
+        <div id="fileListContainer" class="space-y-2.5 flex-1 overflow-y-auto max-h-[500px] pr-1">
+          <!-- Dynamically populated via JavaScript -->
+        </div>
+
+        <!-- Volume Shadow Copy Status -->
+        <div class="mt-4 pt-3 border-t border-cyber-border/70 flex items-center justify-between text-xs font-mono">
+          <span class="text-slate-400 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            Copias VSS (Shadow Copies):
+          </span>
+          <span id="vssStatusBadge" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Íntegras</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER PANEL: Cryptographic Pipeline (4 cols) -->
+    <section class="lg:col-span-4 flex flex-col gap-4">
+      <div class="bg-cyber-card border border-cyber-border rounded-xl p-4 shadow-sm flex flex-col flex-1">
+        <div class="flex items-center justify-between pb-3 border-b border-cyber-border mb-3">
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-slate-300 font-mono">Pipeline Criptográfico Híbrido</h2>
+          <span class="text-xs font-mono text-indigo-400 bg-indigo-950/70 border border-indigo-800 px-2 py-0.5 rounded">AES-256 + RSA</span>
+        </div>
+
+        <div class="space-y-3 text-xs text-slate-400">
+          <p>
+            El ransomware moderno no usa RSA para los archivos porque es demasiado lento computacionalmente. Aplica un <strong class="text-slate-200">cifrado simétrico rápido (AES)</strong> por archivo y luego protege esa llave con la <strong class="text-slate-200">clave pública RSA</strong> del atacante.
+          </p>
+
+          <!-- Interactive Cryptographic Diagram Box -->
+          <div class="bg-cyber-dark/80 rounded-lg p-3.5 border border-cyber-border font-mono space-y-3">
+            <div class="flex items-center justify-between text-[11px] pb-2 border-b border-slate-800">
+              <span class="text-slate-400">Atacante C2:</span>
+              <span class="text-amber-400 truncate max-w-[170px]" title="Clave Pública embebida">RSA-4096 (PubKey embebida)</span>
+            </div>
+
+            <!-- Step 1: Plaintext to AES -->
+            <div id="cryptoStep1" class="p-2.5 rounded bg-slate-900/90 border border-slate-800 transition-all duration-300">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-slate-200">1. Generación de Llave Efímera</span>
+                <span id="badgeAesKey" class="text-[10px] text-slate-400">En espera</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Genera una clave simétrica única <code class="text-cyan-400">AES-256-GCM</code> por cada archivo víctima.</p>
+            </div>
+
+            <!-- Step 2: File Encryption -->
+            <div id="cryptoStep2" class="p-2.5 rounded bg-slate-900/90 border border-slate-800 transition-all duration-300">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-slate-200">2. Cifrado Rápido del Payload</span>
+                <span id="badgePayload" class="text-[10px] text-slate-400">Sin procesar</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Archivo plano $\rightarrow$ Cifrado. La entropía aumenta instantáneamente a $\approx 7.98$ bits/byte.</p>
+            </div>
+
+            <!-- Step 3: Key Wrapping -->
+            <div id="cryptoStep3" class="p-2.5 rounded bg-slate-900/90 border border-slate-800 transition-all duration-300">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-slate-200">3. Encapsulamiento de Llave (Key Wrapping)</span>
+                <span id="badgeWrap" class="text-[10px] text-slate-400">Sin sellar</span>
+              </div>
+              <p class="text-[11px] text-slate-400">La llave AES se cifra con la llave pública RSA del atacante y se destruye de la memoria RAM.</p>
+            </div>
+          </div>
+
+          <!-- Shannon Formula & Math context -->
+          <div class="p-3 bg-slate-900/50 rounded-lg border border-slate-800 font-mono text-[11px]">
+            <div class="text-cyan-400 font-bold mb-1 flex items-center justify-between">
+              <span>Fórmula de Entropía de Shannon</span>
+              <span class="text-slate-400 font-normal">H(X)</span>
+            </div>
+            <div class="text-slate-300 text-center py-1 bg-black/40 rounded my-1 border border-slate-800">
+              H(X) = - &sum; p(x<sub>i</sub>) &middot; log<sub>2</sub>( p(x<sub>i</sub>) )
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1">
+              Mide la incertidumbre o aleatoriedad de los bytes. En archivos normales varía según redundancia de lenguaje (3.0 - 5.0). En datos cifrados o comprimidos roza el máximo teórico de 8.0 bits.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-4 flex gap-2">
+          <button id="btnViewRansomNote" class="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs border border-slate-700 transition flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Inspeccionar Nota de Rescate
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: AI Defensive Telemetry & Detector (4 cols) -->
+    <section class="lg:col-span-4 flex flex-col gap-4">
+      <div class="bg-cyber-card border border-cyber-border rounded-xl p-4 shadow-sm flex flex-col flex-1">
+        <div class="flex items-center justify-between pb-3 border-b border-cyber-border mb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <h2 class="text-sm font-semibold tracking-wide uppercase text-slate-300 font-mono">EDR / Agente Defensor con IA</h2>
+          </div>
+          <!-- Toggle switch for AI -->
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleAiProtection" class="sr-only peer" checked>
+            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between text-xs font-mono mb-2">
+          <span class="text-slate-400">Estado del Modelo (Autoencoder/Forest):</span>
+          <span id="aiStatusBadge" class="text-emerald-400 font-bold">Activo (Monitoreando)</span>
+        </div>
+
+        <!-- Telemetry Chart -->
+        <div class="bg-cyber-dark/80 rounded-lg p-2 border border-cyber-border mb-3">
+          <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1 mb-1">
+            <span>Telemetría en Vivo (I/O burst & Entropía Media)</span>
+            <span class="flex items-center gap-2">
+              <span class="inline-block w-2 h-2 rounded-full bg-cyan-400"></span> Entropía
+              <span class="inline-block w-2 h-2 rounded-full bg-rose-400"></span> E/S Disco
+            </span>
+          </div>
+          <div class="h-36 w-full">
+            <canvas id="telemetryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- AI Anomaly Score Gauge -->
+        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 space-y-2 mb-3">
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-300">Puntaje de Amenaza (Anomaly Score):</span>
+            <span id="threatScoreText" class="font-bold text-emerald-400">0.05 / 1.0</span>
+          </div>
+          <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden relative">
+            <div id="threatScoreBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 5%"></div>
+            <!-- Threshold marker -->
+            <div class="absolute top-0 bottom-0 left-[70%] w-0.5 bg-rose-400" title="Umbral de Disparo (0.70)"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-mono text-slate-400">
+            <span>Normal</span>
+            <span class="text-rose-400">Umbral Disparo: 0.70</span>
+            <span>Ataque Inminente</span>
+          </div>
+        </div>
+
+        <!-- Vector de Características (Features) -->
+        <div class="p-3 bg-cyber-dark rounded-lg border border-cyber-border/70 font-mono text-[11px] space-y-1.5 flex-1">
+          <span class="text-slate-400 block font-semibold text-xs pb-1 border-b border-slate-800">Vector de Extracción de Características:</span>
+          <div class="flex justify-between text-slate-300">
+            <span>Tasa de Escritura (Writes/s):</span>
+            <span id="featWriteRate" class="text-cyan-400">2 ops/s</span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Entropía Promedio Δ:</span>
+            <span id="featEntropyMean" class="text-cyan-400">3.82 bits</span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Renombramientos masivos (.locked):</span>
+            <span id="featRenameCount" class="text-cyan-400">0 detectados</span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Llamadas a vssadmin (Shadow Copy):</span>
+            <span id="featVssTamper" class="text-emerald-400">No</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- File Inspection Modal -->
+  <div id="fileModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-cyber-card border border-cyber-border w-full max-w-2xl rounded-xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 rounded bg-slate-800 text-cyan-400 font-mono text-xs font-bold" id="modalFileExt">TXT</div>
+          <div>
+            <h3 id="modalFileName" class="text-sm font-bold text-white font-mono">archivo.txt</h3>
+            <p id="modalFileStatus" class="text-xs text-slate-400">Estado: Texto Plano</p>
+          </div>
+        </div>
+        <button id="btnCloseFileModal" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Comparison Views -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+        <div>
+          <span class="text-slate-400 block mb-1">Contenido / Muestra de Bytes:</span>
+          <pre id="modalRawContent" class="bg-black/60 p-3 rounded border border-slate-800 h-44 overflow-auto text-slate-300 text-[11px] leading-relaxed whitespace-pre-wrap"></pre>
+        </div>
+        <div class="space-y-3">
+          <div class="bg-slate-900/80 p-3 rounded border border-slate-800 space-y-2">
+            <span class="text-slate-400 block font-bold">Métricas Criptográficas:</span>
+            <div class="flex justify-between">
+              <span>Entropía de Shannon:</span>
+              <span id="modalEntropyVal" class="text-cyan-400 font-bold">3.45</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Clave AES Asignada:</span>
+              <span id="modalKeyVal" class="text-slate-400 truncate max-w-[150px]">N/A</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Algoritmo:</span>
+              <span id="modalAlgoVal" class="text-slate-300">Ninguno (Texto plano)</span>
+            </div>
+          </div>
+          <div class="p-3 bg-indigo-950/40 rounded border border-indigo-900/60 text-[11px] text-indigo-300 leading-normal">
+            💡 <strong>Nota Pedagógica:</strong> La alta entropía ($\approx 8.0$) es un predictor estadístico crítico en modelos de Machine Learning para detección de amenazas en tiempo cero (Zero-Day).
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button id="btnCloseFileModal2" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono rounded-lg">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ransom Note Modal -->
+  <div id="ransomModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-rose-950/80 border-2 border-rose-600/80 w-full max-w-xl rounded-xl p-6 shadow-2xl text-center space-y-4 glow-red">
+      <div class="w-16 h-16 mx-auto rounded-full bg-rose-600/20 border border-rose-500 flex items-center justify-center text-rose-500">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <h2 class="text-2xl font-bold font-mono text-white tracking-wider">¡TODOS TUS ARCHIVOS HAN SIDO CIFRADOS!</h2>
+      <p class="text-xs text-rose-200 font-mono text-left bg-black/60 p-4 rounded-lg border border-rose-800/80 leading-relaxed">
+        Tus algoritmos de IA, modelos pre-entrenados y datasets de tesis han sido bloqueados con cifrado militar híbrido (AES-256-GCM + RSA-4096).
+        <br><br>
+        Es matemáticamente imposible recuperar tus claves sin la clave privada del atacante guardada en el servidor Command & Control (C2).
+        <br><br>
+        <span class="text-amber-400">ID de Víctima: 8F91-C8A2-AI-RESEARCH</span><br>
+        <span class="text-cyan-400">Llave RSA C2 Pública: 0x9AF...44C91E</span>
+      </p>
+      <div class="flex justify-center gap-3 pt-2">
+        <button id="btnCloseRansomModal" class="px-5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-semibold">
+          Entendido (Cerrar Nota)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theory & Metric Modal -->
+  <div id="theoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-cyber-card border border-cyber-border w-full max-w-3xl rounded-xl p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+        <h3 class="text-base font-bold text-white font-mono flex items-center gap-2">
+          <span>Fundamentos en Ciberseguridad & IA</span>
+        </h3>
+        <button id="btnCloseTheoryModal" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+          <h4 class="font-bold text-cyan-400 text-sm mb-1 font-mono">1. ¿Por qué Cifrado Híbrido?</h4>
+          <p>
+            Cifrar gigabytes o terabytes con criptografía asimétrica pura (ej. RSA o ECC) requeriría un tiempo de CPU enorme y colapsaría el rendimiento del host. Por ello, el ransomware genera una clave de sesión simétrica <strong>AES de 256 bits</strong> extremadamente veloz, cifra el archivo en streaming y finalmente cifra esa pequeña llave simétrica con la <strong>clave pública RSA</strong> del atacante (Key Wrapping). Sin la clave privada RSA (que nunca toca la máquina infectada), revertir el proceso es intratable.
+          </p>
+        </div>
+
+        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+          <h4 class="font-bold text-amber-400 text-sm mb-1 font-mono">2. Entropía de Shannon como Firma Estadística</h4>
+          <p>
+            Claude Shannon definió la entropía de la información como la tasa promedio a la cual la información es producida por una fuente estocástica de datos. Un archivo de código o texto tiene redundancia y patrones periódicos (entropía entre 3.0 y 5.0). Cuando los bytes pasan por un cifrador moderno (como AES en modo GCM o CBC), la salida se asemeja a una distribución pseudoaleatoria perfecta (entropía cercana a 8 bits por byte).
+          </p>
+        </div>
+
+        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+          <h4 class="font-bold text-emerald-400 text-sm mb-1 font-mono">3. Rol del Machine Learning y EDR</h4>
+          <p>
+            Los antivirus tradicionales basados en firmas estáticas (hashes MD5/SHA256) fallan ante variantes polimórficas. Las soluciones modernas con IA analizan ventanas de telemetría dinámica:
+          </p>
+          <ul class="list-disc pl-5 mt-1 space-y-1 text-slate-400">
+            <li><strong>Ráfaga de operaciones I/O:</strong> Tasas anómalas de lectura/escritura en intervalos de milisegundos.</li>
+            <li><strong>Gradiente de Entropía ($\Delta H$):</strong> Archivos modificados que cambian abruptamente de baja a máxima entropía.</li>
+            <li><strong>Alteración de extensión:</strong> Renombramiento de archivos a sufijos sospechosos.</li>
+            <li><strong>Intento de evasión:</strong> Comandos para eliminar instantáneas de volumen (<code>vssadmin delete shadows</code>).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Pedagogical Virtual Filesystem with realistic pre-encryption data
+    const initialFiles = [
+      {
+        id: "f1",
+        name: "tesis_maestria_ia.docx",
+        ext: "DOCX",
+        size: "24.5 KB",
+        status: "normal", // normal, encrypting, encrypted, protected
+        rawContent: "Capítulo 4: Redes Neuronales Convolucionales y Transformers en Detección de Amenazas. En este capítulo exploramos el entrenamiento de clasificadores basados en representaciones latentes...",
+        aesKey: null,
+        encryptedHex: null,
+        entropy: 3.42,
+        encryptedEntropy: 7.98
+      },
+      {
+        id: "f2",
+        name: "dataset_entrenamiento.csv",
+        ext: "CSV",
+        size: "18.2 KB",
+        status: "normal",
+        rawContent: "sample_id,src_ip,dst_port,packet_len,entropy_val,label\n001,192.168.1.15,443,1420,4.12,normal\n002,192.168.1.42,8080,512,3.89,normal\n003,10.0.0.5,22,88,2.78,normal",
+        aesKey: null,
+        encryptedHex: null,
+        entropy: 3.88,
+        encryptedEntropy: 7.97
+      },
+      {
+        id: "f3",
+        name: "pesos_modelo_onnx.onnx",
+        ext: "ONNX",
+        size: "82.0 KB",
+        status: "normal",
+        rawContent: "ONNX_MODEL_TENSOR_WEIGHTS_V1.4.1 [Binary Graph Headers]: Layer0_Dense_Bias: [0.0142, -0.0982, 0.551, -0.129, 0.441] ...",
+        aesKey: null,
+        encryptedHex: null,
+        entropy: 4.85,
+        encryptedEntropy: 7.99
+      },
+      {
+        id: "f4",
+        name: "api_credentials.env",
+        ext: "ENV",
+        size: "1.1 KB",
+        status: "normal",
+        rawContent: "GEMINI_API_KEY=AIzaSyA89fK91_MOCKED_KEY_SECRET\nAWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\nDB_PASS=SuperSecureMasterPassword2026!",
+        aesKey: null,
+        encryptedHex: null,
+        entropy: 4.15,
+        encryptedEntropy: 7.94
+      },
+      {
+        id: "f5",
+        name: "codigo_evaluacion.py",
+        ext: "PY",
+        size: "4.8 KB",
+        status: "normal",
+        rawContent: "import torch\nimport numpy as np\nfrom sklearn.metrics import roc_auc_score, f1_score\n\ndef evaluate_telemetry(y_true, y_pred):\n    auc = roc_auc_score(y_true, y_pred)\n    print(f'[+] Modelo EDR AUC: {auc:.4f}')\n    return auc",
+        aesKey: null,
+        encryptedHex: null,
+        entropy: 4.31,
+        encryptedEntropy: 7.96
+      },
+      {
+        id: "f6",
+        name: "backup_local_ia.tar.gz",
+        ext: "TAR",
+        size: "120.4 KB",
+        status: "normal",
+        rawContent: "ARCHIVE_TAR_GZ_CONTAINER_INDEX [MANIFEST: checkpoints, tokenizers, vocab.json, tokenizer_config.json]",
+        aesKey: null,
+        encryptedHex: null,
+        entropy: 5.12,
+        encryptedEntropy: 7.99
+      }
+    ];
+
+    let files = JSON.parse(JSON.stringify(initialFiles));
+    let isAttacking = false;
+    let attackInterval = null;
+    let currentStepFileIndex = 0;
+    let aiProtectionEnabled = true;
+    let attackHaltedByAi = false;
+    let vssDeleted = false;
+
+    // AI Telemetry & Detection State
+    let telemetryHistory = {
+      labels: ['0s', '1s', '2s', '3s', '4s', '5s', '6s'],
+      entropyData: [3.8, 3.9, 3.8, 3.85, 3.8, 3.82, 3.8],
+      ioData: [1, 2, 1, 2, 1, 2, 2],
+    };
+    let currentThreatScore = 0.05;
+
+    /**
+     * Calculates Shannon entropy: H(X) = -sum(p(x) * log2(p(x)))
+     * Range: 0 (completely uniform/deterministic) to 8.0 (pure random byte distribution).
+     */
+    function calculateShannonEntropy(str) {
+      if (!str || str.length === 0) return 0;
+      const frequencies = {};
+      const len = str.length;
+
+      for (let i = 0; i < len; i++) {
+        const char = str[i];
+        frequencies[char] = (frequencies[char] || 0) + 1;
+      }
+
+      let entropy = 0;
+      for (const char in frequencies) {
+        const p = frequencies[char] / len;
+        entropy -= p * Math.log2(p);
+      }
+      return Number(entropy.toFixed(3));
+    }
+
+    // Generate pseudo-hex representations and real WebCrypto keys for visual demonstration
+    async function simulateRealHybridEncryption(plaintext) {
+      // 1. Generate an ephemeral 256-bit AES key in memory using WebCrypto
+      const key = await window.crypto.subtle.generateKey(
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt"]
+      );
+      
+      const exportedKey = await window.crypto.subtle.exportKey("raw", key);
+      const keyBytes = new Uint8Array(exportedKey);
+      const keyHex = Array.from(keyBytes).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16) + "...";
+
+      // 2. Perform AES-GCM encryption on the dummy payload
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+      const encoder = new TextEncoder();
+      const encodedData = encoder.encode(plaintext);
+
+      const cipherBuffer = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        encodedData
+      );
+
+      const cipherBytes = new Uint8Array(cipherBuffer);
+      const cipherHexSample = Array.from(cipherBytes.slice(0, 32))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join(' ') + " [cifrado truncado 256-bit...]";
+
+      return {
+        aesKeyHex: keyHex,
+        cipherHex: cipherHexSample,
+        // Calculate true Shannon entropy on the raw cipher bytes!
+        trueCipherEntropy: calculateShannonEntropy(String.fromCharCode.apply(null, cipherBytes))
+      };
+    }
+
+    const ctx = document.getElementById('telemetryChart').getContext('2d');
+    const telemetryChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: telemetryHistory.labels,
+        datasets: [
+          {
+            label: 'Entropía Media (bits/byte)',
+            data: telemetryHistory.entropyData,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            borderWidth: 2,
+            tension: 0.35,
+            yAxisID: 'y'
+          },
+          {
+            label: 'I/O Writes/s',
+            data: telemetryHistory.ioData,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.05)',
+            borderWidth: 2,
+            borderDash: [4, 4],
+            tension: 0.3,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 400 },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#64748b', font: { family: 'monospace', size: 9 } }
+          },
+          y: {
+            min: 2,
+            max: 8.5,
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#38bdf8', font: { family: 'monospace', size: 9 } },
+            title: { display: false }
+          },
+          y1: {
+            position: 'right',
+            min: 0,
+            max: 20,
+            grid: { display: false },
+            ticks: { color: '#f43f5e', font: { family: 'monospace', size: 9 } }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#111726',
+            borderColor: '#1f293d',
+            borderWidth: 1,
+            titleFont: { family: 'monospace' },
+            bodyFont: { family: 'monospace' }
+          }
+        }
+      }
+    });
+
+    function renderFiles() {
+      const container = document.getElementById('fileListContainer');
+      container.innerHTML = '';
+
+      files.forEach((file, index) => {
+        const item = document.createElement('div');
+        const isEncrypted = file.status === 'encrypted';
+        const isProtect = file.status === 'protected';
+        const isEncrypting = file.status === 'encrypting';
+
+        let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-800">Plano</span>`;
+        if (isEncrypted) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 text-rose-400 border border-rose-800 animate-pulse">.locked</span>`;
+        } else if (isProtect) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-950 text-blue-400 border border-blue-800">Aislado (IA)</span>`;
+        } else if (isEncrypting) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950 text-amber-400 border border-amber-800">Cifrando...</span>`;
+        }
+
+        const currentEntropy = isEncrypted ? file.encryptedEntropy : file.entropy;
+        const entropyColor = currentEntropy > 7.0 ? 'bg-rose-500' : (currentEntropy > 5.0 ? 'bg-amber-400' : 'bg-cyan-400');
+        const progressPct = Math.min(100, Math.round((currentEntropy / 8.0) * 100));
+
+        item.className = `p-3 rounded-lg border transition-all duration-200 cursor-pointer ${
+          isEncrypted 
+            ? 'bg-rose-950/20 border-rose-900/60 hover:border-rose-700' 
+            : isProtect
+              ? 'bg-blue-950/20 border-blue-900/60'
+              : 'bg-slate-900/60 border-cyber-border hover:border-slate-600'
+        }`;
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center gap-2 truncate pr-2">
+              <span class="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${file.ext}</span>
+              <span class="text-xs font-mono font-medium truncate ${isEncrypted ? 'text-rose-300 line-through' : 'text-slate-200'}">
+                ${isEncrypted ? file.name + '.locked' : file.name}
+              </span>
+            </div>
+            ${statusBadge}
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1">
+            <span>Entropía: <strong class="${currentEntropy > 7 ? 'text-rose-400 font-bold' : 'text-cyan-400'}">${currentEntropy.toFixed(2)}</strong> / 8.0</span>
+            <span class="text-[10px] text-slate-500">${file.size}</span>
+          </div>
+
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div class="h-full ${entropyColor} transition-all duration-500" style="width: ${progressPct}%"></div>
+          </div>
+        `;
+
+        item.addEventListener('click', () => openInspectModal(index));
+        container.appendChild(item);
+      });
+    }
+
+    function updateTelemetry(isAttackStep = false) {
+      const activeEncrypted = files.filter(f => f.status === 'encrypted').length;
+      const total = files.length;
+
+      // Calculate mean entropy of file system
+      const sumEntropy = files.reduce((acc, f) => acc + (f.status === 'encrypted' ? f.encryptedEntropy : f.entropy), 0);
+      const meanEntropy = Number((sumEntropy / total).toFixed(2));
+
+      // I/O rate burst during attack
+      const ioBurst = isAttackStep ? Math.floor(Math.random() * 6) + 12 : Math.floor(Math.random() * 2) + 1;
+
+      // Update Chart data
+      telemetryHistory.labels.shift();
+      const currentSeconds = telemetryHistory.labels.length + 1;
+      telemetryHistory.labels.push(`${currentSeconds}s`);
+
+      telemetryHistory.entropyData.shift();
+      telemetryHistory.entropyData.push(meanEntropy);
+
+      telemetryHistory.ioData.shift();
+      telemetryHistory.ioData.push(ioBurst);
+
+      telemetryChart.update();
+
+      // Compute threat score using a simulated linear decision boundary (Anomaly Detector heuristic)
+      // Features: meanEntropy (weight 0.45) + ioBurst (weight 0.35) + encryptedCount (weight 0.20)
+      const normEntropy = Math.max(0, (meanEntropy - 3.8) / (8.0 - 3.8));
+      const normIo = Math.min(1, ioBurst / 16);
+      const normEncrypted = activeEncrypted / total;
+
+      currentThreatScore = Math.min(1.0, (normEntropy * 0.45) + (normIo * 0.35) + (normEncrypted * 0.25));
+      currentThreatScore = Number(currentThreatScore.toFixed(2));
+
+      // Update DOM Indicators
+      const bar = document.getElementById('threatScoreBar');
+      const text = document.getElementById('threatScoreText');
+      bar.style.width = `${Math.round(currentThreatScore * 100)}%`;
+      text.innerText = `${currentThreatScore.toFixed(2)} / 1.0`;
+
+      if (currentThreatScore > 0.70) {
+        bar.className = 'h-full bg-rose-500 transition-all duration-300';
+        text.className = 'font-bold text-rose-400';
+      } else if (currentThreatScore > 0.40) {
+        bar.className = 'h-full bg-amber-400 transition-all duration-300';
+        text.className = 'font-bold text-amber-400';
+      } else {
+        bar.className = 'h-full bg-emerald-500 transition-all duration-300';
+        text.className = 'font-bold text-emerald-400';
+      }
+
+      // Update features list
+      document.getElementById('featWriteRate').innerText = `${ioBurst} ops/s`;
+      document.getElementById('featEntropyMean').innerText = `${meanEntropy} bits`;
+      document.getElementById('featRenameCount').innerText = `${activeEncrypted} detectados`;
+    }
+
+    async function executeNextAttackStep() {
+      if (attackHaltedByAi) return;
+
+      // Find the next plain file
+      const targetIndex = files.findIndex(f => f.status === 'normal');
+
+      if (targetIndex === -1) {
+        // All files processed
+        stopAttackSimulation();
+        showBanner("¡Cifrado masivo completado! Nota de rescate desplegada.", "rose");
+        document.getElementById('ransomModal').classList.remove('hidden');
+        return;
+      }
+
+      const targetFile = files[targetIndex];
+      targetFile.status = 'encrypting';
+      renderFiles();
+
+      // UI Cryptographic Pipeline Highlighting
+      document.getElementById('badgeAesKey').innerText = "Generando...";
+      document.getElementById('badgeAesKey').className = "text-[10px] text-cyan-400 font-bold";
+      document.getElementById('badgePayload').innerText = "Cifrando AES...";
+      document.getElementById('badgePayload').className = "text-[10px] text-amber-400 font-bold";
+
+      // Execute actual simulated encryption
+      const cryptoResult = await simulateRealHybridEncryption(targetFile.rawContent);
+      targetFile.aesKey = cryptoResult.aesKeyHex;
+      targetFile.encryptedHex = cryptoResult.cipherHex;
+      targetFile.encryptedEntropy = Number(cryptoResult.trueCipherEntropy.toFixed(2)) || 7.98;
+      targetFile.status = 'encrypted';
+
+      document.getElementById('badgeWrap').innerText = "Clave sellada (RSA)";
+      document.getElementById('badgeWrap').className = "text-[10px] text-rose-400 font-bold";
+
+      // First step simulates attempting to tamper with Shadow Copies (VSS)
+      if (!vssDeleted) {
+        vssDeleted = true;
+        const vssBadge = document.getElementById('vssStatusBadge');
+        vssBadge.innerText = "Eliminadas (vssadmin delete)";
+        vssBadge.className = "px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800";
+        document.getElementById('featVssTamper').innerText = "¡Sí! (Intento de evasión)";
+        document.getElementById('featVssTamper').className = "text-rose-400 font-bold";
+      }
+
+      renderFiles();
+      updateTelemetry(true);
+
+      // AI Defense Evaluation
+      if (aiProtectionEnabled && currentThreatScore >= 0.70) {
+        triggerAiIntervention();
+      }
+    }
+
+    function triggerAiIntervention() {
+      attackHaltedByAi = true;
+      stopAttackSimulation();
+
+      // Isolate remaining plain files
+      files.forEach(f => {
+        if (f.status === 'normal' || f.status === 'encrypting') {
+          f.status = 'protected';
+        }
+      });
+
+      renderFiles();
+
+      const aiStatus = document.getElementById('aiStatusBadge');
+      aiStatus.innerText = "¡ANOMALÍA DETECTADA: PROCESO AISLADO!";
+      aiStatus.className = "text-rose-400 font-bold animate-pulse";
+
+      showBanner(
+        "🛡️ INTERVENCIÓN DEL AGENTE IA: Pico anómalo de entropía y ráfaga de E/S detectados (Score >= 0.70). Proceso bloqueado y archivos restantes aislados.",
+        "emerald"
+      );
+    }
+
+    function showBanner(text, type = "cyan") {
+      const banner = document.getElementById('systemBanner');
+      banner.classList.remove('hidden');
+      if (type === "rose") {
+        banner.className = "py-2.5 px-4 text-center text-xs font-mono font-medium border-b bg-rose-950/80 text-rose-200 border-rose-800";
+      } else if (type === "emerald") {
+        banner.className = "py-2.5 px-4 text-center text-xs font-mono font-medium border-b bg-emerald-950/90 text-emerald-200 border-emerald-800";
+      } else {
+        banner.className = "py-2.5 px-4 text-center text-xs font-mono font-medium border-b bg-cyan-950/80 text-cyan-200 border-cyan-800";
+      }
+      banner.innerText = text;
+    }
+
+    function startAttackSimulation() {
+      if (isAttacking || attackHaltedByAi) return;
+      isAttacking = true;
+      document.getElementById('btnStartAttack').classList.add('opacity-50', 'cursor-not-allowed');
+      showBanner("Ataque en progreso: Iterando archivos del directorio...", "rose");
+
+      attackInterval = setInterval(async () => {
+        await executeNextAttackStep();
+      }, 1400);
+    }
+
+    function stopAttackSimulation() {
+      isAttacking = false;
+      if (attackInterval) {
+        clearInterval(attackInterval);
+        attackInterval = null;
+      }
+      document.getElementById('btnStartAttack').classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    function resetSimulation() {
+      stopAttackSimulation();
+      files = JSON.parse(JSON.stringify(initialFiles));
+      attackHaltedByAi = false;
+      vssDeleted = false;
+      currentThreatScore = 0.05;
+
+      // Reset Telemetry data
+      telemetryHistory.entropyData = [3.8, 3.9, 3.8, 3.85, 3.8, 3.82, 3.8];
+      telemetryHistory.ioData = [1, 2, 1, 2, 1, 2, 2];
+      telemetryChart.update();
+
+      // Reset DOM state
+      document.getElementById('systemBanner').classList.add('hidden');
+      document.getElementById('aiStatusBadge').innerText = "Activo (Monitoreando)";
+      document.getElementById('aiStatusBadge').className = "text-emerald-400 font-bold";
+      document.getElementById('vssStatusBadge').innerText = "Íntegras";
+      document.getElementById('vssStatusBadge').className = "px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800";
+      document.getElementById('featVssTamper').innerText = "No";
+      document.getElementById('featVssTamper').className = "text-emerald-400";
+      
+      document.getElementById('badgeAesKey').innerText = "En espera";
+      document.getElementById('badgeAesKey').className = "text-[10px] text-slate-400";
+      document.getElementById('badgePayload').innerText = "Sin procesar";
+      document.getElementById('badgePayload').className = "text-[10px] text-slate-400";
+      document.getElementById('badgeWrap').innerText = "Sin sellar";
+      document.getElementById('badgeWrap').className = "text-[10px] text-slate-400";
+
+      renderFiles();
+      updateTelemetry(false);
+    }
+
+    function openInspectModal(index) {
+      const file = files[index];
+      const isEnc = file.status === 'encrypted';
+
+      document.getElementById('modalFileName').innerText = isEnc ? file.name + '.locked' : file.name;
+      document.getElementById('modalFileExt').innerText = file.ext;
+      document.getElementById('modalFileStatus').innerText = `Estado: ${file.status.toUpperCase()}`;
+
+      if (isEnc) {
+        document.getElementById('modalRawContent').innerText = 
+          `// BYTE STREAM CIFRADO (AES-256-GCM):\n${file.encryptedHex}\n\n// METADATA APPENDED:\n[WRAPPED_AES_KEY]: 9A7F4B...C018 [RSA-4096 SEALED]`;
+        document.getElementById('modalEntropyVal').innerText = `${file.encryptedEntropy} bits/byte (Alto / Pseudoaleatorio)`;
+        document.getElementById('modalEntropyVal').className = "text-rose-400 font-bold";
+        document.getElementById('modalKeyVal').innerText = file.aesKey || "Generada y Encapsulada";
+        document.getElementById('modalAlgoVal').innerText = "AES-256-GCM (Wrapped RSA)";
+      } else {
+        document.getElementById('modalRawContent').innerText = file.rawContent;
+        document.getElementById('modalEntropyVal').innerText = `${file.entropy} bits/byte (Estructura normal)`;
+        document.getElementById('modalEntropyVal').className = "text-cyan-400 font-bold";
+        document.getElementById('modalKeyVal').innerText = "N/A (Texto sin cifrar)";
+        document.getElementById('modalAlgoVal').innerText = "Ninguno (Plaintext)";
+      }
+
+      document.getElementById('fileModal').classList.remove('hidden');
+    }
+
+    // Event Listeners
+    document.getElementById('btnStartAttack').addEventListener('click', startAttackSimulation);
+    document.getElementById('btnStep').addEventListener('click', () => {
+      stopAttackSimulation();
+      executeNextAttackStep();
+    });
+    document.getElementById('btnReset').addEventListener('click', resetSimulation);
+
+    document.getElementById('toggleAiProtection').addEventListener('change', (e) => {
+      aiProtectionEnabled = e.target.checked;
+      const statusBadge = document.getElementById('aiStatusBadge');
+      if (aiProtectionEnabled) {
+        statusBadge.innerText = "Activo (Monitoreando)";
+        statusBadge.className = "text-emerald-400 font-bold";
+      } else {
+        statusBadge.innerText = "Desactivado (Sin Mitigación)";
+        statusBadge.className = "text-slate-500 font-bold";
+      }
+    });
+
+    // Modals
+    document.getElementById('btnCloseFileModal').addEventListener('click', () => document.getElementById('fileModal').classList.add('hidden'));
+    document.getElementById('btnCloseFileModal2').addEventListener('click', () => document.getElementById('fileModal').classList.add('hidden'));
+    document.getElementById('btnViewRansomNote').addEventListener('click', () => document.getElementById('ransomModal').classList.remove('hidden'));
+    document.getElementById('btnCloseRansomModal').addEventListener('click', () => document.getElementById('ransomModal').classList.add('hidden'));
+    document.getElementById('btnToggleTheory').addEventListener('click', () => document.getElementById('theoryModal').classList.remove('hidden'));
+    document.getElementById('btnCloseTheoryModal').addEventListener('click', () => document.getElementById('theoryModal').classList.add('hidden'));
+
+    // Initialize display on startup
+    window.onload = () => {
+      renderFiles();
+      updateTelemetry(false);
+    };
+  </script>
+</body>
+</html>

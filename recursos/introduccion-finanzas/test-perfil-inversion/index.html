@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InverTest - Perfil de Inversión</title>
+    <!-- Librería para captura de pantalla -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #22c55e;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            /* Perfiles Colors */
+            --color-conservador: #3b82f6;
+            --color-moderado: #10b981;
+            --color-dinamico: #f59e0b;
+            --color-agresivo: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .screen {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilos Formulario Inicial */
+        .input-group {
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .name-input:focus {
+            border-color: var(--primary);
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.2;
+            background: linear-gradient(to right, #fff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* Botones */
+        .btn-main {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Barra de Progreso */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        /* Estilo de Preguntas */
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            padding: 16px 20px;
+            border-radius: 14px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--secondary);
+            transform: translateX(5px);
+        }
+
+        .option-letter {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        /* Pantalla de Resultados */
+        #capture-area {
+            text-align: center;
+            padding: 20px;
+            border-radius: 20px;
+            /* Se aplica fondo para la captura */
+            background: #1e1b4b; 
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .user-greeting {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .result-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .result-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        /* Medidor de Riesgo */
+        .risk-meter-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 20px 0 40px 0;
+            position: relative;
+        }
+
+        .risk-meter-pointer {
+            position: absolute;
+            top: -5px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            border: 4px solid var(--primary);
+            transform: translateX(-50%);
+            transition: left 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+
+        .risk-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .actions-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Ocultar elementos específicos en la captura si es necesario */
+        .no-capture {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .screen {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div style="position: absolute; top: 16px; left: 16px; z-index: 50;">
+        <a href="../../../index.html" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: #f8fafc; font-size: 0.8rem; font-weight: 600; text-decoration: none; backdrop-filter: blur(8px); transition: all 0.2s;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Repositorio Docente
+        </a>
+    </div>
+
+    <div id="app">
+        <!-- Pantalla de Inicio -->
+        <div id="screen-start" class="screen active">
+            <div class="welcome-icon">💰</div>
+            <h1>InverTest</h1>
+            <p class="subtitle">Descubre cómo tomas decisiones financieras en pocos minutos.</p>
+            
+            <div class="input-group">
+                <label class="input-label" for="user-name">Ingresa tu nombre para comenzar</label>
+                <input type="text" id="user-name" class="name-input" placeholder="Tu nombre aquí..." autocomplete="off">
+            </div>
+
+            <button class="btn-main" onclick="startTest()">Empezar Test</button>
+        </div>
+
+        <!-- Pantalla de Preguntas -->
+        <div id="screen-quiz" class="screen">
+            <div class="progress-text" id="progress-text">Pregunta 1 de 10</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div id="question-container">
+                <h2 class="question-text" id="question-text">...</h2>
+                <div class="options-grid" id="options-grid"></div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Resultados -->
+        <div id="screen-result" class="screen">
+            <div id="capture-area">
+                <div id="result-badge" class="result-badge">Perfil</div>
+                <p id="result-greeting" class="user-greeting">Santiago,</p>
+                <h2 class="result-title">Tu perfil es <br><span id="result-profile">Moderado</span></h2>
+                <p id="result-desc" class="result-description">...</p>
+                
+                <div class="risk-meter-container">
+                    <div id="risk-pointer" class="risk-meter-pointer"></div>
+                    <div class="risk-labels">
+                        <span>CONSERVADOR</span>
+                        <span>AGRESIVO</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.7rem; color: #555; margin-top: -20px;">InverTest App 2024</p>
+            </div>
+
+            <div class="actions-footer">
+                <button class="btn-main" onclick="downloadResult()">Descargar Resultado (Imagen)</button>
+                <button class="btn-secondary" onclick="resetTest()">Volver a intentar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "Si inviertes dinero y en un mes pierdes 10%, ¿qué haces?", options: [{text:"Retiro todo para evitar más pérdidas",pts:1},{text:"Espero un poco",pts:2},{text:"Mantengo la inversión",pts:3},{text:"Invierto más",pts:4}] },
+            { q: "¿Cuál es tu principal objetivo al invertir?", options: [{text:"No perder dinero",pts:1},{text:"Mantener valor",pts:2},{text:"Crecer moderadamente",pts:3},{text:"Máxima rentabilidad",pts:4}] },
+            { q: "¿En cuánto tiempo necesitarás el dinero?", options: [{text:"<1 año",pts:1},{text:"1–3 años",pts:2},{text:"3–5 años",pts:3},{text:">5 años",pts:4}] },
+            { q: "¿Qué porcentaje de ingresos puedes invertir?", options: [{text:"<5%",pts:1},{text:"5–10%",pts:2},{text:"10–20%",pts:3},{text:">20%",pts:4}] },
+            { q: "¿Qué tanto sabes de inversiones?", options: [{text:"Nada",pts:1},{text:"Poco",pts:2},{text:"Intermedio",pts:3},{text:"Mucho",pts:4}] },
+            { q: "Si ganas 20%, ¿qué haces?", options: [{text:"Retiro todo",pts:1},{text:"Retiro parte",pts:2},{text:"Mantengo",pts:3},{text:"Invierto más",pts:4}] },
+            { q: "¿Qué prefieres?", options: [{text:"Ganar poco seguro",pts:1},{text:"Bajo riesgo",pts:2},{text:"Riesgo medio",pts:3},{text:"Alto retorno",pts:4}] },
+            { q: "Tu situación financiera:", options: [{text:"Ajustada",pts:1},{text:"Estable",pts:2},{text:"Cómoda",pts:3},{text:"Holgada",pts:4}] },
+            { q: "Si hay volatilidad:", options: [{text:"Retiro",pts:1},{text:"Espero",pts:2},{text:"Normal",pts:3},{text:"Aprovecho",pts:4}] },
+            { q: "¿Qué priorizas?", options: [{text:"Seguridad total",pts:1},{text:"Seguridad + algo retorno",pts:2},{text:"Equilibrio",pts:3},{text:"Máximo retorno",pts:4}] }
+        ];
+
+        let currentQuestion = 0;
+        let totalScore = 0;
+        let userName = "";
+
+        function startTest() {
+            const nameInput = document.getElementById('user-name');
+            userName = nameInput.value.trim();
+            
+            if (userName === "") {
+                nameInput.style.borderColor = "#ef4444";
+                nameInput.placeholder = "¡Por favor escribe tu nombre!";
+                return;
+            }
+
+            showScreen('screen-quiz');
+            loadQuestion();
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function loadQuestion() {
+            const qData = questions[currentQuestion];
+            const qText = document.getElementById('question-text');
+            const optionsGrid = document.getElementById('options-grid');
+            const progressText = document.getElementById('progress-text');
+            const progressBar = document.getElementById('progress-bar');
+
+            progressText.innerText = `Pregunta ${currentQuestion + 1} de 10`;
+            progressBar.style.width = `${((currentQuestion + 1) / 10) * 100}%`;
+            qText.innerText = qData.q;
+
+            optionsGrid.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            qData.options.forEach((opt, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.innerHTML = `
+                    <span class="option-letter">${letters[index]}</span>
+                    <span>${opt.text}</span>
+                `;
+                button.onclick = () => selectOption(opt.pts);
+                optionsGrid.appendChild(button);
+            });
+        }
+
+        function selectOption(points) {
+            totalScore += points;
+            if (currentQuestion < questions.length - 1) {
+                setTimeout(() => {
+                    currentQuestion++;
+                    loadQuestion();
+                }, 200);
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            showScreen('screen-result');
+            
+            const profileSpan = document.getElementById('result-profile');
+            const profileGreeting = document.getElementById('result-greeting');
+            const profileDesc = document.getElementById('result-desc');
+            const badge = document.getElementById('result-badge');
+            const pointer = document.getElementById('risk-pointer');
+            
+            let profile = "";
+            let desc = "";
+            let color = "";
+            let percent = 0;
+
+            if (totalScore <= 17) {
+                profile = "Conservador";
+                desc = "Buscas estabilidad y seguridad. Prefieres proteger tu capital antes que arriesgar por ganancias inciertas.";
+                color = "var(--color-conservador)";
+                percent = 15;
+            } else if (totalScore <= 25) {
+                profile = "Moderado";
+                desc = "Equilibras el riesgo con el crecimiento. Aceptas pequeñas fluctuaciones a cambio de mejores rendimientos.";
+                color = "var(--color-moderado)";
+                percent = 40;
+            } else if (totalScore <= 33) {
+                profile = "Dinámico";
+                desc = "Entiendes los ciclos del mercado y buscas crecimiento activo. Eres tolerante a la volatilidad.";
+                color = "var(--color-dinamico)";
+                percent = 70;
+            } else {
+                profile = "Agresivo";
+                desc = "Tu meta es el máximo crecimiento. Eres experto manejando el riesgo y aprovechas cada oportunidad del mercado.";
+                color = "var(--color-agresivo)";
+                percent = 90;
+            }
+
+            profileGreeting.innerText = `${userName},`;
+            profileSpan.innerText = profile;
+            profileSpan.style.color = color;
+            profileDesc.innerText = desc;
+            badge.innerText = `Perfil de Inversión`;
+            badge.style.backgroundColor = color;
+            badge.style.color = "white";
+            
+            setTimeout(() => {
+                pointer.style.left = `${percent}%`;
+                pointer.style.borderColor = color;
+            }, 300);
+        }
+
+        function downloadResult() {
+            const element = document.getElementById('capture-area');
+            const btnDownload = event.target;
+            btnDownload.innerText = "Generando imagen...";
+            btnDownload.disabled = true;
+
+            html2canvas(element, {
+                backgroundColor: "#1e1b4b",
+                borderRadius: 24,
+                scale: 2 // Mayor calidad
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Perfil_Inversion_${userName}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                
+                btnDownload.innerText = "Descargar Resultado (Imagen)";
+                btnDownload.disabled = false;
+            }).catch(err => {
+                console.error("Error al generar imagen", err);
+                btnDownload.innerText = "Error al descargar";
+                btnDownload.disabled = false;
+            });
+        }
+
+        function resetTest() {
+            currentQuestion = 0;
+            totalScore = 0;
+            const pointer = document.getElementById('risk-pointer');
+            pointer.style.left = "0%";
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>

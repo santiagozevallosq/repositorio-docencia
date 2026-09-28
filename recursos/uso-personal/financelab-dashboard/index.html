@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceLab - Panel Financiero Educativo</title>
+    <!-- Tailwind CSS para o diseño responsivo y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para la visualización de gráficos interactivos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS para leer archivos Excel (.xlsx, .xls) directamente en el navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        ingreso: '#10b981', // Verde
+                        gasto: '#f43f5e',   // Rosa/Vermello
+                        ahorro: '#3b82f6'   // Azul
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .scroll-custom::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .scroll-custom::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .scroll-custom::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800">
+
+    <!-- CABECERA PRINCIPAL -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-brand-100 text-brand-600 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">FinanceLab</h1>
+                    <p class="text-xs text-slate-500 font-medium">Panel de Análisis de Finanzas Personales (2021 - 2025)</p>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-wrap items-center gap-3">
+                                <!-- Botón Volver al Repositorio -->
+                <a href="../../../index.html" class="flex items-center gap-1.5 px-3.5 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl transition-all shadow-xs">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span>Repositorio Docente</span>
+                </a>
+                <!-- Botón de Acción con trigger JavaScript nativo robusto -->
+                <button onclick="document.getElementById('fileInput').click()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl cursor-pointer shadow-sm transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <span>Cargar Excel o CSV</span>
+                </button>
+                <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx, .xls">
+
+                <!-- Restablecer Datos -->
+                <button id="resetBtn" class="px-3.5 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-all" title="Restaurar datos predeterminados 2021-2025">
+                    Restaurar Datos
+                </button>
+
+                <!-- Botón Guía Excel -->
+                <button onclick="openGuideModal()" class="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-sm font-semibold rounded-xl transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span>¿Cómo hacerlo en Excel?</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CUERPO PRINCIPAL DEL PANEL -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        <!-- PANEL DE FILTROS Y CONTROLES (IZQUIERDA) -->
+        <section class="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-6 self-start">
+            <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+                <h3 class="font-bold text-slate-950 flex items-center gap-2 text-sm uppercase tracking-wider">
+                    <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    Filtros / Segmentadores
+                </h3>
+                <button id="clearFiltersBtn" class="text-xs text-brand-600 hover:underline font-semibold">Limpiar todo</button>
+            </div>
+
+            <!-- Segmentador por Año -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Segmentador por Año</label>
+                <div class="grid grid-cols-3 gap-2" id="yearsContainer">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- Rango de Tempo (Meses) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Período de Análisis</label>
+                <div class="space-y-4">
+                    <div class="flex justify-between text-xs text-slate-600 font-medium">
+                        <span id="dateRangeStart">-</span>
+                        <span id="dateRangeEnd">-</span>
+                    </div>
+                    <div class="px-1">
+                        <input type="range" id="monthSelectorStart" class="w-full accent-brand-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg">
+                        <input type="range" id="monthSelectorEnd" class="w-full accent-brand-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg mt-2">
+                    </div>
+                    <p class="text-[11px] text-slate-400 italic">Desliza para acotar el rango de inicio (arriba) y fin (abajo).</p>
+                </div>
+            </div>
+
+            <!-- Categorías Activas -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Categorías de Gasto</label>
+                <div class="space-y-2.5" id="categoriesCheckboxContainer">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- Información del Archivo Activo -->
+            <div class="pt-4 border-t border-slate-100">
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs">
+                    <div class="flex items-center gap-2 mb-1.5 text-slate-700 font-semibold">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Origen de Datos
+                    </div>
+                    <p id="dataOriginName" class="text-slate-600 truncate font-mono">Datos predeterminados (2021-2025)</p>
+                    <p id="dataTotalRows" class="text-slate-400 mt-1">60 meses registrados</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANEL CENTRAL Y GRÁFICOS (DERECHA) -->
+        <section class="lg:col-span-3 space-y-6">
+
+            <!-- KPIs PRINCIPALES (INDICADORES) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- KPI: Ingresos -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-[0.03] text-ingreso">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h3a1 1 0 100-2H9z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ingresos Totales</p>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-1.5" id="kpiTotalIngresos">S/ 0.00</h2>
+                    <div class="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
+                        <span class="font-bold text-emerald-600" id="kpiPromedioIngresos">S/ 0.00</span>
+                        <span>promedio/mes</span>
+                    </div>
+                </div>
+
+                <!-- KPI: Gastos -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-[0.03] text-gasto">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path></svg>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gastos Totales</p>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-1.5" id="kpiTotalGastos">S/ 0.00</h2>
+                    <div class="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
+                        <span class="font-bold text-rose-600" id="kpiPromedioGastos">S/ 0.00</span>
+                        <span>promedio/mes</span>
+                    </div>
+                </div>
+
+                <!-- KPI: Aforro -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-[0.03] text-ahorro">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a8 8 0 0016 0V6a2 2 0 00-2-2H4zm10 5a1 1 0 100-2 1 1 0 000 2zM9 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ahorro Neto</p>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-1.5" id="kpiTotalAhorro">S/ 0.00</h2>
+                    <div class="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
+                        <span class="font-bold text-blue-600" id="kpiPromedioAhorro">S/ 0.00</span>
+                        <span>promedio/mes</span>
+                    </div>
+                </div>
+
+                <!-- KPI: % Ahorro -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-[0.03] text-indigo-500">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tasa de Ahorro</p>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-1.5" id="kpiTasaAhorro">0.0%</h2>
+                    <div class="flex items-center gap-1.5 mt-2 text-xs text-slate-500" id="kpiSaludAhorro">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full" id="kpiSaludColor"></span>
+                        <span id="kpiSaludTexto">Analizando salud...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS CLAVE -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Gráfico de Tendencia Temporal (Ingresos vs Aforro) -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm lg:col-span-2">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold text-slate-900 text-sm">Tendencia Temporal: Ingresos vs. Gastos y Ahorro</h4>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Ingresos</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Gastos</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Ahorros</span>
+                        </div>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="chartTrend"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico Circular: Distribución Gasto vs Aforro -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <h4 class="font-bold text-slate-900 text-sm mb-4">Destino de los Ingresos</h4>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="chartDoughnut"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPOSICIÓN DEL GASTO -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">Estructura y Composición mensual del Gasto</h4>
+                        <p class="text-xs text-slate-500">Analiza en qué categorías se diluye el dinero cada mes.</p>
+                    </div>
+                    <div id="stackButtons" class="flex gap-1.5 self-end">
+                        <button onclick="setStackType('percent')" id="stackBtnPercent" class="px-2.5 py-1 bg-brand-50 text-brand-700 text-xs font-semibold rounded-lg hover:bg-brand-100 transition-all border border-brand-200">Ver % Relativo</button>
+                        <button onclick="setStackType('value')" id="stackBtnValue" class="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg hover:bg-slate-200 transition-all">Ver Valores Absolutos</button>
+                    </div>
+                </div>
+                <div class="h-72 relative">
+                    <canvas id="chartGastosComposicion"></canvas>
+                </div>
+            </div>
+
+            <!-- TABLAS RESUMEN -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Tabla 1: Resumo por Año -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-slate-900 text-sm">Resumen Acumulado por Año</h4>
+                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded-md">Consolidado</span>
+                        </div>
+                        <div class="overflow-x-auto scroll-custom max-h-[250px] overflow-y-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-500 bg-slate-50/50 sticky top-0">
+                                        <th class="py-2.5 px-3 font-semibold">Año</th>
+                                        <th class="py-2.5 px-3 font-semibold text-right">Total Ingreso</th>
+                                        <th class="py-2.5 px-3 font-semibold text-right">Total Gasto</th>
+                                        <th class="py-2.5 px-3 font-semibold text-right">Total Ahorro</th>
+                                        <th class="py-2.5 px-3 font-semibold text-right">% Ahorro</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableAnualBody">
+                                    <!-- Dinámico -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-4 border-t border-slate-100 pt-3">
+                        * Ideal para aprender a usar a fórmula <code class="bg-slate-100 px-1 py-0.5 rounded text-rose-600 font-mono">SUMAR.SI</code> e Tablas Dinámicas en Excel.
+                    </div>
+                </div>
+
+                <!-- Tabla 2: Ranking de Gastos por Categoría -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-bold text-slate-900 text-sm">Clasificación de Categorías de Gasto</h4>
+                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded-md">Fijo vs. Variable</span>
+                        </div>
+                        <div class="overflow-x-auto scroll-custom max-h-[250px] overflow-y-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-500 bg-slate-50/50 sticky top-0">
+                                        <th class="py-2.5 px-3 font-semibold">Categoría</th>
+                                        <th class="py-2.5 px-3 font-semibold text-right">Total Acumulado</th>
+                                        <th class="py-2.5 px-3 font-semibold text-right">Promedio Mensual</th>
+                                        <th class="py-2.5 px-3 font-semibold text-right">% Gasto Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableGastosBody">
+                                    <!-- Dinámico -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-4 border-t border-slate-100 pt-3">
+                        * Ordenado de mayor a menor gasto para identificar de forma directa las fugas de dinero más críticas.
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTERPRETACIÓN DINÁMICA / INSIGHTS -->
+            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="p-1.5 bg-emerald-100 text-emerald-800 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-emerald-950 text-base">Interpretación Dinámica y Recomendaciones (Insights)</h4>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-emerald-900" id="insightsGrid">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-slate-400 text-xs">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p>© 2026 FinanceLab - Desarrollado para el análisis y aprendizaje interactivo de Finanzas en Excel.</p>
+            <p>La herramienta soporta importaciones de archivos estructurados con columnas como: <code class="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-600">Mes, Ingresos, Ahorro</code> e diversas categorías de gasto.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL: GUÍA PASO A PASO EXCEL -->
+    <div id="guideModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300">
+            <!-- Header Modal -->
+            <div class="p-6 border-b border-slate-200 bg-emerald-50 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-emerald-100 text-emerald-800 rounded-xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">¿Cómo construir este Dashboard en Excel?</h2>
+                        <p class="text-xs text-slate-500">Guía estructurada paso a paso para estudiantes y docentes.</p>
+                    </div>
+                </div>
+                <button onclick="closeGuideModal()" class="p-1.5 rounded-lg hover:bg-emerald-100 text-emerald-800 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Contenido del Modal -->
+            <div class="p-6 overflow-y-auto scroll-custom space-y-6 text-sm text-slate-600 leading-relaxed">
+                <!-- Paso 1 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-950 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-6 h-6 bg-brand-100 text-brand-700 rounded-full text-xs">1</span>
+                        Estructura limpia del Libro de Excel (3 Hojas)
+                    </h3>
+                    <p>Para construir dashboards profesionales, nunca mezcles datos, cálculos e informes. Utiliza 3 pestañas:</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-1 text-xs">
+                        <li><strong>1. Datos:</strong> Donde va la tabla histórica limpia que cargaste (con columnas Mes, Ingresos, etc.).</li>
+                        <li><strong>2. Cálculos:</strong> Espazo privado de soporte para aloxar as túas tablas dinámicas ou fórmulas auxiliares.</li>
+                        <li><strong>3. Dashboard:</strong> La hoja de presentación visual (con gráficos, KPIs y segmentadores).</li>
+                    </ul>
+                </div>
+
+                <!-- Paso 2 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-950 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-6 h-6 bg-brand-100 text-brand-700 rounded-full text-xs">2</span>
+                        Fórmulas para los KPIs principales
+                    </h3>
+                    <p>En la hoja <strong>Cálculos</strong> o directamente en tus tarjetas de KPI usando referencias:</p>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 font-mono text-xs text-slate-700 space-y-1.5">
+                        <p><strong>Ingresos Totales:</strong> =SUMA(Datos!B:B)</p>
+                        <p><strong>Promedio mensual:</strong> =PROMEDIO(Datos!B:B)</p>
+                        <p><strong>Porcentaje de Ahorro:</strong> =C3 / B3 <span class="text-slate-400">(Ahorro / Ingresos) - Formato Porcentaje</span></p>
+                    </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-950 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-6 h-6 bg-brand-100 text-brand-700 rounded-full text-xs">3</span>
+                        Tablas Dinámicas de Soporte
+                    </h3>
+                    <p>Na pestana <strong>Cálculos</strong>, insire dúas tablas dinámicas desde a túa táboa de Datos:</p>
+                    <ol class="list-decimal pl-5 space-y-1 mt-1 text-xs">
+                        <li><strong>Para el Resumen Anual:</strong> Coloca "Mes" agrupado por Años en las Filas, y arrastra "Ingresos", "Ahorro" y el total de categorías a los Valores.</li>
+                        <li><strong>Para la composición del gasto:</strong> Coloca los conceptos de gasto en las filas y suma sus montos totales. Ordénala de mayor a menor para obtener el Top.</li>
+                    </ol>
+                </div>
+
+                <!-- Paso 4 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-950 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-6 h-6 bg-brand-100 text-brand-700 rounded-full text-xs">4</span>
+                        Insertar Gráficos Recomendados e Interactividad
+                    </h3>
+                    <p>Xera os gráficos a partir das tablas dinámicas:</p>
+                    <ul class="list-disc pl-5 space-y-1.5 mt-1 text-xs">
+                        <li><strong>Gráfico de Líneas (Tendencia):</strong> Selecciona la tabla de tendencia anual/mensual y agrega un gráfico de líneas para Ingreso vs. Ahorro.</li>
+                        <li><strong>Gráfico de Columnas Apiladas:</strong> Úsalo para las categorías de gastos. En Excel, haz clic en "Cambiar tipo de gráfico" > Columna Apilada 100% para observar variaciones relativas.</li>
+                        <li><strong>Engadir interactividade (Segmentadores):</strong> Selecciona calquera gráfico dinámico > Menú Analizar tabla dinámica > <strong>Insertar segmentación de datos</strong> > Selecciona "Año" y "Mes".</li>
+                        <li><strong>Conexión de filtros:</strong> Clic dereito sobre o segmentador > <strong>Conexións de informes</strong> > Marca todas as tablas dinámicas correspondentes para que se actualicen ao mesmo tempo.</li>
+                    </ul>
+                </div>
+
+                <!-- Paso 5 -->
+                <div class="space-y-2">
+                    <h3 class="font-bold text-slate-950 flex items-center gap-2">
+                        <span class="flex items-center justify-center w-6 h-6 bg-brand-100 text-brand-700 rounded-full text-xs">5</span>
+                        Estética Profesional
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-1 mt-1 text-xs">
+                        <li>Oculta las líneas de cuadrícula: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-emerald-700 font-mono">Vista > Mostrar > Desmarcar Líneas de cuadrícula</code>.</li>
+                        <li>Usa una única tipografía limpia en todo el archivo (ej. Segoe UI o Aptos).</li>
+                        <li>Elige colores unificados: Verde para flujos positivos (ingresos), Rojo/Naranja para gastos y Azul para el ahorro constante.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+                <button onclick="closeGuideModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl text-xs transition-all">
+                    Entendido, ¡a practicar!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LÓXICA E INTERACTIVIDADE -->
+    <script>
+        // --- 1. CONXUNTO DE DATOS PREDETERMINADO (S08_data.xlsx) ---
+        const DEFAULT_CSV = `Mes,Ingresos,Alimentación,Transporte,Alquiler_y_Servicios,Entretenimiento,Educación_y_Salud,Aforro
+2021-01-01,3200,650,280,1150,250,180,690
+2021-02-01,3200,670,290,1150,270,150,670
+2021-03-01,3200,690,300,1160,230,200,620
+2021-04-01,3300,700,300,1160,260,180,700
+2021-05-01,3300,710,310,1170,280,220,610
+2021-06-01,3300,720,320,1170,260,180,650
+2021-07-01,3400,740,330,1180,300,250,600
+2021-08-01,3400,730,320,1180,280,180,710
+2021-09-01,3400,750,340,1190,290,200,630
+2021-10-01,3500,760,350,1190,310,220,670
+2021-11-01,3500,780,360,1200,320,240,600
+2021-12-01,3500,850,380,1200,450,250,370
+2022-01-01,3550,770,350,1210,260,190,770
+2022-02-01,3550,780,360,1210,280,170,750
+2022-03-01,3550,800,370,1220,250,230,680
+2022-04-01,3600,810,370,1220,270,190,760
+2022-05-01,3600,820,380,1230,290,210,700
+2022-06-01,3600,830,390,1230,270,190,720
+2022-07-01,3700,850,400,1240,320,270,620
+2022-08-01,3700,840,390,1240,300,190,740
+2022-09-01,3700,860,400,1250,310,210,670
+2022-10-01,3750,870,410,1250,330,230,660
+2022-11-01,3750,890,420,1260,340,250,590
+2022-12-01,3750,960,440,1260,490,260,340
+2023-01-01,3800,900,400,1300,320,240,640
+2023-02-01,3800,910,410,1300,340,220,620
+2023-03-01,3800,930,420,1310,360,300,480
+2023-04-01,3900,940,420,1310,340,240,650
+2023-05-01,3900,960,430,1320,370,260,560
+2023-06-01,3900,970,440,1320,350,240,580
+2023-07-01,4000,990,450,1330,390,320,520
+2023-08-01,4000,980,440,1330,360,250,640
+2023-09-01,4000,1000,450,1340,340,270,600
+2023-10-01,4100,1010,460,1340,360,290,640
+2023-11-01,4100,1030,470,1350,370,310,570
+2023-12-01,4100,1100,490,1350,520,320,320
+2024-01-01,4200,1020,460,1380,330,250,760
+2024-02-01,4200,1030,470,1380,350,230,740
+2024-03-01,4200,1050,480,1390,340,310,630
+2024-04-01,4300,1060,480,1390,360,250,760
+2024-05-01,4300,1080,490,1400,390,270,670
+2024-06-01,4300,1090,500,1400,370,250,690
+2024-07-01,4400,1110,510,1410,410,330,630
+2024-08-01,4400,1100,500,1410,380,260,750
+2024-09-01,4400,1120,510,1420,360,280,710
+2024-10-01,4500,1130,520,1420,380,300,750
+2024-11-01,4500,1150,530,1430,390,320,680
+2024-12-01,4500,1220,550,1430,550,330,420
+2025-01-01,4600,1140,520,1460,350,260,870
+2025-02-01,4600,1150,530,1460,370,240,850
+2025-03-01,4600,1170,540,1470,360,320,740
+2025-04-01,4700,1180,540,1470,380,260,870
+2025-05-01,4700,1200,550,1480,410,280,780
+2025-06-01,4700,1210,560,1480,390,260,800
+2025-07-01,4800,1230,570,1490,430,340,740
+2025-08-01,4800,1220,560,1490,400,270,860
+2025-09-01,4800,1240,570,1500,380,290,820
+2025-10-01,4900,1250,580,1500,400,310,860
+2025-11-01,4900,1270,590,1510,410,330,790
+2025-12-01,4900,1340,610,1510,580,340,520`;
+
+        // --- 2. VARIABLES DE ESTADO DO PANEL ---
+        let rawData = [];         // Conxunto estruturado de datos leídos
+        let filteredData = [];    // Datos filtrados activos
+        let uniqueYears = [];     // Lista de años disponibles
+        let expenseCategories = []; // Nomes das columnas de gastos
+        
+        // Filtros actuais
+        let filterActiveYear = 'TODOS'; // 'TODOS' ou ano específico (ex. 2023)
+        let filterMonthStartIdx = 0;
+        let filterMonthEndIdx = 0;
+        let filterCategoriesActive = {}; // { Aluguer: true, ... }
+        let stackType = 'percent'; // 'percent' o 'value' para o gráfico de barras apiladas
+
+        // Variables de gráficos de Chart.js
+        let chartTrendInstance = null;
+        let chartDoughnutInstance = null;
+        let chartComposicionInstance = null;
+
+        // --- 3. INICIALIZAR AO CARGAR A PÁXINA ---
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDefaultData();
+            setupEventListeners();
+        });
+
+        // Carga os datos por defecto
+        function loadDefaultData() {
+            parseCSVText(DEFAULT_CSV, "Datos predeterminados (2021-2025)");
+        }
+
+        // --- 4. PARSEADORES DE ARQUIVO (CSV / EXCEL) ---
+        
+        // Analizador de datas intelixente compatible con varios formatos españois e ISO
+        function parseRobustDate(dateStr) {
+            if (!dateStr) return null;
+            dateStr = dateStr.trim();
+            
+            // Probar o parseador nativo estándar
+            let d = new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+                return d;
+            }
+            
+            // Comprobar formatos comúns como DD/MM/AAAA ou DD-MM-AAAA
+            const parts = dateStr.split(/[\/\-\.]/);
+            if (parts.length === 3) {
+                // Se o primeiro elemento é o ano (lonxitude 4) -> AAAA, MM, DD
+                if (parts[0].length === 4) {
+                    const year = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const day = parseInt(parts[2], 10);
+                    d = new Date(year, month, day);
+                    if (!isNaN(d.getTime())) return d;
+                } else {
+                    // Formato habitual DD/MM/AAAA ou MM/DD/AAAA
+                    const part1 = parseInt(parts[0], 10);
+                    const part2 = parseInt(parts[1], 10);
+                    let part3 = parseInt(parts[2], 10);
+                    if (part3 < 100) {
+                        part3 += 2000; // Resolver anos de 2 díxitos (ex. 21 -> 2021)
+                    }
+                    
+                    let day = part1;
+                    let month = part2 - 1;
+                    let year = part3;
+                    
+                    // Se o mes supera 11, é probable que sexa MM/DD/AAAA
+                    if (month > 11) {
+                        month = part1 - 1;
+                        day = part2;
+                    }
+                    
+                    d = new Date(year, month, day);
+                    if (!isNaN(d.getTime())) return d;
+                }
+            }
+            return null;
+        }
+
+        // Limpador e parseador numérico para previr problemas de formato de moeda ou separadores
+        function parseRobustNumber(valStr) {
+            if (valStr === undefined || valStr === null) return 0;
+            let str = String(valStr).trim();
+            
+            // Eliminar símbolos de moedas comúns, espazos e porcentaxes
+            str = str.replace(/[S\/$€%]/g, '').trim();
+            
+            const hasComma = str.includes(',');
+            const hasDot = str.includes('.');
+            
+            if (hasComma && hasDot) {
+                // Coma coma millar e punto como decimal (ex. 1,200.50)
+                if (str.indexOf(',') < str.indexOf('.')) {
+                    str = str.replace(/,/g, '');
+                } else {
+                    // Punto como millar e coma como decimal (ex. 1.200,50)
+                    str = str.replace(/\./g, '').replace(/,/g, '.');
+                }
+            } else if (hasComma) {
+                // Comprobar se a coma actúa como millar ou decimal
+                const parts = str.split(',');
+                if (parts[1] && parts[1].length === 3) {
+                    str = str.replace(/,/g, '');
+                } else {
+                    str = str.replace(/,/g, '.');
+                }
+            } else if (hasDot) {
+                // Comprobar se o punto actúa como millar ou decimal
+                const parts = str.split('.');
+                if (parts[1] && parts[1].length === 3 && parts[0].length <= 3) {
+                    str = str.replace(/\./g, '');
+                }
+            }
+            
+            const num = parseFloat(str);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // Parser para arquivos de texto plano CSV
+        function parseCSVText(text, originName = "Archivo Importado") {
+            try {
+                const lines = text.trim().split('\n');
+                if (lines.length < 2) throw new Error("El archivo está vacío o no tiene formato.");
+
+                // Auto-detectar delimitador (coma, punto e coma, tabulación)
+                const firstLine = lines[0];
+                let delimiter = ',';
+                const commas = (firstLine.match(/,/g) || []).length;
+                const semicolons = (firstLine.match(/;/g) || []).length;
+                const tabs = (firstLine.match(/\t/g) || []).length;
+                
+                if (semicolons > commas && semicolons > tabs) {
+                    delimiter = ';';
+                } else if (tabs > commas && tabs > semicolons) {
+                    delimiter = '\t';
+                }
+
+                // Cabeceras
+                const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
+                
+                // Procurar columnas clave
+                const idxMes = headers.findIndex(h => h.toLowerCase().includes('mes') || h.toLowerCase().includes('fecha') || h.toLowerCase().includes('date'));
+                const idxIngresos = headers.findIndex(h => h.toLowerCase().includes('ingreso'));
+                const idxAhorro = headers.findIndex(h => h.toLowerCase().includes('ahorro'));
+
+                if (idxMes === -1 || idxIngresos === -1) {
+                    alert("Faltan columnas requeridas en el archivo. Asegúrate de incluir 'Mes' e 'Ingresos'.");
+                    return;
+                }
+
+                // As columnas restantes son identificadas como categorías de gasto
+                const tempCategories = [];
+                headers.forEach((h, i) => {
+                    if (h !== "" && i !== idxMes && i !== idxIngresos && i !== idxAhorro) {
+                        tempCategories.push(h);
+                    }
+                });
+
+                const parsed = [];
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const cols = lines[i].split(delimiter).map(c => c.trim().replace(/^"|"$/g, ''));
+                    
+                    if (cols.length < headers.length) continue;
+
+                    // Parseo de data
+                    const rawDate = cols[idxMes];
+                    const dateObj = parseRobustDate(rawDate);
+                    if (!dateObj || isNaN(dateObj.getTime())) continue;
+
+                    const ingresosVal = parseRobustNumber(cols[idxIngresos]);
+                    const ahorroVal = idxAhorro !== -1 ? parseRobustNumber(cols[idxAhorro]) : 0;
+
+                    // Extraer categorías de gastos
+                    const itemExpenses = {};
+                    let totalSumaGastos = 0;
+                    tempCategories.forEach((cat) => {
+                        const idxCat = headers.indexOf(cat);
+                        const valCat = idxCat !== -1 ? parseRobustNumber(cols[idxCat]) : 0;
+                        itemExpenses[cat] = valCat;
+                        totalSumaGastos += valCat;
+                    });
+
+                    // Estimar aforro se non vén especificado
+                    const finalAhorro = idxAhorro !== -1 ? ahorroVal : Math.max(0, ingresosVal - totalSumaGastos);
+
+                    const mesPad = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const mesStr = `${dateObj.getFullYear()}-${mesPad}`;
+
+                    parsed.push({
+                        fecha: dateObj,
+                        mesStr: mesStr,
+                        anio: dateObj.getFullYear(),
+                        ingresos: ingresosVal,
+                        ahorro: finalAhorro,
+                        gastosCategorias: itemExpenses,
+                        totalGastos: totalSumaGastos || (ingresosVal - finalAhorro)
+                    });
+                }
+
+                // Ordenar cronoloxicamente
+                parsed.sort((a, b) => a.fecha - b.fecha);
+
+                if (parsed.length === 0) {
+                    alert("No se pudieron extraer registros con fechas válidas.");
+                    return;
+                }
+
+                rawData = parsed;
+                expenseCategories = tempCategories;
+
+                document.getElementById('dataOriginName').textContent = originName;
+                document.getElementById('dataTotalRows').textContent = `${parsed.length} meses registrados`;
+
+                initFiltersState();
+
+            } catch (err) {
+                console.error(err);
+                alert("Error al procesar el archivo CSV: " + err.message);
+            }
+        }
+
+        // Lector de arquivos binarios de Excel co soporte de SheetJS (procesado JSON flexible)
+        function handleExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Extraer en formato matriz de filas para evitar erros de formateo CSV
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    parseExcelJSON(jsonData, file.name);
+                } catch (err) {
+                    alert("Error al leer el archivo Excel: " + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Parser do obxecto matriz JSON xerado desde Excel
+        function parseExcelJSON(grid, originName = "Archivo Importado") {
+            try {
+                if (!grid || grid.length < 2) throw new Error("El archivo Excel no contiene datos.");
+
+                // Cabeceras desde a primeira fila
+                const headers = grid[0].map(h => h ? String(h).trim() : "");
+                
+                const idxMes = headers.findIndex(h => h.toLowerCase().includes('mes') || h.toLowerCase().includes('fecha') || h.toLowerCase().includes('date'));
+                const idxIngresos = headers.findIndex(h => h.toLowerCase().includes('ingreso'));
+                const idxAhorro = headers.findIndex(h => h.toLowerCase().includes('ahorro'));
+
+                if (idxMes === -1 || idxIngresos === -1) {
+                    alert("Faltan columnas requeridas en el archivo. Asegúrate de incluir 'Mes' e 'Ingresos'.");
+                    return;
+                }
+
+                const tempCategories = [];
+                headers.forEach((h, i) => {
+                    if (h !== "" && i !== idxMes && i !== idxIngresos && i !== idxAhorro) {
+                        tempCategories.push(h);
+                    }
+                });
+
+                const parsed = [];
+                for (let i = 1; i < grid.length; i++) {
+                    const row = grid[i];
+                    if (!row || row.length === 0) continue;
+                    if (row[idxMes] === undefined || row[idxMes] === null || row[idxMes] === "") continue;
+
+                    let dateObj = null;
+                    const rawDate = row[idxMes];
+                    
+                    // Soporte para cando Excel exporta datas en formato de número de serie flotante
+                    if (typeof rawDate === 'number') {
+                        dateObj = new Date((rawDate - 25569) * 86400 * 1000);
+                    } else {
+                        dateObj = parseRobustDate(String(rawDate));
+                    }
+
+                    if (!dateObj || isNaN(dateObj.getTime())) continue;
+
+                    const ingresosVal = parseRobustNumber(row[idxIngresos]);
+                    const ahorroVal = idxAhorro !== -1 ? parseRobustNumber(row[idxAhorro]) : 0;
+
+                    const itemExpenses = {};
+                    let totalSumaGastos = 0;
+                    tempCategories.forEach((cat) => {
+                        const idxCat = headers.indexOf(cat);
+                        const valCat = idxCat !== -1 ? parseRobustNumber(row[idxCat]) : 0;
+                        itemExpenses[cat] = valCat;
+                        totalSumaGastos += valCat;
+                    });
+
+                    const finalAhorro = idxAhorro !== -1 ? ahorroVal : Math.max(0, ingresosVal - totalSumaGastos);
+
+                    const mesPad = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const mesStr = `${dateObj.getFullYear()}-${mesPad}`;
+
+                    parsed.push({
+                        fecha: dateObj,
+                        mesStr: mesStr,
+                        anio: dateObj.getFullYear(),
+                        ingresos: ingresosVal,
+                        ahorro: finalAhorro,
+                        gastosCategorias: itemExpenses,
+                        totalGastos: totalSumaGastos || (ingresosVal - finalAhorro)
+                    });
+                }
+
+                parsed.sort((a, b) => a.fecha - b.fecha);
+
+                if (parsed.length === 0) {
+                    alert("No se pudieron extraer registros con fechas válidas.");
+                    return;
+                }
+
+                rawData = parsed;
+                expenseCategories = tempCategories;
+
+                document.getElementById('dataOriginName').textContent = originName;
+                document.getElementById('dataTotalRows').textContent = `${parsed.length} meses registrados`;
+
+                initFiltersState();
+
+            } catch (err) {
+                console.error(err);
+                alert("Error al leer los datos de Excel: " + err.message);
+            }
+        }
+
+        // --- 5. CONFIGURACIÓN DE FILTROS ---
+        function initFiltersState() {
+            const yearsSet = new Set(rawData.map(d => d.anio));
+            uniqueYears = Array.from(yearsSet).sort((a, b) => a - b);
+            filterActiveYear = 'TODOS';
+
+            filterMonthStartIdx = 0;
+            filterMonthEndIdx = rawData.length - 1;
+
+            filterCategoriesActive = {};
+            expenseCategories.forEach(cat => {
+                filterCategoriesActive[cat] = true;
+            });
+
+            renderFilterUI();
+            applyFilters();
+        }
+
+        function renderFilterUI() {
+            const yearsContainer = document.getElementById('yearsContainer');
+            yearsContainer.innerHTML = '';
+
+            const btnTodos = document.createElement('button');
+            btnTodos.className = getYearBtnClass(filterActiveYear === 'TODOS');
+            btnTodos.textContent = 'Todos';
+            btnTodos.addEventListener('click', () => {
+                filterActiveYear = 'TODOS';
+                updateYearFilterUI();
+                applyFilters();
+            });
+            yearsContainer.appendChild(btnTodos);
+
+            uniqueYears.forEach(year => {
+                const btn = document.createElement('button');
+                btn.className = getYearBtnClass(filterActiveYear == year);
+                btn.textContent = year;
+                btn.addEventListener('click', () => {
+                    filterActiveYear = year;
+                    updateYearFilterUI();
+                    applyFilters();
+                });
+                yearsContainer.appendChild(btn);
+            });
+
+            const sliderStart = document.getElementById('monthSelectorStart');
+            const sliderEnd = document.getElementById('monthSelectorEnd');
+            
+            sliderStart.min = 0;
+            sliderStart.max = rawData.length - 1;
+            sliderStart.value = 0;
+
+            sliderEnd.min = 0;
+            sliderEnd.max = rawData.length - 1;
+            sliderEnd.value = rawData.length - 1;
+
+            const catContainer = document.getElementById('categoriesCheckboxContainer');
+            catContainer.innerHTML = '';
+
+            expenseCategories.forEach(cat => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between hover:bg-slate-50 p-1 rounded-lg transition-all";
+                
+                const cleanName = cat.replace(/_/g, ' ');
+
+                div.innerHTML = `
+                    <label class="flex items-center gap-2.5 text-xs text-slate-700 font-medium cursor-pointer w-full select-none">
+                        <input type="checkbox" id="chk-${cat}" checked class="rounded border-slate-300 accent-brand-500 w-4 h-4 cursor-pointer">
+                        <span>${cleanName}</span>
+                    </label>
+                `;
+                
+                const checkbox = div.querySelector('input');
+                checkbox.addEventListener('change', (e) => {
+                    filterCategoriesActive[cat] = e.target.checked;
+                    applyFilters();
+                });
+
+                catContainer.appendChild(div);
+            });
+        }
+
+        function getYearBtnClass(isActive) {
+            return isActive 
+                ? "px-2 py-1.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm text-center"
+                : "px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl transition-all text-center";
+        }
+
+        function updateYearFilterUI() {
+            const buttons = document.getElementById('yearsContainer').querySelectorAll('button');
+            buttons.forEach(btn => {
+                const isSelected = (btn.textContent === 'Todos' && filterActiveYear === 'TODOS') || (btn.textContent == filterActiveYear);
+                btn.className = getYearBtnClass(isSelected);
+            });
+        }
+
+        // --- 6. APLICAR FILTROS E CALCULAR ---
+        function applyFilters() {
+            let temp = rawData.slice(filterMonthStartIdx, filterMonthEndIdx + 1);
+
+            if (filterActiveYear !== 'TODOS') {
+                temp = temp.filter(d => d.anio == filterActiveYear);
+            }
+
+            filteredData = temp;
+
+            if (filteredData.length > 0) {
+                document.getElementById('dateRangeStart').textContent = formatLabelMonth(filteredData[0].mesStr);
+                document.getElementById('dateRangeEnd').textContent = formatLabelMonth(filteredData[filteredData.length - 1].mesStr);
+            } else {
+                document.getElementById('dateRangeStart').textContent = "Baleiro";
+                document.getElementById('dateRangeEnd').textContent = "Baleiro";
+            }
+
+            updateDashboardData();
+        }
+
+        // --- 7. ACTUALIZAR O PANEL (CÁLCULOS E GRÁFICOS) ---
+        function updateDashboardData() {
+            if (filteredData.length === 0) {
+                showEmptyDashboardState();
+                return;
+            }
+
+            let sumaIngresos = 0;
+            let sumaAhorro = 0;
+            let sumaGastosTotales = 0;
+            let totalMeses = filteredData.length;
+
+            const totalPorCategoria = {};
+            expenseCategories.forEach(cat => totalPorCategoria[cat] = 0);
+
+            filteredData.forEach(row => {
+                sumaIngresos += row.ingresos;
+                sumaAhorro += row.ahorro;
+
+                let gastoMesFiltrado = 0;
+                expenseCategories.forEach(cat => {
+                    const montoCat = row.gastosCategorias[cat] || 0;
+                    if (filterCategoriesActive[cat]) {
+                        gastoMesFiltrado += montoCat;
+                        totalPorCategoria[cat] += montoCat;
+                    }
+                });
+
+                sumaGastosTotales += gastoMesFiltrado;
+            });
+
+            const kpiIngresos = sumaIngresos;
+            const kpiGastos = sumaGastosTotales;
+            const kpiAhorro = sumaAhorro;
+            const tasaAhorro = kpiIngresos > 0 ? (kpiAhorro / kpiIngresos) * 100 : 0;
+
+            const promIngreso = kpiIngresos / totalMeses;
+            const promGasto = kpiGastos / totalMeses;
+            const promAhorro = kpiAhorro / totalMeses;
+
+            document.getElementById('kpiTotalIngresos').textContent = formatMoney(kpiIngresos);
+            document.getElementById('kpiPromedioIngresos').textContent = formatMoney(promIngreso);
+
+            document.getElementById('kpiTotalGastos').textContent = formatMoney(kpiGastos);
+            document.getElementById('kpiPromedioGastos').textContent = formatMoney(promGasto);
+
+            document.getElementById('kpiTotalAhorro').textContent = formatMoney(kpiAhorro);
+            document.getElementById('kpiPromedioAhorro').textContent = formatMoney(promAhorro);
+
+            document.getElementById('kpiTasaAhorro').textContent = `${tasaAhorro.toFixed(1)}%`;
+
+            const colorIndicador = document.getElementById('kpiSaludColor');
+            const textoIndicador = document.getElementById('kpiSaludTexto');
+            if (tasaAhorro >= 15) {
+                colorIndicador.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500";
+                textoIndicador.textContent = "Saudable (>= 15%)";
+                textoIndicador.className = "text-emerald-700 font-semibold";
+            } else if (tasaAhorro >= 8) {
+                colorIndicador.className = "inline-block w-2.5 h-2.5 rounded-full bg-amber-500";
+                textoIndicador.textContent = "Aceptable (8-15%)";
+                textoIndicador.className = "text-amber-700 font-semibold";
+            } else {
+                colorIndicador.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500";
+                textoIndicador.textContent = "En Alerta (< 8%)";
+                textoIndicador.className = "text-rose-700 font-semibold";
+            }
+
+            renderAnualTable();
+            renderGastosTable(totalPorCategoria, kpiGastos, totalMeses);
+            renderCharts(totalPorCategoria, kpiAhorro);
+            renderDynamicInsights(totalPorCategoria, tasaAhorro, promAhorro);
+        }
+
+        function renderAnualTable() {
+            const agrupadoAnio = {};
+            filteredData.forEach(row => {
+                if (!agrupadoAnio[row.anio]) {
+                    agrupadoAnio[row.anio] = { ingresos: 0, gastos: 0, ahorro: 0 };
+                }
+                agrupadoAnio[row.anio].ingresos += row.ingresos;
+                agrupadoAnio[row.anio].ahorro += row.ahorro;
+
+                let gastoActivo = 0;
+                expenseCategories.forEach(cat => {
+                    if (filterCategoriesActive[cat]) {
+                        gastoActivo += (row.gastosCategorias[cat] || 0);
+                    }
+                });
+                agrupadoAnio[row.anio].gastos += gastoActivo;
+            });
+
+            const tbody = document.getElementById('tableAnualBody');
+            tbody.innerHTML = '';
+
+            Object.keys(agrupadoAnio).sort().forEach(year => {
+                const item = agrupadoAnio[year];
+                const tasa = item.ingresos > 0 ? (item.ahorro / item.ingresos) * 100 : 0;
+                
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50/70 transition-all";
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-semibold text-slate-800">${year}</td>
+                    <td class="py-2.5 px-3 text-right font-medium text-slate-700">${formatMoney(item.ingresos)}</td>
+                    <td class="py-2.5 px-3 text-right text-slate-600">${formatMoney(item.gastos)}</td>
+                    <td class="py-2.5 px-3 text-right text-blue-600 font-medium">${formatMoney(item.ahorro)}</td>
+                    <td class="py-2.5 px-3 text-right font-semibold text-slate-800">${tasa.toFixed(1)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderGastosTable(totalPorCategoria, totalGastosFiltrados, totalMeses) {
+            const tbody = document.getElementById('tableGastosBody');
+            tbody.innerHTML = '';
+
+            const lista = [];
+            expenseCategories.forEach(cat => {
+                const sum = totalPorCategoria[cat] || 0;
+                lista.push({
+                    key: cat,
+                    name: cat.replace(/_/g, ' '),
+                    total: sum,
+                    promedio: sum / totalMeses,
+                    porcentaje: totalGastosFiltrados > 0 ? (sum / totalGastosFiltrados) * 100 : 0,
+                    active: filterCategoriesActive[cat]
+                });
+            });
+
+            lista.sort((a, b) => b.total - a.total);
+
+            lista.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-slate-100 hover:bg-slate-50/70 transition-all ${item.active ? '' : 'opacity-30'}`;
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-medium text-slate-800 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full" style="background-color: ${getColorForCategory(item.key)}"></span>
+                        ${item.name}
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-medium text-slate-700">${formatMoney(item.total)}</td>
+                    <td class="py-2.5 px-3 text-right text-slate-600">${formatMoney(item.promedio)}</td>
+                    <td class="py-2.5 px-3 text-right font-bold text-slate-800">${item.porcentaje.toFixed(1)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- 8. REPRESENTACIÓN DE GRÁFICOS (CHART.JS) ---
+        function renderCharts(totalPorCategoria, totalAhorro) {
+            const labelsCategorias = expenseCategories.map(c => c.replace(/_/g, ' '));
+            const dataCategorias = expenseCategories.map(c => totalPorCategoria[c] || 0);
+
+            // 1. CHART DOUGHNUT: Relación Gasto vs Aforro
+            const ctxDoughnut = document.getElementById('chartDoughnut').getContext('2d');
+            if (chartDoughnutInstance) chartDoughnutInstance.destroy();
+
+            const sumGastos = expenseCategories.reduce((acc, cur) => acc + (filterCategoriesActive[cur] ? totalPorCategoria[cur] : 0), 0);
+
+            chartDoughnutInstance = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ahorros', 'Gastos Activos'],
+                    datasets: [{
+                        data: [totalAhorro, sumGastos],
+                        backgroundColor: ['#3b82f6', '#f43f5e'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 11, family: 'Plus Jakarta Sans', weight: 'bold' },
+                                boxWidth: 12
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // 2. CHART TREND: Liñas de Tendencia Temporal (Ingresos, Gastos e Aforro)
+            const ctxTrend = document.getElementById('chartTrend').getContext('2d');
+            if (chartTrendInstance) chartTrendInstance.destroy();
+
+            const trendLabels = filteredData.map(d => formatLabelMonth(d.mesStr));
+            const trendIngresos = filteredData.map(d => d.ingresos);
+            const trendAhorro = filteredData.map(d => d.ahorro);
+            const trendGastos = filteredData.map(d => {
+                let gastoActivo = 0;
+                expenseCategories.forEach(cat => {
+                    if (filterCategoriesActive[cat]) {
+                        gastoActivo += (d.gastosCategorias[cat] || 0);
+                    }
+                });
+                return gastoActivo;
+            });
+
+            chartTrendInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [
+                        {
+                            label: 'Ingresos',
+                            data: trendIngresos,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 1.5
+                        },
+                        {
+                            label: 'Gastos',
+                            data: trendGastos,
+                            borderColor: '#f43f5e',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            pointRadius: 1
+                        },
+                        {
+                            label: 'Ahorros',
+                            data: trendAhorro,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2.5,
+                            tension: 0.3,
+                            pointRadius: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 12, font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            // 3. CHART COMPOSICIÓN GASTO: Gráfico de Columnas Apiladas
+            const ctxComposicion = document.getElementById('chartGastosComposicion').getContext('2d');
+            if (chartComposicionInstance) chartComposicionInstance.destroy();
+
+            const datasetsCategorias = expenseCategories.map(cat => {
+                const color = getColorForCategory(cat);
+                const dataArray = filteredData.map(d => {
+                    const val = d.gastosCategorias[cat] || 0;
+                    if (!filterCategoriesActive[cat]) return 0;
+
+                    if (stackType === 'percent') {
+                        let totalMesGastoActivo = 0;
+                        expenseCategories.forEach(c => {
+                            if (filterCategoriesActive[c]) totalMesGastoActivo += (d.gastosCategorias[c] || 0);
+                        });
+                        return totalMesGastoActivo > 0 ? (val / totalMesGastoActivo) * 100 : 0;
+                    } else {
+                        return val;
+                    }
+                });
+
+                return {
+                    label: cat.replace(/_/g, ' '),
+                    data: dataArray,
+                    backgroundColor: color,
+                    borderWidth: 0,
+                    stack: 'Stack 0'
+                };
+            });
+
+            chartComposicionInstance = new Chart(ctxComposicion, {
+                type: 'bar',
+                data: {
+                    labels: trendLabels,
+                    datasets: datasetsCategorias
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 10, family: 'Plus Jakarta Sans' },
+                                boxWidth: 10
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 12, font: { size: 10 } }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return stackType === 'percent' ? `${value.toFixed(0)}%` : `S/ ${value}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 9. INSIGHTS INTELIXENTES DINÁMICOS ---
+        function renderDynamicInsights(totalPorCategoria, tasaAhorro, promedioAhorro) {
+            const insightsContainer = document.getElementById('insightsGrid');
+            insightsContainer.innerHTML = '';
+
+            let mayorGastoCat = "";
+            let mayorGastoMonto = -1;
+            expenseCategories.forEach(cat => {
+                const m = totalPorCategoria[cat] || 0;
+                if (filterCategoriesActive[cat] && m > mayorGastoMonto) {
+                    mayorGastoMonto = m;
+                    mayorGastoCat = cat.replace(/_/g, ' ');
+                }
+            });
+
+            let mesMaxAhorro = "";
+            let maxAhorroMonto = -1;
+            filteredData.forEach(row => {
+                if (row.ahorro > maxAhorroMonto) {
+                    maxAhorroMonto = row.ahorro;
+                    mesMaxAhorro = row.mesStr;
+                }
+            });
+
+            // Tarxeta 1: Fuga de Diñeiro Clave
+            const card1 = document.createElement('div');
+            card1.className = "bg-white/60 p-4 rounded-xl border border-emerald-100";
+            card1.innerHTML = `
+                <span class="text-xs font-bold text-rose-700 uppercase tracking-wide block">Fuga de Diñeiro Clave</span>
+                <p class="font-bold text-slate-900 mt-1">${mayorGastoCat || 'Ningunha'}</p>
+                <p class="text-xs text-emerald-800 mt-1">
+                    É a categoría onde máis se gastou no rango seleccionado, acumulando un total de 
+                    <span class="font-bold">${formatMoney(mayorGastoMonto)}</span>. Reducir un 10% aquí impulsaría directamente o teu aforro mensual.
+                </p>
+            `;
+            insightsContainer.appendChild(card1);
+
+            // Tarxeta 2: Fito de Aforro Histórico
+            const card2 = document.createElement('div');
+            card2.className = "bg-white/60 p-4 rounded-xl border border-emerald-100";
+            card2.innerHTML = `
+                <span class="text-xs font-bold text-emerald-700 uppercase tracking-wide block">Fito de Aforro Histórico</span>
+                <p class="font-bold text-slate-900 mt-1">${formatLabelMonth(mesMaxAhorro)}</p>
+                <p class="text-xs text-emerald-800 mt-1">
+                    Foi o teu mellor mes financeiro rexistrado, logrando gardar <span class="font-bold">${formatMoney(maxAhorroMonto)}</span> neto. 
+                    Analiza que factores ocorreron neste período (ex. menores gastos variables ou ingresos extras) para replicalo.
+                </p>
+            `;
+            insightsContainer.appendChild(card2);
+
+            // Tarxeta 3: Consello de Estrutura
+            const card3 = document.createElement('div');
+            card3.className = "bg-white/60 p-4 rounded-xl border border-emerald-100";
+            card3.innerHTML = `
+                <span class="text-xs font-bold text-blue-700 uppercase tracking-wide block">Consello de Estrutura</span>
+                <p class="font-bold text-slate-900 mt-1">Tasa de Ahorro do ${tasaAhorro.toFixed(1)}%</p>
+                <p class="text-xs text-emerald-800 mt-1">
+                    ${tasaAhorro >= 15 
+                        ? "¡Excelente! Estás por riba do estándar recomendado do 15%. Mantén este ritmo e considera investir parte deste capital."
+                        : "A túa taxa está por debaixo do 15% recomendado. Se logras recortar gastos non esenciais un 5% mensual, acadarás o obxectivo."}
+                </p>
+            `;
+            insightsContainer.appendChild(card3);
+
+            // Tarxeta 4: Reto do Estudante
+            const card4 = document.createElement('div');
+            card4.className = "bg-white/60 p-4 rounded-xl border border-emerald-100";
+            card4.innerHTML = `
+                <span class="text-xs font-bold text-slate-700 uppercase tracking-wide block">Reto do Estudante</span>
+                <p class="font-bold text-slate-900 mt-1">Que pasa se filtras por un só Año?</p>
+                <p class="text-xs text-emerald-800 mt-1">
+                    Usa os segmentadores para illar o ano 2021 fronte ao 2025. Ves como se comportan os teus ingresos e as túas tendencias de aforro? 
+                    Este exercicio demostra o dinámico que resulta ter un panel de control interactivo.
+                </p>
+            `;
+            insightsContainer.appendChild(card4);
+        }
+
+        // --- 10. ESTADOS DE CONTROL E INTERFACES BALEIRAS ---
+        function showEmptyDashboardState() {
+            document.getElementById('kpiTotalIngresos').textContent = "S/ 0.00";
+            document.getElementById('kpiPromedioIngresos').textContent = "S/ 0.00";
+            document.getElementById('kpiTotalGastos').textContent = "S/ 0.00";
+            document.getElementById('kpiPromedioGastos').textContent = "S/ 0.00";
+            document.getElementById('kpiTotalAhorro').textContent = "S/ 0.00";
+            document.getElementById('kpiPromedioAhorro').textContent = "S/ 0.00";
+            document.getElementById('kpiTasaAhorro').textContent = "0.0%";
+            document.getElementById('kpiSaludTexto').textContent = "Sen datos";
+            document.getElementById('tableAnualBody').innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">Sen datos de análise</td></tr>';
+            document.getElementById('tableGastosBody').innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-400">Sen datos de análise</td></tr>';
+            
+            if (chartTrendInstance) chartTrendInstance.destroy();
+            if (chartDoughnutInstance) chartDoughnutInstance.destroy();
+            if (chartComposicionInstance) chartComposicionInstance.destroy();
+        }
+
+        // --- 11. XESTIÓN DE EVENTOS DA INTERFAZ ---
+        function setupEventListeners() {
+            const fileInput = document.getElementById('fileInput');
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (file.name.endsWith('.csv')) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        parseCSVText(event.target.result, file.name);
+                    };
+                    reader.readAsText(file);
+                } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                    handleExcelFile(file);
+                } else {
+                    alert("Por favor, selecciona un arquivo Excel (.xlsx) ou CSV válido.");
+                }
+            });
+
+            const sliderStart = document.getElementById('monthSelectorStart');
+            const sliderEnd = document.getElementById('monthSelectorEnd');
+
+            sliderStart.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                if (val > parseInt(sliderEnd.value)) {
+                    sliderEnd.value = val;
+                }
+                filterMonthStartIdx = parseInt(sliderStart.value);
+                filterMonthEndIdx = parseInt(sliderEnd.value);
+                applyFilters();
+            });
+
+            sliderEnd.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                if (val < parseInt(sliderStart.value)) {
+                    sliderStart.value = val;
+                }
+                filterMonthStartIdx = parseInt(sliderStart.value);
+                filterMonthEndIdx = parseInt(sliderEnd.value);
+                applyFilters();
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                loadDefaultData();
+            });
+
+            document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+                expenseCategories.forEach(cat => {
+                    filterCategoriesActive[cat] = true;
+                    const chk = document.getElementById(`chk-${cat}`);
+                    if (chk) chk.checked = true;
+                });
+                
+                filterActiveYear = 'TODOS';
+                updateYearFilterUI();
+                
+                sliderStart.value = 0;
+                sliderEnd.value = rawData.length - 1;
+                filterMonthStartIdx = 0;
+                filterMonthEndIdx = rawData.length - 1;
+
+                applyFilters();
+            });
+        }
+
+        function setStackType(type) {
+            stackType = type;
+            const btnPercent = document.getElementById('stackBtnPercent');
+            const btnValue = document.getElementById('stackBtnValue');
+
+            if (type === 'percent') {
+                btnPercent.className = "px-2.5 py-1 bg-brand-50 text-brand-700 text-xs font-semibold rounded-lg border border-brand-200 transition-all";
+                btnValue.className = "px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg hover:bg-slate-200 transition-all";
+            } else {
+                btnPercent.className = "px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg hover:bg-slate-200 transition-all";
+                btnValue.className = "px-2.5 py-1 bg-brand-50 text-brand-700 text-xs font-semibold rounded-lg border border-brand-200 transition-all";
+            }
+
+            if (filteredData.length > 0) {
+                let totalPorCategoria = {};
+                expenseCategories.forEach(cat => totalPorCategoria[cat] = 0);
+                let kpiAhorro = 0;
+
+                filteredData.forEach(row => {
+                    kpiAhorro += row.ahorro;
+                    expenseCategories.forEach(cat => {
+                        if (filterCategoriesActive[cat]) {
+                            totalPorCategoria[cat] += (row.gastosCategorias[cat] || 0);
+                        }
+                    });
+                });
+
+                renderCharts(totalPorCategoria, kpiAhorro);
+            }
+        }
+
+        // --- 12. AXUDANTES DE FORMATO ---
+        function formatMoney(value) {
+            return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value);
+        }
+
+        function formatLabelMonth(monthStr) {
+            if (!monthStr) return "";
+            const parts = monthStr.split('-');
+            const anioShort = parts[0].substring(2);
+            const mesesStr = ["Xan", "Feb", "Mar", "Abr", "Mai", "Xuñ", "Xul", "Ago", "Set", "Out", "Nov", "Dec"];
+            const mesIdx = parseInt(parts[1]) - 1;
+            return `${mesesStr[mesIdx]} '${anioShort}`;
+        }
+
+        function getColorForCategory(category) {
+            const colors = {
+                'Alimentación': '#f59e0b',       // Ámbar
+                'Transporte': '#3b82f6',         // Azul claro
+                'Alquiler_y_Servicios': '#ec4899', // Rosa
+                'Entretenimiento': '#8b5cf6',       // Violeta
+                'Educación_y_Salud': '#14b8a6'   // Turquesa
+            };
+            return colors[category] || '#64748b'; // Slate por defecto
+        }
+
+        function openGuideModal() {
+            const modal = document.getElementById('guideModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 50);
+        }
+
+        // Pechar o modal da guía
+        function closeGuideModal() {
+            const modal = document.getElementById('guideModal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>

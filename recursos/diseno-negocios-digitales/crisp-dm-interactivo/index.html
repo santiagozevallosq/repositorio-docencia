@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRISP-DM Interactivo | Del Problema de Negocio a la Solución</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- PDF & Image Generation Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .transition-custom {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Estilos para impresión nativa */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #print-modal-container, #print-modal-container * {
+        visibility: visible !important;
+      }
+      #print-modal-container {
+        display: block !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      @page {
+        margin: 10mm;
+        size: A4 portrait;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col justify-between">
+
+  <!-- HEADER PRINCIPAL -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20">
+          🔄
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            CRISP-DM INTERACTIVO
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 hidden sm:inline-block">Educativo</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-medium">Del problema de negocio a una solución basada en datos</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+        <a href="../../../index.html" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition text-xs font-semibold shadow-xs">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Repositorio Docente
+        </a>
+
+        <!-- Selector de Modo: Casos de Estudio vs Mi Proyecto -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button id="tab-cases" onclick="switchMainTab('cases')" class="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-custom bg-white text-blue-700 shadow-sm">
+            📚 Casos Prácticos
+          </button>
+          <button id="tab-workshop" onclick="switchMainTab('workshop')" class="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-custom text-slate-600 hover:text-slate-900">
+            ✍️ Mi Proyecto (Taller)
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: CASOS DE ESTUDIO (BANCO, RETAIL, TRANSPORTE) -->
+    <!-- ========================================== -->
+    <div id="view-cases" class="space-y-6">
+
+      <!-- Selector de Casos -->
+      <section class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Selecciona un escenario de negocio</h2>
+            <p class="text-sm font-semibold text-slate-700">Explora cómo se adaptan las 6 etapas según la industria:</p>
+          </div>
+          <button id="btn-toggle-all" onclick="toggleViewAllStages()" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-blue-600 text-blue-600 hover:bg-blue-50 transition-custom">
+            <span>📋</span>
+            <span id="text-toggle-all">Ver caso completo (6 etapas)</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <button onclick="selectCase('banco')" id="btn-case-banco" class="p-3.5 rounded-xl border-2 text-left transition-custom flex items-center gap-3 border-blue-600 bg-blue-50/60 shadow-sm">
+            <div class="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center text-lg shrink-0">🏦</div>
+            <div>
+              <div class="font-bold text-slate-900 text-sm">Banco</div>
+              <div class="text-xs text-slate-500">Abandono de clientes (Churn)</div>
+            </div>
+          </button>
+
+          <button onclick="selectCase('retail')" id="btn-case-retail" class="p-3.5 rounded-xl border-2 text-left transition-custom flex items-center gap-3 border-slate-200 bg-white hover:border-slate-300">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-lg shrink-0">🛒</div>
+            <div>
+              <div class="font-bold text-slate-900 text-sm">Retail</div>
+              <div class="text-xs text-slate-500">Aceptación de promociones</div>
+            </div>
+          </button>
+
+          <button onclick="selectCase('transporte')" id="btn-case-transporte" class="p-3.5 rounded-xl border-2 text-left transition-custom flex items-center gap-3 border-slate-200 bg-white hover:border-slate-300">
+            <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-lg shrink-0">🚌</div>
+            <div>
+              <div class="font-bold text-slate-900 text-sm">Transporte</div>
+              <div class="text-xs text-slate-500">Mantenimiento predictivo</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Banner de Situación del Caso Seleccionado -->
+        <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-4 text-xs sm:text-sm">
+          <div class="md:col-span-7 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-700 block mb-1">🎯 Situación del Problema:</span>
+            <p id="case-situation" class="text-slate-600 leading-relaxed"></p>
+          </div>
+          <div class="md:col-span-5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <span class="font-bold text-slate-700 block mb-1">📊 Datos Disponibles:</span>
+            <p id="case-data" class="text-slate-600 leading-relaxed font-mono-code text-xs"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pipeline de las 6 Etapas Conectadas -->
+      <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Ciclo Metodológico CRISP-DM</h2>
+          <div class="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 px-3 py-1 rounded-full font-semibold border border-amber-200">
+            <span>🔁</span>
+            <span>“CRISP-DM es un proceso iterativo.”</span>
+          </div>
+        </div>
+
+        <!-- Indicador de Iteración / Retroalimentación -->
+        <div class="mb-4 text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center gap-2">
+          <span class="text-base">↩️</span>
+          <span><strong>Navegación flexible:</strong> Puedes seleccionar cualquier etapa en cualquier orden. Si descubres anomalías en el modelamiento o evaluación, siempre se regresa a la comprensión o preparación de datos.</span>
+        </div>
+
+        <!-- Grilla de Botones de las 6 Etapas -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5" id="stages-buttons-grid">
+          <!-- Generado dinámicamente con JS -->
+        </div>
+      </section>
+
+      <!-- Detalle de Etapa Individual Seleccionada -->
+      <section id="single-stage-view" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+          <div class="flex items-center gap-3">
+            <div id="stage-badge-number" class="w-9 h-9 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+              01
+            </div>
+            <div>
+              <h3 id="stage-detail-title" class="text-base sm:text-lg font-extrabold text-slate-900">
+                Comprensión del Negocio
+              </h3>
+              <p id="stage-detail-subtitle" class="text-xs text-slate-500">Fase Estratégica</p>
+            </div>
+          </div>
+          <div class="text-xs font-medium text-slate-400 flex items-center gap-1">
+            <span>Haz clic en otra etapa arriba para comparar</span>
+          </div>
+        </div>
+
+        <!-- Tarjetas de Información: Qué se hace, Pregunta clave, Ejemplo -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Qué se hace -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-2 text-blue-700 font-bold text-xs uppercase tracking-wider mb-2">
+              <span>📌</span>
+              <span>¿Qué se hace?</span>
+            </div>
+            <p id="stage-what" class="text-slate-700 text-sm leading-relaxed"></p>
+          </div>
+
+          <!-- Pregunta Clave -->
+          <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200/80">
+            <div class="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-wider mb-2">
+              <span>❓</span>
+              <span>Pregunta Clave</span>
+            </div>
+            <p id="stage-question" class="text-slate-800 text-sm leading-relaxed font-semibold"></p>
+          </div>
+
+          <!-- Ejemplo Aplicado -->
+          <div class="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200/80">
+            <div class="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider mb-2">
+              <span>💡</span>
+              <span>Ejemplo Aplicado</span>
+            </div>
+            <p id="stage-example" class="text-slate-800 text-sm leading-relaxed"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista Completa de las 6 Etapas (Oculta por defecto, visible con el botón) -->
+      <section id="all-stages-view" class="hidden bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-900">Visión Completa del Proceso CRISP-DM</h3>
+            <p class="text-xs text-slate-500">Las 6 fases desplegadas para el caso activo</p>
+          </div>
+          <button onclick="toggleViewAllStages()" class="text-xs text-slate-500 hover:text-slate-800 underline">
+            Volver a vista por etapas
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="all-stages-cards-container">
+          <!-- Renderizado dinámico -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: MI PROYECTO (TALLER PRÁCTICO GUIADO) -->
+    <!-- ========================================== -->
+    <div id="view-workshop" class="hidden space-y-6">
+
+      <!-- Header del Taller y Herramientas -->
+      <section class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-purple-100 text-purple-800 text-xs font-bold mb-1">
+              <span>🎓</span>
+              <span>Taller Académico de Ciencia de Datos</span>
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Formulario de Aplicación CRISP-DM</h2>
+            <p class="text-xs sm:text-sm text-slate-500">
+              Completa cada etapa para tu caso. Los datos se guardan automáticamente en tu navegador.
+            </p>
+          </div>
+
+          <!-- Acciones Rápidas -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="loadDefaultPeruvianCase()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-custom flex items-center gap-1.5">
+              <span>🇵🇪</span>
+              <span>Cargar Ejemplo Industria Perú</span>
+            </button>
+            <button onclick="clearWorkshopData()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-custom">
+              🧹 Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Datos Generales del Proyecto -->
+        <div class="mt-5 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Título del Proyecto</label>
+            <input id="ws-title" oninput="saveWorkshopData()" type="text" class="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Ej: Optimización de Recuperación de Cobre...">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Estudiante(s) / Equipo</label>
+            <input id="ws-author" oninput="saveWorkshopData()" type="text" class="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Nombres y Apellidos...">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Institución / Fecha</label>
+            <input id="ws-date" oninput="saveWorkshopData()" type="text" class="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Universidad / Ciclo 2026-II...">
+          </div>
+        </div>
+
+        <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Situación o Planteamiento del Problema</label>
+            <textarea id="ws-situation" oninput="saveWorkshopData()" rows="2" class="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Describe el contexto, pérdidas actuales o la necesidad a resolver..."></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Variables y Datos Disponibles</label>
+            <textarea id="ws-variables" oninput="saveWorkshopData()" rows="2" class="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-mono-code" placeholder="Variables numéricas, categóricas, sensores, target..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Las 6 Etapas en Tarjetas Editables -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- 01. Negocio -->
+        <div class="bg-white p-5 rounded-2xl border-l-4 border-l-blue-600 border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-blue-700 uppercase tracking-wider">Fase 01</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Estratégica</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">01. Comprensión del Negocio</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              ¿Cuál es el problema a resolver y qué objetivo busca alcanzar el negocio con los datos?
+            </label>
+            <textarea id="ws-s1" oninput="saveWorkshopData()" rows="3" class="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej: Reducir pérdidas por fallas imprevistas en un 30% anticipando averías con 72 horas de anticipación..."></textarea>
+          </div>
+        </div>
+
+        <!-- 02. Datos -->
+        <div class="bg-white p-5 rounded-2xl border-l-4 border-l-sky-600 border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-sky-700 uppercase tracking-wider">Fase 02</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800">Exploratoria</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">02. Comprensión de los Datos</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              ¿De dónde provienen los datos y qué se observa en ellos a primera vista (calidad, nulos, patrones)?
+            </label>
+            <textarea id="ws-s2" oninput="saveWorkshopData()" rows="3" class="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 outline-none" placeholder="Ej: Datos de sensores IoT y órdenes de trabajo; se observan pérdidas de señal en zonas remotas y valores extremos..."></textarea>
+          </div>
+        </div>
+
+        <!-- 03. Preparación -->
+        <div class="bg-white p-5 rounded-2xl border-l-4 border-l-amber-600 border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-amber-700 uppercase tracking-wider">Fase 03</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Ingeniería</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">03. Preparación de los Datos</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              ¿Cómo se van a limpiar, transformar y preparar los datos para poder analizarlos?
+            </label>
+            <textarea id="ws-s3" oninput="saveWorkshopData()" rows="3" class="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Ej: Relleno de datos faltantes, eliminación de registros duplicados y cálculo de promedios móviles..."></textarea>
+          </div>
+        </div>
+
+        <!-- 04. Modelamiento -->
+        <div class="bg-white p-5 rounded-2xl border-l-4 border-l-purple-600 border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-purple-700 uppercase tracking-wider">Fase 04</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">Algorítmica</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">04. Modelamiento</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              ¿Qué técnica o algoritmos se entrenarán y cómo se organizará la validación?
+            </label>
+            <textarea id="ws-s4" oninput="saveWorkshopData()" rows="3" class="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Ej: Clasificación supervisada con Árboles de Decisión y Random Forest usando partición 80% entrenamiento y 20% prueba..."></textarea>
+          </div>
+        </div>
+
+        <!-- 05. Evaluación -->
+        <div class="bg-white p-5 rounded-2xl border-l-4 border-l-emerald-600 border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-emerald-700 uppercase tracking-wider">Fase 05</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Validación</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">05. Evaluación</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              ¿Cuáles fueron los resultados obtenidos y cómo confirman que la solución sirve al negocio?
+            </label>
+            <textarea id="ws-s5" oninput="saveWorkshopData()" rows="3" class="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Ej: Se logró detectar el 87% de las fallas reales con un error mínimo, validado por los jefes de operaciones..."></textarea>
+          </div>
+        </div>
+
+        <!-- 06. Implementación -->
+        <div class="bg-white p-5 rounded-2xl border-l-4 border-l-rose-600 border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-rose-700 uppercase tracking-wider">Fase 06</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">Operativa</span>
+          </div>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900">06. Implementación (Despliegue)</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              ¿Cómo se pondrá en funcionamiento la solución en el día a día y cómo se vigilará?
+            </label>
+            <textarea id="ws-s6" oninput="saveWorkshopData()" rows="3" class="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-rose-500 outline-none" placeholder="Ej: Se integra a un panel diario que envía una alerta cada mañana al equipo técnico para programar revisiones..."></textarea>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Barra de Exportación y Descarga -->
+      <section class="bg-slate-900 text-white p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span>📄</span>
+            <span>Generar Documento Académico</span>
+          </h3>
+          <p class="text-xs text-slate-400">Descarga tu informe estructurado listo para entregar o imprimir en tamaño A4.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <!-- Vista Previa -->
+          <button onclick="openReportPreview()" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-custom">
+            👁️ Vista Previa
+          </button>
+
+          <!-- Descargar como Imagen PNG (100% infalible) -->
+          <button id="btn-dl-png" onclick="downloadReportAsImage()" class="px-3.5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white text-xs font-semibold transition-custom flex items-center gap-1.5 shadow">
+            <span>🖼️</span>
+            <span>Descargar como Imagen (PNG)</span>
+          </button>
+
+          <!-- Descargar como PDF (A4 nativo sin desbordes) -->
+          <button id="btn-dl-pdf" onclick="downloadReportAsPdf()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-custom flex items-center gap-1.5 shadow-md shadow-emerald-900/40">
+            <span>📥</span>
+            <span>Generar y Descargar PDF</span>
+          </button>
+
+          <!-- Imprimir -->
+          <button onclick="printReportDirectly()" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-custom">
+            🖨️ Imprimir
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL DE VISTA PREVIA Y CONTENEDOR DE REPORTE A4 -->
+  <div id="preview-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-slate-100 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      <!-- Modal Header -->
+      <div class="p-4 bg-white border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-blue-600 font-bold">📄</span>
+          <h3 class="text-sm font-bold text-slate-800">Vista del Reporte Académico A4</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="downloadReportAsPdf()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+            📥 Descargar PDF
+          </button>
+          <button onclick="downloadReportAsImage()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">
+            🖼️ Descargar PNG
+          </button>
+          <button onclick="closeReportPreview()" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold">
+            ✕ Cerrar
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body con el Reporte Visualizado en escala real -->
+      <div class="p-4 sm:p-6 overflow-y-auto flex justify-center bg-slate-200/70">
+        <!-- CONTENEDOR EXCLUSIVO DEL REPORTE A4 CON ESTILOS CONSISTENTES -->
+        <div id="a4-report-document" class="bg-white text-slate-900 shadow-lg" style="width: 794px; min-height: 1123px; padding: 32px 36px; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+          
+          <!-- Encabezado Formal -->
+          <div style="border-bottom: 3px solid #2563eb; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div style="max-width: 70%;">
+              <div style="font-size: 10px; font-weight: 800; color: #2563eb; letter-spacing: 1.5px; text-transform: uppercase;">
+                METODOLOGÍA CRISP-DM • INFORME TÉCNICO
+              </div>
+              <h1 id="rep-title" style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 4px 0 0 0; line-height: 1.25;">
+                Título del Proyecto
+              </h1>
+            </div>
+            <div style="text-align: right; font-size: 10px; color: #64748b; line-height: 1.4;">
+              <div id="rep-date" style="font-weight: 700; color: #334155;">Fecha / Semestre</div>
+              <div>Cross-Industry Standard Process</div>
+              <div style="color: #0284c7; font-weight: 600;">Ciencia de Datos Aplicada</div>
+            </div>
+          </div>
+
+          <!-- Metadatos de Estudiante y Problema -->
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; line-height: 1.45;">
+            <div style="display: flex; margin-bottom: 4px;">
+              <span style="font-weight: 700; color: #334155; width: 140px; shrink-0;">Autor / Equipo:</span>
+              <span id="rep-author" style="color: #0f172a; font-weight: 600;"></span>
+            </div>
+            <div style="display: flex; margin-bottom: 4px;">
+              <span style="font-weight: 700; color: #334155; width: 140px; shrink-0;">Problema:</span>
+              <span id="rep-situation" style="color: #475569; flex: 1; text-align: justify;"></span>
+            </div>
+            <div style="display: flex;">
+              <span style="font-weight: 700; color: #334155; width: 140px; shrink-0;">Variables Clave:</span>
+              <span id="rep-variables" style="color: #334155; font-family: monospace; font-size: 10px; background-color: #e2e8f0; padding: 1px 6px; border-radius: 4px; flex: 1;"></span>
+            </div>
+          </div>
+
+          <!-- Nota Metodológica de Retroalimentación -->
+          <div style="background-color: #eff6ff; border-left: 3px solid #3b82f6; padding: 6px 10px; border-radius: 4px; margin-bottom: 14px; font-size: 9.5px; color: #1e40af;">
+            <strong>Principio CRISP-DM:</strong> Este flujo es cíclico e iterativo. Los descubrimientos en evaluación o modelamiento retroalimentan la preparación y comprensión de negocio.
+          </div>
+
+          <!-- Grilla de las 6 Etapas -->
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            
+            <!-- Etapa 1 -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; background-color: #ffffff;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #1e40af;">01. Comprensión del Negocio (Business Understanding)</span>
+                <span style="font-size: 8.5px; font-weight: 700; background-color: #dbeafe; color: #1e40af; padding: 1px 6px; border-radius: 10px;">Fase Estratégica</span>
+              </div>
+              <div style="font-size: 10.5px; color: #334155; line-height: 1.45;">
+                <strong style="color: #0f172a;">Objetivo & Pregunta Clave:</strong>
+                <p id="rep-s1" style="margin: 3px 0 0 0; text-align: justify;"></p>
+              </div>
+            </div>
+
+            <!-- Etapa 2 -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; background-color: #ffffff;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #0284c7;">02. Comprensión de los Datos (Data Understanding)</span>
+                <span style="font-size: 8.5px; font-weight: 700; background-color: #e0f2fe; color: #0369a1; padding: 1px 6px; border-radius: 10px;">Fase Exploratoria</span>
+              </div>
+              <div style="font-size: 10.5px; color: #334155; line-height: 1.45;">
+                <strong style="color: #0f172a;">Origen de Datos & Diagnóstico:</strong>
+                <p id="rep-s2" style="margin: 3px 0 0 0; text-align: justify;"></p>
+              </div>
+            </div>
+
+            <!-- Etapa 3 -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; background-color: #ffffff;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #b45309;">03. Preparación de los Datos (Data Preparation)</span>
+                <span style="font-size: 8.5px; font-weight: 700; background-color: #fef3c7; color: #92400e; padding: 1px 6px; border-radius: 10px;">Fase de Ingeniería</span>
+              </div>
+              <div style="font-size: 10.5px; color: #334155; line-height: 1.45;">
+                <strong style="color: #0f172a;">Limpieza & Transformación:</strong>
+                <p id="rep-s3" style="margin: 3px 0 0 0; text-align: justify;"></p>
+              </div>
+            </div>
+
+            <!-- Etapa 4 -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; background-color: #ffffff;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #6b21a8;">04. Modelamiento (Modeling)</span>
+                <span style="font-size: 8.5px; font-weight: 700; background-color: #f3e8ff; color: #6b21a8; padding: 1px 6px; border-radius: 10px;">Fase Algorítmica</span>
+              </div>
+              <div style="font-size: 10.5px; color: #334155; line-height: 1.45;">
+                <strong style="color: #0f172a;">Técnicas & Enfoque de Modelado:</strong>
+                <p id="rep-s4" style="margin: 3px 0 0 0; text-align: justify;"></p>
+              </div>
+            </div>
+
+            <!-- Etapa 5 -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; background-color: #ffffff;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #047857;">05. Evaluación (Evaluation)</span>
+                <span style="font-size: 8.5px; font-weight: 700; background-color: #d1fae5; color: #065f46; padding: 1px 6px; border-radius: 10px;">Fase de Validación</span>
+              </div>
+              <div style="font-size: 10.5px; color: #334155; line-height: 1.45;">
+                <strong style="color: #0f172a;">Resultados & Utilidad para el Negocio:</strong>
+                <p id="rep-s5" style="margin: 3px 0 0 0; text-align: justify;"></p>
+              </div>
+            </div>
+
+            <!-- Etapa 6 -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; background-color: #ffffff;">
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #be123c;">06. Implementación (Deployment)</span>
+                <span style="font-size: 8.5px; font-weight: 700; background-color: #ffe4e6; color: #9f1239; padding: 1px 6px; border-radius: 10px;">Fase Operativa</span>
+              </div>
+              <div style="font-size: 10.5px; color: #334155; line-height: 1.45;">
+                <strong style="color: #0f172a;">Puesta en Práctica & Seguimiento:</strong>
+                <p id="rep-s6" style="margin: 3px 0 0 0; text-align: justify;"></p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Pie del Reporte -->
+          <div style="margin-top: 18px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 8.5px; color: #94a3b8;">
+            <span>Reporte generado en CRISP-DM Interactivo</span>
+            <span>Documento Académico / Perú</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Oculto para Impresión Nativa -->
+  <div id="print-modal-container" class="hidden"></div>
+
+  <!-- Toast de Notificaciones -->
+  <div id="toast-message" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl border border-slate-700 hidden items-center gap-2">
+    <span id="toast-icon">✅</span>
+    <span id="toast-text">Acción completada</span>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>CRISP-DM Interactivo • Metodología de Ciencia de Datos</span>
+      <span>Diseñado para estudiantes universitarios e investigadores</span>
+    </div>
+  </footer>
+
+  <script>
+    // ==========================================
+    // 1. DATOS DE LOS 3 CASOS EDUCATIVOS
+    // ==========================================
+    const casesData = {
+      banco: {
+        name: "Banco – Abandono de clientes",
+        icon: "🏦",
+        situation: "Un banco quiere identificar qué clientes tienen mayor probabilidad de abandonar la institución durante los próximos tres meses para ejecutar una campaña preventiva de retención personalizada.",
+        data: "Edad, antigüedad, saldo promedio, número de productos, reclamos, transacciones, uso de la aplicación móvil, días en mora y abandono (sí/no).",
+        stages: [
+          {
+            title: "Comprensión del Negocio",
+            tag: "Fase Estratégica",
+            what: "Identificar clientes con alto riesgo de abandono para aplicar acciones de retención comercial y reducir la fuga de capital.",
+            question: "¿Qué factores financieros y de atención provocan que un cliente decida cancelar sus productos?",
+            example: "Definir un umbral de riesgo: si la probabilidad supera el 75%, el gestor asignará un beneficio directo antes del fin de mes."
+          },
+          {
+            title: "Comprensión de los Datos",
+            tag: "Fase Exploratoria",
+            what: "Analizar el comportamiento financiero, frecuencia de transacciones en canales digitales y patrones de reclamos.",
+            question: "¿Los clientes que abandonan presentan caídas bruscas en el saldo promedio o reclamos no atendidos?",
+            example: "Se detecta que los clientes con más de 2 reclamos en el último trimestre tienen un 60% más de probabilidad de cancelar su cuenta."
+          },
+          {
+            title: "Preparación de los Datos",
+            tag: "Fase de Ingeniería",
+            what: "Tratar valores faltantes, registros duplicados, codificar variables categóricas y tratar valores extremos en saldos.",
+            question: "¿Cómo transformar variables continuas y normalizar los saldos para que los modelos no se sesguen?",
+            example: "Imputación de ingresos no declarados mediante la mediana del segmento demográfico y escalado de montos."
+          },
+          {
+            title: "Modelamiento",
+            tag: "Fase Algorítmica",
+            what: "Formular un problema de clasificación supervisada. Entrenar y comparar Regresión Logística, Árbol de Decisión y Random Forest.",
+            question: "¿Qué algoritmo ofrece la mejor capacidad de discriminar clientes en riesgo sin sobreajustarse?",
+            example: "Entrenamiento cruzado (5-Fold CV) con partición 80/20 balanceando la clase minoritaria mediante SMOTE."
+          },
+          {
+            title: "Evaluación",
+            tag: "Fase de Validación",
+            what: "Comparar métricas técnicas: Regresión Logística obtuvo exactitud 82% y recall 68%. Random Forest obtuvo exactitud 86% y recall 79%.",
+            question: "¿Es prioritario maximizar el Recall para no dejar escapar clientes que abandonarán, aunque aumenten las alertas?",
+            example: "Se elige Random Forest porque su recall del 79% permite capturar a 8 de cada 10 clientes desertores potenciales."
+          },
+          {
+            title: "Implementación",
+            tag: "Fase Operativa",
+            what: "Generar semanalmente una lista priorizada de clientes con alto riesgo y cargarla al CRM del equipo de retención.",
+            example: "Caso Real:\n• Cliente ID: 10524\n• Riesgo de abandono calculado: 88%\n• Acción: Llamada preferente ofreciendo exoneración de comisión y tasa preferencial."
+          }
+        ]
+      },
+      retail: {
+        name: "Retail – Promociones personalizadas",
+        icon: "🛒",
+        situation: "Una cadena de supermercados busca identificar qué clientes tienen mayor probabilidad de utilizar cupones de descuento específicos, optimizando el retorno de inversión publicitaria.",
+        data: "Frecuencia de compra, gasto promedio mensual, fecha de última compra, categorías compradas, uso de promociones anteriores y antigüedad del cliente.",
+        stages: [
+          {
+            title: "Comprensión del Negocio",
+            tag: "Fase Estratégica",
+            what: "Enviar promociones exclusivamente a clientes con alta propensión de canje, evitando descuentos innecesarios en compradores habituales.",
+            question: "¿Cómo focalizar cupones para incrementar el ticket de compra sin canibalizar el margen de venta?",
+            example: "Meta: Lograr una tasa de conversión de cupones superior al 25% con un retorno publicitario (ROAS) positivo."
+          },
+          {
+            title: "Comprensión de los Datos",
+            tag: "Fase Exploratoria",
+            what: "Analizar el comportamiento histórico del ticket de compra y la sensibilidad al precio por categoría de producto.",
+            question: "¿Qué familias de productos presentan mayor elasticidad al descuento según el día de la semana?",
+            example: "El 40% de las ventas en carnes y lácteos se activa con promociones en fines de semana."
+          },
+          {
+            title: "Preparación de los Datos",
+            tag: "Fase de Ingeniería",
+            what: "Crear variables agregadas clave como frecuencia mensual, ticket promedio y días transcurridos desde la última visita (RFM).",
+            question: "¿Cómo estructurar el historial de transacciones por cliente en una sola fila analítica enriquecida?",
+            example: "Cálculo del score RFM (Recencia, Frecuencia, Monto) y ratio de compra con cupón en el semestre previo."
+          },
+          {
+            title: "Modelamiento",
+            tag: "Fase Algorítmica",
+            what: "Desarrollar modelos de clasificación probabilística (LightGBM, Regresión Logística y Redes Neuronales).",
+            question: "¿Qué modelo predice con mayor calibración la probabilidad exacta de canje de cada cupón?",
+            example: "Ajuste de hiperparámetros buscando optimizar la curva PR-AUC por encima de 0.78."
+          },
+          {
+            title: "Evaluación",
+            tag: "Fase de Validación",
+            what: "Comparar el score probabilístico generado para distintos segmentos de clientes:",
+            question: "¿El modelo separa con nitidez los perfiles receptivos de los no receptivos?",
+            example: "• Cliente A: Probabilidad de uso 84% (Candidato a promoción)\n• Cliente B: Probabilidad de uso 17% (No desgastar con comunicación)"
+          },
+          {
+            title: "Implementación",
+            tag: "Fase Operativa",
+            what: "Enviar notificaciones push y cupones por correo automático solo a clientes que superen el umbral del 70% de probabilidad.",
+            example: "Integración con la pasarela de mailing y app móvil: cada jueves se disparan las promociones personalizadas antes de las compras del fin de semana."
+          }
+        ]
+      },
+      transporte: {
+        name: "Transporte – Mantenimiento predictivo",
+        icon: "🚌",
+        situation: "Una empresa de transporte metropolitano opera 200 buses y requiere reducir averías mecánicas imprevistas en ruta, las cuales generan retrasos críticos y altos costos de remolque.",
+        data: "Kilometraje acumulado, antigüedad del bus, temperatura de aceite/motor, nivel de vibración, horas de operación diaria, historial de mantenimiento y fallas previas.",
+        stages: [
+          {
+            title: "Comprensión del Negocio",
+            tag: "Fase Estratégica",
+            what: "Reducir paradas imprevistas en ruta y anticipar fallas críticas con al menos 48 horas de anticipación para programar el taller.",
+            question: "¿Cómo minimizar los costos de grúas y penalizaciones operativas por viajes cancelados?",
+            example: "Objetivo: Disminuir un 40% las fallas en vía pública durante los horarios de mayor afluencia."
+          },
+          {
+            title: "Comprensión de los Datos",
+            tag: "Fase Exploratoria",
+            what: "Explorar series temporales de sensores telemáticos (temperatura, presión y vibración) junto con el historial de órdenes de trabajo.",
+            question: "¿Existen picos anormales de temperatura antes de que el motor entre en falla catastrófica?",
+            example: "Se halla una correlación directa entre vibraciones sostenidas por más de 30 minutos y fallas en la transmisión."
+          },
+          {
+            title: "Preparación de los Datos",
+            tag: "Fase de Ingeniería",
+            what: "Depurar señales de sensores desconectados, interpolar valores perdidos por pérdida de cobertura GPS y crear ventanas móviles.",
+            question: "¿Qué transformaciones temporales capturan el desgaste acumulado de los componentes mecánicos?",
+            example: "Cálculo del promedio móvil de temperatura de los últimos 5 días y ratio de vibración máxima/promedio."
+          },
+          {
+            title: "Modelamiento",
+            tag: "Fase Algorítmica",
+            what: "Entrenar modelos predictivos de riesgo de falla (Random Forest, XGBoost y modelos de supervivencia).",
+            question: "¿Cuál es el algoritmo más confiable para alertar fallas sin saturar al equipo mecánico de falsas alarmas?",
+            example: "Se entrena un clasificador XGBoost enfocado en predecir falla inminente en las siguientes 48 a 72 horas."
+          },
+          {
+            title: "Evaluación",
+            tag: "Fase de Validación",
+            what: "Evaluar qué tan certero es el modelo identificando buses que efectivamente presentaron fallas en la flota histórica.",
+            question: "¿El costo de inspeccionar un bus por falso positivo es inferior a que se descomponga en avenida principal?",
+            example: "Evaluación de la matriz de confusión: Se alcanza una sensibilidad (Recall) del 89% con un costo de mantenimiento 5 veces menor al remolque."
+          },
+          {
+            title: "Implementación",
+            tag: "Fase Operativa",
+            what: "Generar diariamente a las 5:00 a.m. un ranking de buses por nivel de riesgo para el jefe de flota.",
+            example: "Alerta Automática:\n• Bus ID: 083\n• Nivel de riesgo de falla: 91%\n• Acción: Asignar a revisión preventiva de inyectores antes de salir al turno."
+          }
+        ]
+      }
+    };
+
+    // ==========================================
+    // 2. ESTADO GLOBAL DE LA APLICACIÓN
+    // ==========================================
+    let currentCaseKey = 'banco';
+    let currentStageIndex = 0;
+    let isViewAllActive = false;
+
+    // Alternar entre Casos Prácticos y Taller
+    function switchMainTab(tab) {
+      const viewCases = document.getElementById('view-cases');
+      const viewWorkshop = document.getElementById('view-workshop');
+      const tabCases = document.getElementById('tab-cases');
+      const tabWorkshop = document.getElementById('tab-workshop');
+
+      if (tab === 'cases') {
+        viewCases.classList.remove('hidden');
+        viewWorkshop.classList.add('hidden');
+        tabCases.classList.add('bg-white', 'text-blue-700', 'shadow-sm');
+        tabCases.classList.remove('text-slate-600');
+        tabWorkshop.classList.remove('bg-white', 'text-blue-700', 'shadow-sm');
+        tabWorkshop.classList.add('text-slate-600');
+      } else {
+        viewCases.classList.add('hidden');
+        viewWorkshop.classList.remove('hidden');
+        tabWorkshop.classList.add('bg-white', 'text-blue-700', 'shadow-sm');
+        tabWorkshop.classList.remove('text-slate-600');
+        tabCases.classList.remove('bg-white', 'text-blue-700', 'shadow-sm');
+        tabCases.classList.add('text-slate-600');
+        loadWorkshopData(); // Cargar datos guardados o por defecto
+      }
+    }
+
+    // ==========================================
+    // 3. LOGICA DEL VISUALIZADOR DE CASOS
+    // ==========================================
+    function selectCase(caseKey) {
+      currentCaseKey = caseKey;
+      
+      // Actualizar estilo de los 3 botones de casos
+      ['banco', 'retail', 'transporte'].forEach(key => {
+        const btn = document.getElementById(`btn-case-${key}`);
+        if (key === caseKey) {
+          btn.className = "p-3.5 rounded-xl border-2 text-left transition-custom flex items-center gap-3 border-blue-600 bg-blue-50/60 shadow-sm";
+          btn.querySelector('div').className = "w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center text-lg shrink-0";
+        } else {
+          btn.className = "p-3.5 rounded-xl border-2 text-left transition-custom flex items-center gap-3 border-slate-200 bg-white hover:border-slate-300";
+          btn.querySelector('div').className = "w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-lg shrink-0";
+        }
+      });
+
+      const currentCase = casesData[caseKey];
+      document.getElementById('case-situation').innerText = currentCase.situation;
+      document.getElementById('case-data').innerText = currentCase.data;
+
+      renderStagesGrid();
+      updateStageDetails();
+      if (isViewAllActive) {
+        renderAllStagesCards();
+      }
+    }
+
+    function renderStagesGrid() {
+      const container = document.getElementById('stages-buttons-grid');
+      container.innerHTML = '';
+
+      const stages = casesData[currentCaseKey].stages;
+      stages.forEach((st, idx) => {
+        const isSelected = idx === currentStageIndex;
+        const btn = document.createElement('button');
+        btn.onclick = () => selectStage(idx);
+        
+        btn.className = `p-3 rounded-xl border text-left transition-custom flex flex-col justify-between ${
+          isSelected 
+            ? 'border-blue-600 bg-blue-600 text-white shadow-md ring-2 ring-blue-600/30' 
+            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+        }`;
+
+        btn.innerHTML = `
+          <div class="flex items-center justify-between w-full mb-1">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider ${isSelected ? 'text-blue-200' : 'text-slate-400'}">
+              0${idx + 1}
+            </span>
+            ${idx > 0 ? `<span class="text-[10px] ${isSelected ? 'text-blue-200' : 'text-slate-400'}" title="Regresar a etapa anterior">↩️</span>` : ''}
+          </div>
+          <div class="text-xs font-bold leading-tight ${isSelected ? 'text-white' : 'text-slate-800'}">
+            ${st.title}
+          </div>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectStage(index) {
+      currentStageIndex = index;
+      renderStagesGrid();
+      updateStageDetails();
+
+      if (isViewAllActive) {
+        toggleViewAllStages(); // Vuelve a vista individual si estaba abierta la vista completa
+      }
+    }
+
+    function updateStageDetails() {
+      const stage = casesData[currentCaseKey].stages[currentStageIndex];
+      document.getElementById('stage-badge-number').innerText = `0${currentStageIndex + 1}`;
+      document.getElementById('stage-detail-title').innerText = stage.title;
+      document.getElementById('stage-detail-subtitle').innerText = stage.tag || "Fase de Proceso";
+      document.getElementById('stage-what').innerText = stage.what;
+      document.getElementById('stage-question').innerText = stage.question;
+      document.getElementById('stage-example').innerText = stage.example;
+    }
+
+    function toggleViewAllStages() {
+      isViewAllActive = !isViewAllActive;
+      const singleView = document.getElementById('single-stage-view');
+      const allView = document.getElementById('all-stages-view');
+      const textToggle = document.getElementById('text-toggle-all');
+
+      if (isViewAllActive) {
+        singleView.classList.add('hidden');
+        allView.classList.remove('hidden');
+        textToggle.innerText = "Ver etapa seleccionada";
+        renderAllStagesCards();
+      } else {
+        singleView.classList.remove('hidden');
+        allView.classList.add('hidden');
+        textToggle.innerText = "Ver caso completo (6 etapas)";
+      }
+    }
+
+    function renderAllStagesCards() {
+      const container = document.getElementById('all-stages-cards-container');
+      container.innerHTML = '';
+      const stages = casesData[currentCaseKey].stages;
+
+      stages.forEach((st, idx) => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-blue-700">Etapa 0${idx + 1}</span>
+              <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-medium">${st.tag}</span>
+            </div>
+            <h4 class="font-bold text-slate-900 text-sm mb-2">${st.title}</h4>
+            <p class="text-xs text-slate-600 mb-2 leading-relaxed"><strong>Qué se hace:</strong> ${st.what}</p>
+            <p class="text-xs text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-100 mb-2 font-medium"><strong>Pregunta:</strong> ${st.question}</p>
+          </div>
+          <div class="text-xs text-emerald-800 bg-emerald-50/70 p-2 rounded-lg border border-emerald-100 mt-2">
+            <strong>Ejemplo:</strong> ${st.example}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // ==========================================
+    // 4. EJEMPLO PREDETERMINADO (MINERÍA EN PERÚ) & STORAGE
+    // ==========================================
+    const defaultPeruvianMiningCase = {
+      title: "Compañía Minera Antamina (Áncash) – Mantenimiento Predictivo en Flota Komatsu 930E",
+      author: "Ing. Carlos Mendoza & Lucía Quispe (UNMSM / UNI)",
+      date: "Semestre 2026-II • Ciencia de Datos Aplicada",
+      situation: "En la mina a tajo abierto a 4,300 m.s.n.m. en Huari (Áncash), las paradas imprevistas de motor en camiones de acarreo de 300 toneladas generan pérdidas de $70,000 USD por hora. Se busca alertar fallas mecánicas con al menos 72 horas de anticipación.",
+      variables: "Temperatura de aceite, presión de turbo, horas de uso continuo, conteo de metales en aceite (Fe/Cu), vibración y falla en 72h (Sí/No).",
+      
+      s1: "Reducir en un 30% las paralizaciones no programadas de camiones de acarreo identificando con 72 horas de anticipación qué motores presentan riesgo inminente de avería.",
+      s2: "Se utilizan registros de telemetría de sensores en tiempo real y muestras químicas de aceite de motor. Se detectaron pérdidas temporales de señal en el fondo del tajo.",
+      s3: "Se rellenaron datos faltantes por desconexión, se estandarizaron las unidades de temperatura y se calculó el promedio móvil de vibración de los últimos 3 días.",
+      s4: "Se entrenaron modelos de clasificación supervisada (Random Forest y XGBoost) para predecir si habrá avería o no en las siguientes 72 horas.",
+      s5: "El modelo XGBoost identificó acertadamente el 87% de las fallas reales con un error bajo, permitiendo programar las reparaciones sin frenar la producción minera.",
+      s6: "El modelo se conecta al sistema de despacho y genera cada mañana una lista de camiones en riesgo para que el equipo mecánico los revise antes de su turno."
+    };
+
+    function saveWorkshopData() {
+      const data = {
+        title: document.getElementById('ws-title').value,
+        author: document.getElementById('ws-author').value,
+        date: document.getElementById('ws-date').value,
+        situation: document.getElementById('ws-situation').value,
+        variables: document.getElementById('ws-variables').value,
+        s1: document.getElementById('ws-s1').value,
+        s2: document.getElementById('ws-s2').value,
+        s3: document.getElementById('ws-s3').value,
+        s4: document.getElementById('ws-s4').value,
+        s5: document.getElementById('ws-s5').value,
+        s6: document.getElementById('ws-s6').value
+      };
+      try {
+        localStorage.setItem('crispdm_user_project', JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function loadWorkshopData() {
+      try {
+        const raw = localStorage.getItem('crispdm_user_project');
+        if (!raw) {
+          loadDefaultPeruvianCase();
+          return;
+        }
+        const d = JSON.parse(raw);
+        setFormValues(d);
+      } catch (e) {
+        loadDefaultPeruvianCase();
+      }
+    }
+
+    function setFormValues(d) {
+      document.getElementById('ws-title').value = d.title || '';
+      document.getElementById('ws-author').value = d.author || '';
+      document.getElementById('ws-date').value = d.date || '';
+      document.getElementById('ws-situation').value = d.situation || '';
+      document.getElementById('ws-variables').value = d.variables || '';
+
+      document.getElementById('ws-s1').value = d.s1 || d.s1_what || '';
+      document.getElementById('ws-s2').value = d.s2 || d.s2_sources || '';
+      document.getElementById('ws-s3').value = d.s3 || d.s3_clean || '';
+      document.getElementById('ws-s4').value = d.s4 || d.s4_models || '';
+      document.getElementById('ws-s5').value = d.s5 || d.s5_metrics || '';
+      document.getElementById('ws-s6').value = d.s6 || d.s6_deploy || '';
+    }
+
+    function loadDefaultPeruvianCase() {
+      setFormValues(defaultPeruvianMiningCase);
+      saveWorkshopData();
+      showToast("Ejemplo de Minería en Perú (Antamina) cargado con éxito", "🇵🇪");
+    }
+
+    function clearWorkshopData() {
+      const empty = {
+        title: '', author: '', date: '', situation: '', variables: '',
+        s1: '', s2: '', s3: '', s4: '', s5: '', s6: ''
+      };
+      setFormValues(empty);
+      try { localStorage.removeItem('crispdm_user_project'); } catch(e){}
+      showToast("Formulario restablecido", "🧹");
+    }
+
+    // ==========================================
+    // 5. LLENADO Y SINCRONIZACIÓN DEL REPORTE A4
+    // ==========================================
+    function syncReportElements() {
+      document.getElementById('rep-title').innerText = document.getElementById('ws-title').value.trim() || "Proyecto de Metodología CRISP-DM";
+      document.getElementById('rep-author').innerText = document.getElementById('ws-author').value.trim() || "Estudiante / Equipo de Trabajo";
+      document.getElementById('rep-date').innerText = document.getElementById('ws-date').value.trim() || new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('rep-situation').innerText = document.getElementById('ws-situation').value.trim() || "Situación no especificada.";
+      document.getElementById('rep-variables').innerText = document.getElementById('ws-variables').value.trim() || "Variables no detalladas.";
+
+      document.getElementById('rep-s1').innerText = document.getElementById('ws-s1').value.trim() || "Por definir.";
+      document.getElementById('rep-s2').innerText = document.getElementById('ws-s2').value.trim() || "Por definir.";
+      document.getElementById('rep-s3').innerText = document.getElementById('ws-s3').value.trim() || "Por definir.";
+      document.getElementById('rep-s4').innerText = document.getElementById('ws-s4').value.trim() || "Por definir.";
+      document.getElementById('rep-s5').innerText = document.getElementById('ws-s5').value.trim() || "Por definir.";
+      document.getElementById('rep-s6').innerText = document.getElementById('ws-s6').value.trim() || "Por definir.";
+    }
+
+    function openReportPreview() {
+      syncReportElements();
+      document.getElementById('preview-modal').classList.remove('hidden');
+    }
+
+    function closeReportPreview() {
+      document.getElementById('preview-modal').classList.add('hidden');
+    }
+
+    // ==========================================
+    // 6. GENERACIÓN Y DESCARGA (PDF & PNG INFALIBLES)
+    // ==========================================
+    
+    // Función de captura con html2canvas optimizada para evitar recortes
+    async function captureReportCanvas() {
+      syncReportElements();
+      const reportElement = document.getElementById('a4-report-document');
+      
+      // Forzar que el modal esté visible temporalmente para garantizar renderizado
+      const modal = document.getElementById('preview-modal');
+      const wasHidden = modal.classList.contains('hidden');
+      if (wasHidden) {
+        modal.classList.remove('hidden');
+      }
+
+      // Asegurar que las fuentes e imágenes estén computadas
+      await new Promise(r => setTimeout(r, 120));
+
+      const canvas = await html2canvas(reportElement, {
+        scale: 2, // Alta resolución para lectura nítida
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: 794,
+        windowWidth: 1024
+      });
+
+      if (wasHidden) {
+        modal.classList.add('hidden');
+      }
+
+      return canvas;
+    }
+
+    // Opción 1: Descarga directa como Imagen PNG
+    async function downloadReportAsImage() {
+      const btn = document.getElementById('btn-dl-png');
+      const origText = btn ? btn.innerHTML : '';
+      if (btn) btn.innerHTML = '<span>⏳ Generando Imagen...</span>';
+
+      showToast("Renderizando imagen de alta resolución...", "🖼️");
+
+      try {
+        const canvas = await captureReportCanvas();
+        const imageUri = canvas.toDataURL('image/png', 1.0);
+        
+        const title = document.getElementById('ws-title').value.trim() || 'CRISP-DM_Reporte';
+        const cleanName = title.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 35);
+        
+        const link = document.createElement('a');
+        link.download = `${cleanName}_CRISP-DM.png`;
+        link.href = imageUri;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast("¡Imagen PNG descargada con éxito!", "✅");
+      } catch (err) {
+        console.error("Error al generar imagen:", err);
+        showToast("Hubo un detalle al exportar imagen.", "⚠️");
+      } finally {
+        if (btn) btn.innerHTML = origText;
+      }
+    }
+
+    // Opción 2: Descarga directa como PDF en A4 (utilizando jsPDF)
+    async function downloadReportAsPdf() {
+      const btn = document.getElementById('btn-dl-pdf');
+      const origText = btn ? btn.innerHTML : '';
+      if (btn) btn.innerHTML = '<span>⏳ Generando PDF...</span>';
+
+      showToast("Generando PDF en formato estándar A4...", "📄");
+
+      try {
+        const canvas = await captureReportCanvas();
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+        // Crear documento jsPDF en A4 (210mm x 297mm)
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Si la imagen entra en una sola página A4
+        if (imgHeight <= pageHeight) {
+          pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+        } else {
+          // Ajustar escalando proporcionalmente para que quede impecable en 1 hoja
+          const scaleRatio = pageHeight / imgHeight;
+          const fittedWidth = imgWidth * scaleRatio;
+          const leftMargin = (pageWidth - fittedWidth) / 2;
+          pdf.addImage(imgData, 'JPEG', leftMargin, 0, fittedWidth, pageHeight);
+        }
+
+        const title = document.getElementById('ws-title').value.trim() || 'CRISP-DM_Reporte';
+        const cleanName = title.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 35);
+
+        pdf.save(`${cleanName}_CRISP-DM.pdf`);
+        showToast("¡PDF generado y descargado con éxito!", "✅");
+      } catch (err) {
+        console.error("Error al generar PDF:", err);
+        showToast("Generando vista de impresión...", "ℹ️");
+        printReportDirectly();
+      } finally {
+        if (btn) btn.innerHTML = origText;
+      }
+    }
+
+    // Opción 3: Impresión nativa del navegador
+    function printReportDirectly() {
+      syncReportElements();
+      const printContainer = document.getElementById('print-modal-container');
+      const reportClone = document.getElementById('a4-report-document').cloneNode(true);
+      
+      printContainer.innerHTML = '';
+      printContainer.appendChild(reportClone);
+      printContainer.classList.remove('hidden');
+
+      setTimeout(() => {
+        window.print();
+        printContainer.classList.add('hidden');
+      }, 200);
+    }
+
+    // Toast informativo
+    function showToast(message, icon = "✅") {
+      const toast = document.getElementById('toast-message');
+      document.getElementById('toast-icon').innerText = icon;
+      document.getElementById('toast-text').innerText = message;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 3500);
+    }
+
+    // Inicialización al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      selectCase('banco');
+      selectStage(0);
+      loadWorkshopData();
+    });
+  </script>
+</body>
+</html>

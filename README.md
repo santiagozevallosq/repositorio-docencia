@@ -39,3 +39,7 @@ recursos/
 
 - **Matemáticas / Simulador de Ecuaciones e Inecuaciones Lineales (2x2)** — copiado desde el repo `simulador-inecuaciones` (que sigue publicado por separado en `https://santiagozevallosq.github.io/simulador-inecuaciones/`).
 - **Diseño de Negocios Digitales / Explorador del E-commerce en Perú** — plataforma pedagógica con KPIs de mercado, comportamiento del consumidor, tendencias, medios de pago (caso Yape) y cadena logística en Perú.
+- **Diseño de Negocios Digitales / CRISP-DM Interactivo** — guía metodológica para minería de datos y proyectos analíticos con casos prácticos y taller de proyectos.
+- **Recurso de Maestría / Simulador de Criptoanálisis de Ransomware y Detección con IA** — laboratorio interactivo de cifrado híbrido, cálculo de entropía de Shannon y telemetría defensiva.
+- **Uso Personal / FinanceLab - Panel Financiero Interactivo** — dashboard financiero personal con carga de hojas de cálculo (Excel/CSV), desglose de gastos y guía didáctica de fórmulas.
+- **Introducción a las Finanzas / InverTest - Test de Perfil de Inversión** — evaluación interactiva de aversión al riesgo y diagnóstico del perfil del inversionista con asignación de activos sugerida.
