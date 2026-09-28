@@ -50,3 +50,6 @@ recursos/
 - **Uso Personal / ¡Hebi-Chan! - Anime Snake Adventure** — juego de la serpiente (Snake) con estética anime en Canvas, efectos y multiplicadores de velocidad.
 - **Uso Personal / Misión Espacial - Arcade de Supervivencia** — juego arcade de combate espacial 2D, esquiva de meteoritos, recolección de energía y mejoras.
 - **Uso Personal / Super Mario Bros Canvas** — recreación retro completa en HTML5 Canvas con salto calibrado, bloques interactivos, sonido 8-bit, Goombas y meta final.
+- **Uso Personal / Calculadora de Notas Universitarias** — simulador de promedios ponderados y nota requerida para aprobación académica.
+- **Introducción a las Finanzas / Calculadora Financiera Estudiantil** — gestión de presupuestos personales, categorización de gastos y metas de ahorro para universitarios.
+- **Introducción a las Finanzas / Simulador de Anualidades Vencidas y Anticipadas** — calculadora interactiva de valor futuro y presente con tablas de evolución y comparación de regímenes.

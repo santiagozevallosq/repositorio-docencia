@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Financiera Estudiantil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+  <!-- Botón superior Volver al Repositorio -->
+  <div class="max-w-5xl mx-auto px-4 pt-4 flex justify-between items-center">
+    <a href="../../../index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition text-xs font-semibold shadow-xs">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+      Repositorio Docente
+    </a>
+  </div>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+
+    const IconBase = ({ children, className = "w-5 h-5", size = 20, ...props }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
+        {children}
+      </svg>
+    );
+    const Wallet = (p) => <IconBase {...p}><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></IconBase>;
+    const TrendingUp = (p) => <IconBase {...p}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></IconBase>;
+    const TrendingDown = (p) => <IconBase {...p}><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></IconBase>;
+    const ShieldCheck = (p) => <IconBase {...p}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></IconBase>;
+    const PiggyBank = (p) => <IconBase {...p}><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></IconBase>;
+    const Smartphone = (p) => <IconBase {...p}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></IconBase>;
+    const Info = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>;
+    const CreditCard = (p) => <IconBase {...p}><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></IconBase>;
+    const Utensils = (p) => <IconBase {...p}><path d="M18 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/><path d="M8 2v20"/><path d="M3 2v6a5 5 0 0 0 5 5v9"/></IconBase>;
+    const Home = (p) => <IconBase {...p}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconBase>;
+    const Bus = (p) => <IconBase {...p}><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4C2.9 6 1.9 6.8 1.6 7.8l-1.4 5c-.1.4-.2.8-.2 1.2 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></IconBase>;
+    const Zap = (p) => <IconBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>;
+    const Coffee = (p) => <IconBase {...p}><path d="M10 2v2"/><path d="M14 2v2"/><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="14" y1="2" y2="2"/></IconBase>;
+    const ShoppingBag = (p) => <IconBase {...p}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></IconBase>;
+
+
+
+
+const App = () => {
+  // --- Estado del Presupuesto ---
+  const [budget, setBudget] = useState({
+    income: 1200,
+    rent: 400,
+    food: 250,
+    transport: 80,
+    services: 60,
+    leisure: 150,
+    shopping: 100,
+    debts: 50
+  });
+
+  // --- Estado del Fondo de Emergencia ---
+  const [emergencyConfig, setEmergencyConfig] = useState({
+    basicExpense: 850,
+    monthlySavings: 110
+  });
+
+  // --- Cálculos Automáticos ---
+  const totalExpenses = useMemo(() => {
+    return (
+      Number(budget.rent) +
+      Number(budget.food) +
+      Number(budget.transport) +
+      Number(budget.services) +
+      Number(budget.leisure) +
+      Number(budget.shopping) +
+      Number(budget.debts)
+    );
+  }, [budget]);
+
+  const balance = budget.income - totalExpenses;
+
+  const getStatusInfo = () => {
+    if (balance > 0) return { text: "Tienes superávit", color: "text-emerald-600", bg: "bg-emerald-50", icon: <TrendingUp className="w-5 h-5" /> };
+    if (balance === 0) return { text: "Estás en equilibrio", color: "text-blue-600", bg: "bg-blue-50", icon: <Wallet className="w-5 h-5" /> };
+    return { text: "Estás en déficit", color: "text-rose-600", bg: "bg-rose-50", icon: <TrendingDown className="w-5 h-5" /> };
+  };
+
+  const status = getStatusInfo();
+
+  // --- Cálculos de Fondo de Emergencia ---
+  const fund3Months = emergencyConfig.basicExpense * 3;
+  const monthsToReach3 = emergencyConfig.monthlySavings > 0 ? (fund3Months / emergencyConfig.monthlySavings).toFixed(1) : "∞";
+
+  // --- Manejadores de cambios ---
+  const handleInputChange = (field, value) => {
+    const numValue = value === "" ? 0 : parseFloat(value);
+    setBudget(prev => ({ ...prev, [field]: numValue }));
+  };
+
+  const handleEmergencyChange = (field, value) => {
+    const numValue = value === "" ? 0 : parseFloat(value);
+    setEmergencyConfig(prev => ({ ...prev, [field]: numValue }));
+  };
+
+  const percentageSpent = Math.min((totalExpenses / budget.income) * 100, 100);
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12">
+      {/* Header */}
+      <header className="bg-blue-700 text-white p-6 shadow-lg sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <div className="bg-white/20 p-2 rounded-lg">
+            <Wallet className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold leading-tight">Mi Plan Financiero</h1>
+            <p className="text-blue-100 text-xs">Calculadora interactiva para universitarios</p>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto p-4 space-y-6">
+        
+        {/* SECCIÓN 1: PRESUPUESTO MENSUAL */}
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-blue-800">
+              <TrendingUp className="w-5 h-5" /> Presupuesto Mensual
+            </h2>
+          </div>
+          
+          <div className="p-5 space-y-4">
+            {/* Ingreso */}
+            <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+              <label className="block text-emerald-800 text-xs font-bold uppercase tracking-wider mb-1">Ingreso Mensual (Soles/$)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 font-bold">$</span>
+                <input 
+                  type="number"
+                  value={budget.income}
+                  onChange={(e) => handleInputChange('income', e.target.value)}
+                  className="w-full pl-8 pr-4 py-3 rounded-lg border-none focus:ring-2 focus:ring-emerald-500 text-lg font-bold bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Gastos Grid */}
+            <div className="grid grid-cols-1 gap-4">
+              <h3 className="text-sm font-semibold text-slate-500 pt-2 border-t border-slate-50">Mis Gastos Fijos y Variables</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField icon={<Home size={18}/>} label="Alquiler" value={budget.rent} onChange={(v) => handleInputChange('rent', v)} />
+                <InputField icon={<Utensils size={18}/>} label="Alimentación" value={budget.food} onChange={(v) => handleInputChange('food', v)} />
+                <InputField icon={<Bus size={18}/>} label="Transporte" value={budget.transport} onChange={(v) => handleInputChange('transport', v)} />
+                <InputField icon={<Zap size={18}/>} label="Servicios (Luz/Agua/Net)" value={budget.services} onChange={(v) => handleInputChange('services', v)} />
+                <InputField icon={<CreditCard size={18}/>} label="Deudas" value={budget.debts} onChange={(v) => handleInputChange('debts', v)} color="border-rose-200" />
+              </div>
+            </div>
+          </div>
+
+          {/* Resultados Presupuesto */}
+          <div className="p-5 bg-slate-50 space-y-4">
+            <div className="flex justify-between items-end">
+              <div>
+                <p className="text-xs font-medium text-slate-500 uppercase">Gasto Total</p>
+                <p className="text-2xl font-bold text-slate-900">${totalExpenses.toLocaleString()}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-medium text-slate-500 uppercase">Balance</p>
+                <p className={`text-2xl font-black ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {balance >= 0 ? '+' : ''}${balance.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            {/* Barra Visual */}
+            <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-500 ${balance >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} 
+                style={{ width: `${percentageSpent}%` }}
+              ></div>
+            </div>
+
+            <div className={`flex items-center gap-2 p-3 rounded-xl font-bold justify-center ${status.bg} ${status.color}`}>
+              {status.icon}
+              {status.text}
+            </div>
+          </div>
+        </section>
+
+        {/* SECCIÓN 2: AJUSTE DE GASTOS (Variables) */}
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+          <h2 className="text-lg font-bold flex items-center gap-2 text-indigo-700 mb-4">
+            <ShoppingBag className="w-5 h-5" /> Ajuste de Gastos Flexibles
+          </h2>
+          <p className="text-slate-500 text-sm mb-4">Modifica estos campos para ver cuánto podrías ahorrar si reduces tus gustos este mes.</p>
+          
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold flex items-center gap-2"><Coffee className="w-4 h-4 text-amber-600" /> Ocio / Salidas</label>
+                <span className="text-sm font-bold bg-slate-100 px-2 py-1 rounded">${budget.leisure}</span>
+              </div>
+              <input 
+                type="range" 
+                min="0" 
+                max="500" 
+                step="10"
+                value={budget.leisure}
+                onChange={(e) => handleInputChange('leisure', e.target.value)}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold flex items-center gap-2"><ShoppingBag className="w-4 h-4 text-indigo-600" /> Compras varias</label>
+                <span className="text-sm font-bold bg-slate-100 px-2 py-1 rounded">${budget.shopping}</span>
+              </div>
+              <input 
+                type="range" 
+                min="0" 
+                max="500" 
+                step="10"
+                value={budget.shopping}
+                onChange={(e) => handleInputChange('shopping', e.target.value)}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-start gap-3">
+            <Info className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />
+            <p className="text-xs text-indigo-900 leading-relaxed italic">
+              "Pequeños cambios generan grandes resultados. Reducir un poco el ocio hoy, construye tu libertad mañana."
+            </p>
+          </div>
+        </section>
+
+        {/* SECCIÓN 3: FONDO DE EMERGENCIA */}
+        <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-teal-700">
+              <ShieldCheck className="w-5 h-5" /> Fondo de Emergencia
+            </h2>
+          </div>
+
+          <div className="p-5 space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-500 text-[10px] font-bold uppercase mb-1">Gasto Básico Mensual</label>
+                <input 
+                  type="number"
+                  value={emergencyConfig.basicExpense}
+                  onChange={(e) => handleEmergencyChange('basicExpense', e.target.value)}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 font-bold"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-500 text-[10px] font-bold uppercase mb-1">Ahorro Mensual Destinado</label>
+                <input 
+                  type="number"
+                  value={emergencyConfig.monthlySavings}
+                  onChange={(e) => handleEmergencyChange('monthlySavings', e.target.value)}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="p-5 bg-slate-900 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-teal-500/20 p-2 rounded-lg">
+                  <PiggyBank className="w-6 h-6 text-teal-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Progreso</p>
+                  <p className="text-sm font-medium">Tiempo para meta (3 meses de gastos):</p>
+                </div>
+              </div>
+              <div className="text-center sm:text-right">
+                <span className="text-3xl font-black text-teal-400">{monthsToReach3}</span>
+                <span className="text-teal-400 ml-1 font-bold text-sm uppercase">meses</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* MENSAJE FINAL */}
+        <footer className="text-center py-8 px-4">
+          <p className="text-lg font-medium text-slate-500 italic mb-2">
+            "No es cuánto ganas, sino cómo administras tu dinero"
+          </p>
+          <div className="flex justify-center gap-4 text-slate-400 mt-6">
+            <Smartphone size={20} />
+            <span className="text-xs uppercase font-bold tracking-widest">Educación Financiera v1.0</span>
+          </div>
+        </footer>
+
+      </main>
+    </div>
+  );
+};
+
+// Componente helper para inputs
+const InputField = ({ label, value, onChange, icon, color = "border-slate-200" }) => (
+  <div className="space-y-1">
+    <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+      {icon} {label}
+    </label>
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">$</span>
+      <input 
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full pl-7 pr-3 py-2.5 bg-white border ${color} rounded-lg focus:ring-2 focus:ring-blue-500 text-sm font-semibold text-slate-700 transition-all shadow-sm`}
+      />
+    </div>
+  </div>
+);
+
+
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
