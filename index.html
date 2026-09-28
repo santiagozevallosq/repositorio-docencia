@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repositorio Docencia</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card-bg: #ffffff;
+    --text: #1f2328;
+    --text-muted: #57606a;
+    --border: #d8dee4;
+    --accent: #2563eb;
+    --tag-bg: #eef2ff;
+    --tag-text: #3730a3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px 64px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  header { margin-bottom: 32px; }
+  h1 { font-size: 1.75rem; margin: 0 0 4px; }
+  header p { color: var(--text-muted); margin: 0; }
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  #buscador {
+    flex: 1 1 220px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+  #filtro-curso {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--card-bg);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  .card h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .tag {
+    align-self: flex-start;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .vacio {
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 24px 0;
+  }
+  footer {
+    margin-top: 48px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Repositorio Docencia</h1>
+    <p>Dashboards, simuladores y recursos interactivos usados en clase.</p>
+  </header>
+
+  <div class="controls">
+    <input type="search" id="buscador" placeholder="Buscar por nombre o descripción...">
+    <select id="filtro-curso">
+      <option value="">Todos los cursos</option>
+    </select>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <p class="vacio" id="vacio" hidden>No se encontraron recursos.</p>
+
+  <footer>Actualizado a mano en <code>index.html</code> — agrega un recurso nuevo editando el array RECURSOS.</footer>
+</div>
+
+<script>
+// Para agregar un recurso nuevo:
+// 1. Copia su carpeta dentro de recursos/<curso>/<nombre-recurso>/
+// 2. Añade un objeto aquí abajo con su info.
+const RECURSOS = [
+  {
+    titulo: "Simulador de Ecuaciones e Inecuaciones Lineales (2x2)",
+    curso: "Matemáticas",
+    descripcion: "Resuelve, grafica en tiempo real y explica paso a paso sistemas de 2 ecuaciones o inecuaciones lineales con dos incógnitas. Incluye plano cartesiano interactivo con zoom/pan y desglose por Regla de Cramer.",
+    ruta: "recursos/matematicas/simulador-inecuaciones/index.html"
+  }
+];
+
+const grid = document.getElementById("grid");
+const vacio = document.getElementById("vacio");
+const buscador = document.getElementById("buscador");
+const filtroCurso = document.getElementById("filtro-curso");
+
+const cursos = [...new Set(RECURSOS.map(r => r.curso))].sort();
+cursos.forEach(c => {
+  const opt = document.createElement("option");
+  opt.value = c;
+  opt.textContent = c;
+  filtroCurso.appendChild(opt);
+});
+
+function render() {
+  const texto = buscador.value.trim().toLowerCase();
+  const curso = filtroCurso.value;
+
+  const filtrados = RECURSOS.filter(r => {
+    const coincideTexto = !texto || r.titulo.toLowerCase().includes(texto) || r.descripcion.toLowerCase().includes(texto);
+    const coincideCurso = !curso || r.curso === curso;
+    return coincideTexto && coincideCurso;
+  });
+
+  grid.innerHTML = "";
+  vacio.hidden = filtrados.length > 0;
+
+  filtrados.forEach(r => {
+    const a = document.createElement("a");
+    a.className = "card";
+    a.href = r.ruta;
+    a.innerHTML = `
+      <span class="tag">${r.curso}</span>
+      <h2>${r.titulo}</h2>
+      <p>${r.descripcion}</p>
+    `;
+    grid.appendChild(a);
+  });
+}
+
+buscador.addEventListener("input", render);
+filtroCurso.addEventListener("change", render);
+render();
+</script>
+</body>
+</html>
