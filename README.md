@@ -38,3 +38,4 @@ recursos/
 ## Recursos incluidos
 
 - **Matemáticas / Simulador de Ecuaciones e Inecuaciones Lineales (2x2)** — copiado desde el repo `simulador-inecuaciones` (que sigue publicado por separado en `https://santiagozevallosq.github.io/simulador-inecuaciones/`).
+- **Diseño de Negocios Digitales / Explorador del E-commerce en Perú** — plataforma pedagógica con KPIs de mercado, comportamiento del consumidor, tendencias, medios de pago (caso Yape) y cadena logística en Perú.

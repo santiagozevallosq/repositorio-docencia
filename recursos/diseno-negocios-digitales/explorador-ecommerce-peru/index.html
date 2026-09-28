@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorador del E-commerce en Perú</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN for clean, responsive data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              blue: '#2563eb',
+              indigo: '#4f46e5',
+              purple: '#7c3aed',
+              teal: '#0d9488',
+              emerald: '#059669',
+              amber: '#d97706',
+              yape: '#781577',
+              yapeTeal: '#00afaa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbars and refined transitions */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .tab-active {
+      border-bottom: 3px solid #2563eb;
+      color: #1e40af;
+      font-weight: 700;
+      background: rgba(37, 99, 235, 0.04);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-blue-100 selection:text-blue-900">
+
+  <!-- Header / Navigation Bar -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between py-3 border-b border-slate-100 gap-2">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-xl shadow-md shadow-blue-500/20">
+            PE
+          </div>
+          <div>
+            <h1 class="text-xl font-bold font-display tracking-tight text-slate-900 flex items-center gap-2">
+              Explorador del E-commerce en Perú
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">Docente</span>
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Datos, tendencias y transformación digital de los negocios peruanos</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <a href="../../../index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition text-xs font-semibold shadow-xs">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Repositorio Docente
+          </a>
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-md font-medium text-slate-600">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            Uso Pedagógico Universitario
+          </span>
+          <button onclick="switchTab('fuentes')" class="hover:text-blue-600 transition-colors underline decoration-dotted text-xs font-semibold">
+            Ver 6 fuentes
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizontal Tab Menu -->
+      <nav class="flex space-x-1 overflow-x-auto py-2.5 no-scrollbar text-sm font-medium" id="main-nav">
+        <button onclick="switchTab('panorama')" id="tab-panorama" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap tab-active">
+          📊 Panorama
+        </button>
+        <button onclick="switchTab('consumidor')" id="tab-consumidor" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          🧭 Consumidor
+        </button>
+        <button onclick="switchTab('tendencias')" id="tab-tendencias" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          ⚡ Tendencias
+        </button>
+        <button onclick="switchTab('viaje')" id="tab-viaje" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          🔄 Viaje de compra
+        </button>
+        <button onclick="switchTab('pagos')" id="tab-pagos" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          💳 Pagos
+        </button>
+        <button onclick="switchTab('yape')" id="tab-yape" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          🟣 Caso Yape
+        </button>
+        <button onclick="switchTab('logistica')" id="tab-logistica" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          📦 Logística
+        </button>
+        <button onclick="switchTab('sintesis')" id="tab-sintesis" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          🎯 Síntesis
+        </button>
+        <button onclick="switchTab('fuentes')" id="tab-fuentes" class="tab-btn px-3.5 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition whitespace-nowrap">
+          📚 Fuentes
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ==========================================
+         SECCIÓN 1: PANORAMA
+         ========================================== -->
+    <section id="section-panorama" class="space-y-6">
+      <!-- Pedagogy banner -->
+      <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 flex items-center justify-between text-xs text-blue-900">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+          <span class="font-semibold">Objetivo formativo:</span>
+          <span>Comprender el salto de escala de la economía digital en el Perú y los catalizadores estructurales del mercado.</span>
+        </div>
+        <span class="text-blue-700 font-mono text-[11px] hidden sm:inline">Lectura en 3 bloques</span>
+      </div>
+
+      <!-- BLOQUE 1: 4 KPIs en una sola fila -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- KPI 1 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-blue-300 transition-all">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
+            <span>VOLUMEN TRANSACCIONAL</span>
+            <span class="p-1 rounded bg-blue-50 text-blue-600">📈 Mercado</span>
+          </div>
+          <div class="text-3xl font-extrabold font-display text-slate-900 tracking-tight">US$ 15.6B</div>
+          <p class="text-xs text-slate-600 mt-1 font-medium">Volumen total de ventas e-commerce en Perú</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span class="font-semibold text-slate-500">2024–2025</span>
+            <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Fuente: CAPECE</span>
+          </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-blue-300 transition-all">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
+            <span>ADOPCIÓN CIUDADANA</span>
+            <span class="p-1 rounded bg-indigo-50 text-indigo-600">👥 Demanda</span>
+          </div>
+          <div class="text-3xl font-extrabold font-display text-slate-900 tracking-tight">16.8M</div>
+          <p class="text-xs text-slate-600 mt-1 font-medium">Compradores online habituales en el país</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span class="font-semibold text-slate-500">2024</span>
+            <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Fuente: CAPECE / CCL</span>
+          </div>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-blue-300 transition-all">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
+            <span>DENSIDAD EMPRESARIAL</span>
+            <span class="p-1 rounded bg-teal-50 text-teal-600">🏬 Oferta</span>
+          </div>
+          <div class="text-3xl font-extrabold font-display text-slate-900 tracking-tight">330,000+</div>
+          <p class="text-xs text-slate-600 mt-1 font-medium">Comercios que operan canales o cobros online</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span class="font-semibold text-slate-500">2023–2024</span>
+            <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Fuente: CAPECE</span>
+          </div>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-blue-300 transition-all">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
+            <span>CONCENTRACIÓN CANAL</span>
+            <span class="p-1 rounded bg-purple-50 text-purple-600">🛒 Plataformas</span>
+          </div>
+          <div class="text-3xl font-extrabold font-display text-slate-900 tracking-tight">~58%</div>
+          <p class="text-xs text-slate-600 mt-1 font-medium">Participación del volumen retail en Marketplaces</p>
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span class="font-semibold text-slate-500">2024</span>
+            <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Fuente: PCMI / CAPECE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOQUE 2: Gráfico Grande de Evolución -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+          <div>
+            <h2 class="text-lg font-bold font-display text-slate-900">Evolución del comercio electrónico en Perú (2010 – 2025)</h2>
+            <p class="text-xs text-slate-500">Ventas totales e-commerce en miles de millones de dólares americanos (US$ B)</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span> Datos Oficiales CAPECE / BCRP
+            </span>
+          </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="relative w-full h-[280px] sm:h-[320px]">
+          <canvas id="growthChart"></canvas>
+        </div>
+        <div class="mt-2 text-right">
+          <span class="text-[11px] text-slate-400">Fuente consolidada: CAPECE (Observatorio Ecommerce 2022-2023, 4.ª ed. y actualización 2024-2025)</span>
+        </div>
+      </div>
+
+      <!-- BLOQUE 3: Factores + Lectura Clave -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <!-- Izquierda: Factores (7 cols) -->
+        <div class="md:col-span-7 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700">¿Qué explica este crecimiento exponencial?</h3>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div class="text-blue-600 font-bold text-xs mb-1">1. Expansión móvil</div>
+              <p class="text-xs text-slate-600 leading-snug">Penetración masiva de smartphones y redes móviles 4G/5G en todo el país.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div class="text-blue-600 font-bold text-xs mb-1">2. Cuarentena 2020</div>
+              <p class="text-xs text-slate-600 leading-snug">Aceleró en semanas una curva de adopción digital proyectada para 5 años.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div class="text-blue-600 font-bold text-xs mb-1">3. Pagos digitales</div>
+              <p class="text-xs text-slate-600 leading-snug">Yape, Plin y QR redujeron drásticamente la barrera de no estar bancarizado.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div class="text-blue-600 font-bold text-xs mb-1">4. Marketplaces</div>
+              <p class="text-xs text-slate-600 leading-snug">Falabella, Mercado Libre y Ripley ofrecieron confianza y surtido unificado.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div class="text-blue-600 font-bold text-xs mb-1">5. Logística urbana</div>
+              <p class="text-xs text-slate-600 leading-snug">Ecosistema multicourier y seguimiento en tiempo real de última milla.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div class="text-blue-600 font-bold text-xs mb-1">6. Confianza social</div>
+              <p class="text-xs text-slate-600 leading-snug">Normalización de reseñas y garantías formales contra el fraude en línea.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Derecha: Lectura clave (5 cols) -->
+        <div class="md:col-span-5 bg-gradient-to-br from-blue-900 to-indigo-950 text-white rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-200 text-xs font-semibold mb-3 border border-blue-400/20">
+              💡 Lectura clave para el aula
+            </div>
+            <h3 class="text-base font-bold font-display text-white mb-2">De canal alternativo a columna económica</h3>
+            <p class="text-xs text-blue-100 leading-relaxed">
+              El comercio electrónico peruano no creció solo por la oferta de grandes tiendas, sino por la democratización radical del cobro digital y el celular como terminal universal de compra.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-blue-800/60 flex items-center justify-between text-[11px] text-blue-300">
+            <span>Lección: La infraestructura precede a la venta</span>
+            <span class="font-mono">Punto de partida</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 2: CONSUMIDOR
+         ========================================== -->
+    <section id="section-consumidor" class="hidden space-y-6">
+      <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3.5 flex items-center justify-between text-xs text-indigo-900">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+          <span class="font-semibold">Radiografía interactiva:</span>
+          <span>Haz clic en cada una de las 5 dimensiones alrededor del consumidor digital peruano para desplegar la evidencia pedagógica.</span>
+        </div>
+        <span class="text-indigo-700 font-mono text-[11px]">Interactivo 1-Click</span>
+      </div>
+
+      <!-- Visual Orbit Layout -->
+      <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-xs relative">
+        <div class="text-center max-w-md mx-auto mb-6">
+          <h2 class="text-lg font-bold font-display text-slate-900">Comportamiento del comprador digital peruano</h2>
+          <p class="text-xs text-slate-500">Selecciona un cuadrante para analizar su hábito, fricción e implicancia de negocio.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+          
+          <!-- Node 1: Dispositivo -->
+          <button onclick="selectConsumerNode('dispositivo')" id="c-node-dispositivo" class="c-node group text-left p-4 rounded-xl border-2 border-blue-200 bg-blue-50/50 hover:bg-blue-100/60 transition-all flex flex-col justify-between h-36">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">📱</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-white px-2 py-0.5 rounded border border-blue-200">1. Dispositivo</span>
+            </div>
+            <div>
+              <div class="font-bold text-sm text-slate-900">Smartphone First</div>
+              <div class="text-xs text-slate-500 mt-0.5">80%+ del tráfico e-commerce</div>
+            </div>
+            <div class="text-[11px] text-blue-700 font-semibold group-hover:translate-x-1 transition-transform">Ver análisis →</div>
+          </button>
+
+          <!-- Node 2: Descubrimiento -->
+          <button onclick="selectConsumerNode('descubrimiento')" id="c-node-descubrimiento" class="c-node group text-left p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all flex flex-col justify-between h-36">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">🔍</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">2. Descubrimiento</span>
+            </div>
+            <div>
+              <div class="font-bold text-sm text-slate-900">Social + Búsqueda</div>
+              <div class="text-xs text-slate-500 mt-0.5">TikTok, Instagram y Google</div>
+            </div>
+            <div class="text-[11px] text-slate-600 font-semibold group-hover:translate-x-1 transition-transform">Ver análisis →</div>
+          </button>
+
+          <!-- Center: Consumer Avatar (Pedagogical Center) -->
+          <div class="flex flex-col items-center justify-center p-4 bg-gradient-to-b from-slate-900 to-indigo-950 text-white rounded-2xl shadow-sm text-center h-36">
+            <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-2xl mb-1 ring-2 ring-indigo-400/40">
+              🇵🇪
+            </div>
+            <div class="font-display font-bold text-xs tracking-wide">Consumidor Digital</div>
+            <div class="text-[10px] text-indigo-200">Sensible al precio y desconfiado</div>
+          </div>
+
+          <!-- Node 3: Compra -->
+          <button onclick="selectConsumerNode('compra')" id="c-node-compra" class="c-node group text-left p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all flex flex-col justify-between h-36">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">🛍️</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">3. Compra</span>
+            </div>
+            <div>
+              <div class="font-bold text-sm text-slate-900">Multicanal híbrido</div>
+              <div class="text-xs text-slate-500 mt-0.5">App, Web & WhatsApp</div>
+            </div>
+            <div class="text-[11px] text-slate-600 font-semibold group-hover:translate-x-1 transition-transform">Ver análisis →</div>
+          </button>
+
+          <!-- Node 4: Pago -->
+          <button onclick="selectConsumerNode('pago')" id="c-node-pago" class="c-node group text-left p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all flex flex-col justify-between h-36">
+            <div class="flex items-center justify-between">
+              <span class="text-xl">💳</span>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">4. Pago</span>
+            </div>
+            <div>
+              <div class="font-bold text-sm text-slate-900">Billeteras & QR</div>
+              <div class="text-xs text-slate-500 mt-0.5">Yape / Plin superan tarjetas</div>
+            </div>
+            <div class="text-[11px] text-slate-600 font-semibold group-hover:translate-x-1 transition-transform">Ver análisis →</div>
+          </button>
+        </div>
+
+        <!-- Node 5: Entrega (Full width accent) -->
+        <div class="mt-3">
+          <button onclick="selectConsumerNode('entrega')" id="c-node-entrega" class="c-node w-full group text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">🚚</span>
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">5. Entrega & Confianza</span>
+                <span class="font-bold text-sm text-slate-900 ml-2">Rapidez, trazabilidad y miedo a la pérdida del pedido</span>
+              </div>
+            </div>
+            <div class="text-xs text-slate-600 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-1">
+              Ver exigencias logísticas →
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Detail Panel (Only opens when node is clicked) -->
+      <div id="consumer-detail-card" class="bg-white rounded-2xl p-6 border-2 border-indigo-200 shadow-md transition-all">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+          <div class="flex items-center gap-2">
+            <span id="c-detail-icon" class="text-2xl">📱</span>
+            <div>
+              <h3 id="c-detail-title" class="text-base font-bold text-slate-900 font-display">Dispositivo: Smartphone como eje absoluto</h3>
+              <p class="text-xs text-slate-500">Dimensión de interacción tecnológica del usuario peruano</p>
+            </div>
+          </div>
+          <span id="c-detail-source" class="inline-block text-[11px] font-mono text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2.5 py-1 rounded-md">
+            Fuente: CAPECE / PCMI (2024)
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+          <!-- Col 1: Dato -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">📊 El Dato Concreto</div>
+            <div id="c-detail-dato" class="text-sm font-semibold text-slate-800">
+              Más del 82% del tráfico en tiendas virtuales peruanas proviene de teléfonos inteligentes. 7 de cada 10 compras finales se cierran directamente desde un celular.
+            </div>
+          </div>
+
+          <!-- Col 2: Qué significa -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1">💡 ¿Qué significa?</div>
+            <div id="c-detail-significado" class="text-xs text-slate-600 leading-relaxed">
+              El peruano no navega el e-commerce sentado en una computadora de escritorio; lo hace en el transporte público, pausas laborales y momentos de ocio cotidiano.
+            </div>
+          </div>
+
+          <!-- Col 3: Implicancia de negocio -->
+          <div class="p-4 bg-blue-50/60 rounded-xl border border-blue-100">
+            <div class="text-xs font-bold uppercase tracking-wider text-blue-700 mb-1">🏢 Implicancia para el Negocio</div>
+            <div id="c-detail-negocio" class="text-xs text-slate-700 leading-relaxed font-medium">
+              El diseño "desktop first" está condenado. Si la web tarda más de 3 segundos en 4G o los formularios son largos, la tasa de abandono de carrito supera el 85%.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 3: TENDENCIAS
+         ========================================== -->
+    <section id="section-tendencias" class="hidden space-y-6">
+      <div class="bg-purple-50/70 border border-purple-100 rounded-xl p-3.5 flex items-center justify-between text-xs text-purple-900">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></span>
+          <span class="font-semibold">Radar de innovación:</span>
+          <span>Analiza cómo cambia el hábito del comprador, la estrategia del vendedor y la infraestructura técnica.</span>
+        </div>
+        <span class="text-purple-700 font-mono text-[11px]">Doble Columna (30% / 70%)</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Columna Izquierda: Menú de tendencias (aprox 30% -> 4 cols en lg) -->
+        <div class="lg:col-span-4 bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-4">
+          
+          <!-- Category 1 -->
+          <div>
+            <div class="text-[11px] font-bold uppercase tracking-wider text-purple-700 mb-2 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-purple-600"></span> CAMBIA CÓMO COMPRAMOS
+            </div>
+            <div class="space-y-1">
+              <button onclick="renderTrend('mobile')" id="t-btn-mobile" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold bg-purple-100 text-purple-900 transition flex items-center justify-between">
+                <span>📱 Mobile commerce</span>
+                <span class="text-[10px] text-purple-600">Dominante</span>
+              </button>
+              <button onclick="renderTrend('social')" id="t-btn-social" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>💬 Social commerce</span>
+                <span class="text-[10px] text-slate-400">TikTok/IG</span>
+              </button>
+              <button onclick="renderTrend('conversational')" id="t-btn-conversational" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>🟢 Conversational commerce</span>
+                <span class="text-[10px] text-slate-400">WhatsApp</span>
+              </button>
+              <button onclick="renderTrend('crossborder')" id="t-btn-crossborder" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>✈️ Cross-border commerce</span>
+                <span class="text-[10px] text-slate-400">Global</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category 2 -->
+          <div>
+            <div class="text-[11px] font-bold uppercase tracking-wider text-blue-700 mb-2 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span> CAMBIA CÓMO VENDEN
+            </div>
+            <div class="space-y-1">
+              <button onclick="renderTrend('marketplaces')" id="t-btn-marketplaces" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>🏬 Marketplaces unificados</span>
+                <span class="text-[10px] text-slate-400">58% retail</span>
+              </button>
+              <button onclick="renderTrend('unificado')" id="t-btn-unificado" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>🔄 Comercio unificado</span>
+                <span class="text-[10px] text-slate-400">Omnicanal</span>
+              </button>
+              <button onclick="renderTrend('ia')" id="t-btn-ia" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>🤖 IA y personalización</span>
+                <span class="text-[10px] text-slate-400">Predictivo</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category 3 -->
+          <div>
+            <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 mb-2 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-600"></span> INFRAESTRUCTURA
+            </div>
+            <div class="space-y-1">
+              <button onclick="renderTrend('pagos_digitales')" id="t-btn-pagos_digitales" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>⚡ Pagos A2A & QR</span>
+                <span class="text-[10px] text-slate-400">Interoperable</span>
+              </button>
+              <button onclick="renderTrend('ultimamilla')" id="t-btn-ultimamilla" class="trend-nav-btn w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition flex items-center justify-between">
+                <span>📍 Última milla & PUDO</span>
+                <span class="text-[10px] text-slate-400">Lockers/Red</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Columna Derecha: Detalle pedagógico de la tendencia (70% -> 8 cols en lg) -->
+        <div class="lg:col-span-8 bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/80 shadow-xs">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+            <div>
+              <span id="trend-tag" class="text-[11px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                Cambia cómo compramos
+              </span>
+              <h2 id="trend-title" class="text-xl font-bold font-display text-slate-900 mt-1">Mobile Commerce (M-Commerce)</h2>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-slate-400 block">Fuente documentada:</span>
+              <span id="trend-source" class="text-xs font-mono font-bold text-slate-700">CAPECE | Observatorio 2024–2025</span>
+            </div>
+          </div>
+
+          <div class="space-y-5 mt-5">
+            <!-- 1. Qué es -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">1. ¿Qué es?</h3>
+              <p id="trend-desc" class="text-sm text-slate-800 leading-relaxed font-medium">
+                La realización de todo el ciclo de búsqueda, navegación, selección y pago transaccional a través de teléfonos inteligentes y aplicaciones móviles optimizadas.
+              </p>
+            </div>
+
+            <!-- 2. Qué ocurre en Perú -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-purple-800 mb-1">2. ¿Qué ocurre en el Perú?</h3>
+                <p id="trend-peru" class="text-xs text-slate-700 leading-relaxed">
+                  Más del 80% de compras digitales se efectúan por el celular. El auge de billeteras como Yape y Plin transformó el móvil en billetera y mostrador de compra simultáneo.
+                </p>
+              </div>
+
+              <!-- 3. Ejemplo peruano -->
+              <div class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-1">3. Ejemplo peruano</h3>
+                <p id="trend-example" class="text-xs text-slate-700 leading-relaxed">
+                  Compra de comida en apps rápidas o tiendas por departamento mediante la app de Falabella / Ripley con pago directo vía tarjeta vinculada o Yape sin salir de la pantalla.
+                </p>
+              </div>
+            </div>
+
+            <!-- 4. Por qué importa / Negocio -->
+            <div class="p-4 bg-blue-50/60 rounded-xl border border-blue-100">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 mb-1">4. ¿Por qué importa para un negocio? (Implicancia directiva)</h3>
+              <p id="trend-why" class="text-xs text-slate-800 leading-relaxed">
+                El diseño responsivo ya no basta; se exige "Mobile First". Los botones de compra flotantes, los flujos en menos de 3 clics y la verificación de checkout con huella/FaceID determinan directamente la tasa de conversión.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 4: VIAJE DE COMPRA
+         ========================================== -->
+    <section id="section-viaje" class="hidden space-y-6">
+      <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 flex items-center justify-between text-xs text-blue-900">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+          <span class="font-semibold">Pipeline del Nuevo Customer Journey:</span>
+          <span>Selecciona cualquier estación para analizar herramientas, puntos de fricción y decisiones gerenciales.</span>
+        </div>
+        <span class="text-blue-700 font-mono text-[11px]">7 Fases Integradas</span>
+      </div>
+
+      <!-- Horizontal Pipeline -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs overflow-x-auto">
+        <div class="min-w-[760px] flex items-center justify-between relative">
+          
+          <!-- Connecting line -->
+          <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-slate-200 -z-0"></div>
+
+          <!-- Step 1 -->
+          <button onclick="selectJourneyStep(1)" id="j-step-1" class="journey-node z-10 flex flex-col items-center group focus:outline-hidden">
+            <div class="w-12 h-12 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow-md ring-4 ring-blue-100 group-hover:scale-105 transition-all text-sm">
+              1
+            </div>
+            <div class="mt-2 text-center">
+              <span class="text-xs font-bold text-slate-900 block">DESCUBRIR</span>
+              <span class="text-[10px] text-slate-400">TikTok / Reels / Google</span>
+            </div>
+          </button>
+
+          <!-- Step 2 -->
+          <button onclick="selectJourneyStep(2)" id="j-step-2" class="journey-node z-10 flex flex-col items-center group focus:outline-hidden">
+            <div class="w-12 h-12 rounded-full bg-white text-slate-700 border-2 border-slate-300 font-bold flex items-center justify-center shadow-xs ring-4 ring-transparent group-hover:scale-105 transition-all text-sm">
+              2
+            </div>
+            <div class="mt-2 text-center">
+              <span class="text-xs font-bold text-slate-700 block">EVALUAR</span>
+              <span class="text-[10px] text-slate-400">Web / Reviews / Precios</span>
+            </div>
+          </button>
+
+          <!-- Step 3 -->
+          <button onclick="selectJourneyStep(3)" id="j-step-3" class="journey-node z-10 flex flex-col items-center group focus:outline-hidden">
+            <div class="w-12 h-12 rounded-full bg-white text-slate-700 border-2 border-slate-300 font-bold flex items-center justify-center shadow-xs ring-4 ring-transparent group-hover:scale-105 transition-all text-sm">
+              3
+            </div>
+            <div class="mt-2 text-center">
+              <span class="text-xs font-bold text-slate-700 block">CONVERSAR</span>
+              <span class="text-[10px] text-slate-400">WhatsApp / Chatbot</span>
+            </div>
+          </button>
+
+          <!-- Step 4 -->
+          <button onclick="selectJourneyStep(4)" id="j-step-4" class="journey-node z-10 flex flex-col items-center group focus:outline-hidden">
+            <div class="w-12 h-12 rounded-full bg-white text-slate-700 border-2 border-slate-300 font-bold flex items-center justify-center shadow-xs ring-4 ring-transparent group-hover:scale-105 transition-all text-sm">
+              4
+            </div>
+            <div class="mt-2 text-center">
+              <span class="text-xs font-bold text-slate-700 block">COMPRAR</span>
+              <span class="text-[10px] text-slate-400">Carrito / Checkout</span>
+            </div>
+          </button>
+
+          <!-- Step 5 -->
+          <button onclick="selectJourneyStep(5)" id="j-step-5" class="journey-node z-10 flex flex-col items-center group focus:outline-hidden">
+            <div class="w-12 h-12 rounded-full bg-white text-slate-700 border-2 border-slate-300 font-bold flex items-center justify-center shadow-xs ring-4 ring-transparent group-hover:scale-105 transition-all text-sm">
+              5
+            </div>
+            <div class="mt-2 text-center">
+              <span class="text-xs font-bold text-slate-700 block">PAGAR</span>
+              <span class="text-[10px] text-slate-400">Yape / Plin / Tarjeta</span>
+            </div>
+          </button>
+
+          <!-- Step 6 -->
+          <button onclick="selectJourneyStep(6)" id="j-step-6" class="journey-node z-10 flex flex-col items-center group focus:outline-hidden">
+            <div class="w-12 h-12 rounded-full bg-white text-slate-700 border-2 border-slate-300 font-bold flex items-center justify-center shadow-xs ring-4 ring-transparent group-hover:scale-105 transition-all text-sm">
+              6
+            </div>
+            <div class="mt-2 text-center">
+              <span class="text-xs font-bold text-slate-700 block">RECIBIR</span>
+              <span class="text-[10px] text-slate-400">Courier / Última Milla</span>
+            </div>
+          </button>
+
+          <!-- Step 7 -->
+          <button onclick="selectJourneyStep(7)" id="j-step-7" class="journey-node z-10 flex flex-col items-center group focus:outline-hidden">
+            <div class="w-12 h-12 rounded-full bg-white text-slate-700 border-2 border-slate-300 font-bold flex items-center justify-center shadow-xs ring-4 ring-transparent group-hover:scale-105 transition-all text-sm">
+              7
+            </div>
+            <div class="mt-2 text-center">
+              <span class="text-xs font-bold text-slate-700 block">COMPARTIR</span>
+              <span class="text-[10px] text-slate-400">Review / Recompra</span>
+            </div>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Detail Card of the Selected Journey Phase -->
+      <div id="journey-detail" class="bg-white rounded-2xl p-6 border-2 border-blue-200 shadow-md">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span id="j-detail-badge" class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold font-mono">Fase 1</span>
+            <h3 id="j-detail-title" class="text-lg font-bold font-display text-slate-900">1. Descubrir: La génesis del deseo de compra</h3>
+          </div>
+          <span class="text-xs text-slate-400">Marco metodológico del Journey</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+          <!-- Bloque A: Qué ocurre -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">🔍 ¿Qué ocurre aquí?</div>
+            <p id="j-detail-occurs" class="text-xs text-slate-700 leading-relaxed">
+              El usuario no necesariamente busca un producto específico. Se topa con un video en TikTok, un reel o una búsqueda puntual de solución a un problema personal.
+            </p>
+          </div>
+
+          <!-- Bloque B: Herramientas típicas -->
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-blue-600 mb-1">🛠️ Herramientas habituales</div>
+            <p id="j-detail-tools" class="text-xs text-slate-700 leading-relaxed font-mono">
+              TikTok Ads, Meta Ads (IG/FB), Google Search / SEO, micro-influencers peruanos, catálogos visuales.
+            </p>
+          </div>
+
+          <!-- Bloque C: Posibles fricciones -->
+          <div class="p-4 bg-red-50/50 rounded-xl border border-red-100">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-red-700 mb-1">⚠️ Posibles fricciones</div>
+            <p id="j-detail-frictions" class="text-xs text-red-950 leading-relaxed">
+              Publicidad engañosa, enlaces rotos hacia la tienda, promociones vencidas, falta de claridad en el precio o en los envíos a provincias.
+            </p>
+          </div>
+
+          <!-- Bloque D: Decisión empresarial -->
+          <div class="p-4 bg-indigo-50/60 rounded-xl border border-indigo-100">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-indigo-800 mb-1">🎯 Decisión empresarial</div>
+            <p id="j-detail-decisions" class="text-xs text-indigo-950 leading-relaxed font-medium">
+              Invertir en contenido nativo orgánico en vez de banners tradicionales; definir UTMs claras para saber qué red social genera clientes reales y rentables.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 5: PAGOS
+         ========================================== -->
+    <section id="section-pagos" class="hidden space-y-6">
+      <div class="bg-emerald-50/70 border border-emerald-100 rounded-xl p-3.5 flex items-center justify-between text-xs text-emerald-900">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+          <span class="font-semibold">Infraestructura y Pasarelas de Pago:</span>
+          <span>Analiza el flujo desde el usuario hasta la liquidación del comercio en cuentas peruanas.</span>
+        </div>
+        <span class="text-emerald-700 font-mono text-[11px]">Distribución 65% / 35%</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Lado Izquierdo (aprox 65% -> 8 cols en lg) -->
+        <div class="lg:col-span-8 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold font-display text-slate-900">Flujo Transaccional del E-commerce Peruano</h2>
+            <button onclick="toggleGatewayCriteriaModal()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition flex items-center gap-1.5">
+              <span>📋</span> ¿Cómo elegir una pasarela? (6 Criterios)
+            </button>
+          </div>
+
+          <!-- Flow Diagram with Interactive Nodes -->
+          <div class="space-y-4">
+            <!-- Stage 1: Cliente -->
+            <div class="p-3.5 bg-slate-100/80 rounded-xl border border-slate-200 text-center">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">1. ORIGEN</span>
+              <div class="font-bold text-slate-800 text-sm">👤 CLIENTE FINAL (Comprador)</div>
+              <p class="text-[11px] text-slate-500">Decide pagar desde su navegador o teléfono inteligente</p>
+            </div>
+
+            <!-- Down Arrow -->
+            <div class="flex justify-center text-slate-300 text-lg font-bold">↓</div>
+
+            <!-- Stage 2: Métodos de Pago (Interactive Buttons) -->
+            <div class="p-4 bg-emerald-50/40 rounded-xl border-2 border-emerald-200">
+              <div class="text-center mb-2">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">2. SELECCIÓN DE MÉTODO DE PAGO (Haz clic para auditar)</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button onclick="selectPaymentMethod('tarjetas')" id="pm-btn-tarjetas" class="pm-btn p-3 rounded-xl border-2 border-emerald-600 bg-white font-semibold text-xs text-slate-800 shadow-xs hover:border-emerald-500 transition text-center">
+                  <div class="text-lg">💳</div>
+                  <div class="mt-1 font-bold">Tarjetas</div>
+                  <div class="text-[10px] text-slate-500">Crédito / Débito</div>
+                </button>
+                <button onclick="selectPaymentMethod('yapeplin')" id="pm-btn-yapeplin" class="pm-btn p-3 rounded-xl border border-slate-200 bg-white font-medium text-xs text-slate-700 hover:border-emerald-300 transition text-center">
+                  <div class="text-lg">📱</div>
+                  <div class="mt-1 font-bold">Yape / Plin</div>
+                  <div class="text-[10px] text-slate-500">QR & Push directo</div>
+                </button>
+                <button onclick="selectPaymentMethod('transferencia')" id="pm-btn-transferencia" class="pm-btn p-3 rounded-xl border border-slate-200 bg-white font-medium text-xs text-slate-700 hover:border-emerald-300 transition text-center">
+                  <div class="text-lg">🏦</div>
+                  <div class="mt-1 font-bold">Transferencia</div>
+                  <div class="text-[10px] text-slate-500">CCI / Banco directo</div>
+                </button>
+                <button onclick="selectPaymentMethod('pagoefectivo')" id="pm-btn-pagoefectivo" class="pm-btn p-3 rounded-xl border border-slate-200 bg-white font-medium text-xs text-slate-700 hover:border-emerald-300 transition text-center">
+                  <div class="text-lg">🧾</div>
+                  <div class="mt-1 font-bold">PagoEfectivo</div>
+                  <div class="text-[10px] text-slate-500">Código CIP / Agentes</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Down Arrow -->
+            <div class="flex justify-center text-slate-300 text-lg font-bold">↓</div>
+
+            <!-- Stage 3: Pasarela / Infraestructura -->
+            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-center">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">3. ENCRIPTACIÓN & ENRUTAMIENTO</span>
+              <div class="font-bold text-slate-800 text-sm">🛡️ PASARELA DE PAGO / ADQUIRIENTE (Payment Gateway)</div>
+              <div class="flex flex-wrap justify-center gap-2 mt-1.5 text-[11px] text-slate-600 font-mono">
+                <span class="bg-white px-2 py-0.5 rounded border border-slate-200">Niubiz</span>
+                <span class="bg-white px-2 py-0.5 rounded border border-slate-200">Culqi</span>
+                <span class="bg-white px-2 py-0.5 rounded border border-slate-200">Mercado Pago</span>
+                <span class="bg-white px-2 py-0.5 rounded border border-slate-200">Izipay</span>
+                <span class="bg-white px-2 py-0.5 rounded border border-slate-200">Openpay</span>
+              </div>
+            </div>
+
+            <!-- Down Arrow -->
+            <div class="flex justify-center text-slate-300 text-lg font-bold">↓</div>
+
+            <!-- Stage 4: Comercio -->
+            <div class="p-3.5 bg-slate-100/80 rounded-xl border border-slate-200 text-center">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">4. DESTINO & LIQUIDACIÓN</span>
+              <div class="font-bold text-slate-800 text-sm">🏬 CUENTA DEL COMERCIO (Abono neto D+1 o D+2)</div>
+              <p class="text-[11px] text-slate-500">Deducción de comisión de adquirencia (aprox 3.4% a 4.2% + IGV)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lado Derecho: Análisis del Método Seleccionado (aprox 35% -> 4 cols en lg) -->
+        <div class="lg:col-span-4 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              Auditoría de Medio
+            </span>
+            <h3 id="pm-detail-name" class="text-base font-bold font-display text-slate-900 mt-1">Tarjetas de Crédito y Débito</h3>
+          </div>
+
+          <!-- Cómo funciona -->
+          <div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">¿Cómo funciona?</div>
+            <p id="pm-detail-how" class="text-xs text-slate-700 mt-0.5 leading-relaxed">
+              El cliente ingresa los 16 dígitos, fecha de vencimiento y CVV. La pasarela valida el saldo con Visa/Mastercard y aplica filtros antifraude (3D Secure).
+            </p>
+          </div>
+
+          <!-- Ventajas -->
+          <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100">
+            <div class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">✅ Ventajas clave</div>
+            <p id="pm-detail-pros" class="text-xs text-emerald-950 mt-0.5 leading-relaxed">
+              Permite ventas a plazos (cuotas sin intereses), ticket promedio más alto y aceptación universal de tarjetas extranjeras.
+            </p>
+          </div>
+
+          <!-- Limitaciones -->
+          <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-100">
+            <div class="text-[11px] font-bold text-amber-800 uppercase tracking-wider">⚠️ Limitaciones en Perú</div>
+            <p id="pm-detail-cons" class="text-xs text-amber-950 mt-0.5 leading-relaxed">
+              Miedo persistente a la clonación y fraudes; contracargos (chargebacks) y comisiones más altas para el comercio (3.5% a 4.5%).
+            </p>
+          </div>
+
+          <!-- Ejemplo y Fuente -->
+          <div class="pt-2 border-t border-slate-100 flex flex-col gap-1 text-[11px]">
+            <div>
+              <span class="font-bold text-slate-600">Ejemplo en Perú:</span>
+              <span id="pm-detail-example" class="text-slate-500">Checkout web de Ripley o Platanitos con autenticación OTP al SMS.</span>
+            </div>
+            <div class="text-slate-400 font-mono mt-1">
+              Fuente: <span id="pm-detail-source">Material Clase Sem 5 / BCRP (2024)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 Criterios Modal / Panel (Toggled by button) -->
+      <div id="gateway-criteria-panel" class="hidden bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl p-6 sm:p-7 shadow-lg border border-slate-700">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-700 mb-5">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Guía de Decisión Empresarial</span>
+            <h3 class="text-lg font-bold font-display text-white mt-0.5">6 Criterios para Elegir una Pasarela de Pagos en Perú</h3>
+          </div>
+          <button onclick="toggleGatewayCriteriaModal()" class="text-slate-400 hover:text-white text-sm px-2 py-1 rounded bg-slate-800">
+            ✕ Cerrar panel
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-white/5 border border-white/10 p-3.5 rounded-xl">
+            <div class="text-emerald-400 font-bold text-xs mb-1">1. Costo y Comisiones</div>
+            <p class="text-xs text-slate-300">Tasa por transacción (aprox 3.4% - 3.99% + IGV), costo fijo por transacción exitosa y costo de retiro a banco local.</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 p-3.5 rounded-xl">
+            <div class="text-emerald-400 font-bold text-xs mb-1">2. Seguridad y Antifraude</div>
+            <p class="text-xs text-slate-300">Certificación PCI-DSS Nivel 1, soporte obligatorio de 3D Secure 2.0 y motor de Machine Learning contra chargebacks.</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 p-3.5 rounded-xl">
+            <div class="text-emerald-400 font-bold text-xs mb-1">3. Variedad de Métodos</div>
+            <p class="text-xs text-slate-300">En Perú es indispensable que acepte Yape/Plin nativo, PagoEfectivo (CIP) además de todas las marcas de tarjeta.</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 p-3.5 rounded-xl">
+            <div class="text-emerald-400 font-bold text-xs mb-1">4. Pagos Internacionales</div>
+            <p class="text-xs text-slate-300">Capacidad de procesar cobros en dólares ($USD) con tarjetas emitidas fuera del Perú sin bloqueos bancarios falsos.</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 p-3.5 rounded-xl">
+            <div class="text-emerald-400 font-bold text-xs mb-1">5. Facilidad de Integración</div>
+            <p class="text-xs text-slate-300">Plugins verificados para Shopify, WooCommerce, VTEX o Magento; SDKs móviles actualizados y soporte local.</p>
+          </div>
+          <div class="bg-white/5 border border-white/10 p-3.5 rounded-xl">
+            <div class="text-emerald-400 font-bold text-xs mb-1">6. Alineamiento al Negocio</div>
+            <p class="text-xs text-slate-300">Si vendes por WhatsApp requieres enlaces de cobro (PayLinks); para tiendas de suscripción requieres tokenización.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 6: CASO YAPE
+         ========================================== -->
+    <section id="section-yape" class="hidden space-y-6">
+      <!-- Unique Visual Branding for Yape -->
+      <div class="bg-gradient-to-r from-[#781577]/10 via-[#00afaa]/10 to-transparent border border-[#781577]/20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#781577] bg-white px-2.5 py-0.5 rounded-full border border-[#781577]/20">
+            🟣 Caso de Estudio Peruano
+          </span>
+          <h2 class="text-xl font-bold font-display text-slate-900 mt-1">Yape: de transferencia entre amigos a ecosistema digital</h2>
+          <p class="text-xs text-slate-600">Un caso peruano de transformación digital acelerada (2016 – 2025)</p>
+        </div>
+        <div class="text-right">
+          <span class="text-[11px] text-slate-400 block font-mono">Fuente Académica:</span>
+          <span class="text-xs font-bold text-[#781577]">ESAN Management Case Studies (2025)</span>
+        </div>
+      </div>
+
+      <!-- PRIMER BLOQUE: Línea de Tiempo Horizontal Interactiva -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700">Hitos de Transformación de Yape</h3>
+            <p class="text-xs text-slate-500">Haz clic en cada año para explorar la decisión de diseño, escala e impacto.</p>
+          </div>
+          <span class="text-xs font-mono text-purple-700 font-semibold bg-purple-50 px-2 py-1 rounded">2016 → 2025</span>
+        </div>
+
+        <!-- Timeline Buttons Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+          <button onclick="selectYapeYear('2016_problem')" id="y-btn-2016_problem" class="y-btn p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 transition text-center text-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2016</span>
+            <span class="text-[10px] text-slate-500">Problema</span>
+          </button>
+          <button onclick="selectYapeYear('2016_mvp')" id="y-btn-2016_mvp" class="y-btn p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 transition text-center text-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2016</span>
+            <span class="text-[10px] text-slate-500">MVP Jóvenes</span>
+          </button>
+          <button onclick="selectYapeYear('2017')" id="y-btn-2017" class="y-btn p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 transition text-center text-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2017</span>
+            <span class="text-[10px] text-slate-500">Lanzamiento</span>
+          </button>
+          <button onclick="selectYapeYear('2018')" id="y-btn-2018" class="y-btn p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 transition text-center text-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2018</span>
+            <span class="text-[10px] text-slate-500">Micronegocios</span>
+          </button>
+          <button onclick="selectYapeYear('2020')" id="y-btn-2020" class="y-btn p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 transition text-center text-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2020</span>
+            <span class="text-[10px] text-slate-500">Yape con DNI</span>
+          </button>
+          <button onclick="selectYapeYear('2022')" id="y-btn-2022" class="y-btn p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 transition text-center text-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2022</span>
+            <span class="text-[10px] text-slate-500">10.7M Usuarios</span>
+          </button>
+          <button onclick="selectYapeYear('2023')" id="y-btn-2023" class="y-btn p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-purple-50 transition text-center text-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2023</span>
+            <span class="text-[10px] text-slate-500">Interoperable</span>
+          </button>
+          <button onclick="selectYapeYear('2024_2025')" id="y-btn-2024_2025" class="y-btn p-2.5 rounded-xl border-2 border-[#781577] bg-purple-50 font-bold transition text-center text-xs shadow-xs">
+            <span class="font-extrabold text-[#781577] block text-sm">2024–25</span>
+            <span class="text-[10px] text-[#781577]">Superapp</span>
+          </button>
+        </div>
+
+        <!-- Active Milestone Detail Panel -->
+        <div id="yape-milestone-card" class="bg-gradient-to-r from-purple-50/60 to-teal-50/50 p-5 rounded-2xl border border-purple-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-purple-100 gap-2">
+            <div>
+              <span id="y-detail-year" class="text-xs font-bold uppercase tracking-wider text-[#781577] bg-white px-2.5 py-0.5 rounded border border-purple-200">
+                Consolidación 2024–2025
+              </span>
+              <h4 id="y-detail-title" class="text-base font-bold text-slate-900 mt-1">Superapp Digital: Más de 16 Millones de Usuarios Activos</h4>
+            </div>
+            <span class="text-xs font-mono text-slate-500">Fuente: BCP / ESAN (2025)</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div class="p-3 bg-white rounded-xl border border-purple-100">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">El Hito y el Dato</span>
+              <p id="y-detail-dato" class="text-xs text-slate-800 font-medium">
+                Alcanza 16.5M de usuarios en Perú. Ya no es solo pagos: concentra créditos preaprobados, compra de gas, boletos, seguros y Yape Tienda.
+              </p>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-purple-100">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#781577] block mb-0.5">Explicación Estratégica</span>
+              <p id="y-detail-exp" class="text-xs text-slate-700 leading-relaxed">
+                Monetización del efecto de red. Una vez consolidada la masa crítica de pagos sin costo, se monetizan servicios de valor agregado con márgenes financieros.
+              </p>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-purple-100">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#00afaa] block mb-0.5">Impacto en el E-commerce</span>
+              <p id="y-detail-impact" class="text-xs text-slate-700 leading-relaxed">
+                Elimina la necesidad de registrar tarjetas en sitios web para microtransacciones, permitiendo inclusión real en pequeños y medianos comercios.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEGUNDO BLOQUE: Visualización en Red / Factores + Evolución del Modelo -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Red de Factores Clave (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800">Ecosistema Radial: Factores de Éxito de Yape</h3>
+              <p class="text-xs text-slate-500">Haz clic en cada componente del ecosistema para ver el análisis formativo.</p>
+            </div>
+            <span class="text-xl">☸️</span>
+          </div>
+
+          <!-- Interactive Pills Radial Representation -->
+          <div class="flex flex-wrap gap-2 justify-center py-4 bg-slate-50/70 rounded-xl border border-slate-100 p-3">
+            <button onclick="showYapeFactor('simplicidad')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              ✨ Simplicidad radical
+            </button>
+            <button onclick="showYapeFactor('friccion')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              ⚡ Eliminación de fricción
+            </button>
+            <button onclick="showYapeFactor('red')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-100 border border-purple-300 text-[#781577] shadow-2xs transition">
+              🔄 Efecto de red bilateral
+            </button>
+            <button onclick="showYapeFactor('smartphone')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              📱 Smartphone nativo
+            </button>
+            <button onclick="showYapeFactor('micronegocios')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              🏪 Micronegocios & Bodegas
+            </button>
+            <button onclick="showYapeFactor('qr')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              🏁 Código QR en acrílico
+            </button>
+            <button onclick="showYapeFactor('pandemia')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              😷 Catalizador de pandemia
+            </button>
+            <button onclick="showYapeFactor('inclusion')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              🆔 Inclusión (Yape con DNI)
+            </button>
+            <button onclick="showYapeFactor('interoperabilidad')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              🤝 Interoperabilidad Yape-Plin
+            </button>
+            <button onclick="showYapeFactor('confianza')" class="y-factor-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:border-[#781577] text-slate-700 hover:text-[#781577] shadow-2xs transition">
+              🏛️ Respaldo institucional BCP
+            </button>
+          </div>
+
+          <!-- Factor Description Box -->
+          <div id="yape-factor-box" class="mt-4 p-4 rounded-xl bg-purple-50/50 border border-purple-200 text-xs">
+            <span id="yape-factor-title" class="font-bold text-[#781577] block text-sm mb-1">Efecto de red bilateral (Network Effects)</span>
+            <p id="yape-factor-desc" class="text-slate-700 leading-relaxed">
+              Cuantos más amigos o comerciantes usan Yape, más indispensable se vuelve para el resto descargarlo. El costo de no tener Yape en Perú pasó a ser el perder ventas cotidianas o quedar excluido de transacciones sociales.
+            </p>
+          </div>
+        </div>
+
+        <!-- Evolución del Modelo de Negocio (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800">Evolución del Modelo</h3>
+              <span class="text-xs text-purple-700 font-mono font-bold">4 Fases Claras</span>
+            </div>
+            
+            <div class="space-y-2.5">
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-xs text-slate-900">1. P2P (Peer to Peer)</div>
+                  <div class="text-[11px] text-slate-500">Persona a Persona: dividir la cuenta, amigos.</div>
+                </div>
+                <span class="text-xs font-mono font-semibold text-slate-400">2016-17</span>
+              </div>
+
+              <div class="text-center text-slate-300 text-xs font-bold leading-none">↓</div>
+
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-xs text-slate-900">2. P2MB (Peer to Microbusiness)</div>
+                  <div class="text-[11px] text-slate-500">Mercados de abastos, taxis, bodegas de barrio.</div>
+                </div>
+                <span class="text-xs font-mono font-semibold text-slate-400">2018-20</span>
+              </div>
+
+              <div class="text-center text-slate-300 text-xs font-bold leading-none">↓</div>
+
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-xs text-slate-900">3. B2C / B2B (Corporativo & E-com)</div>
+                  <div class="text-[11px] text-slate-500">Botón de pago web, pasarelas y cobros masivos.</div>
+                </div>
+                <span class="text-xs font-mono font-semibold text-slate-400">2021-23</span>
+              </div>
+
+              <div class="text-center text-slate-300 text-xs font-bold leading-none">↓</div>
+
+              <div class="p-2.5 rounded-xl bg-gradient-to-r from-purple-100 to-teal-50 border-2 border-[#781577]/30 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-xs text-[#781577]">4. SUPERAPP DIGITAL</div>
+                  <div class="text-[11px] text-slate-700">Créditos, marketplace, seguros, servicios públicos.</div>
+                </div>
+                <span class="text-xs font-mono font-bold text-[#781577]">Hoy</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500">
+            <span class="font-semibold text-slate-700">Conclusión didáctica:</span> Una billetera digital no sobrevive solo con comisiones P2P gratuitas; debe escalar a plataforma multiservicio.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 7: LOGÍSTICA Y ÚLTIMA MILLA
+         ========================================== -->
+    <section id="section-logistica" class="hidden space-y-6">
+      <div class="bg-amber-50/70 border border-amber-100 rounded-xl p-3.5 flex items-center justify-between text-xs text-amber-900">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
+          <span class="font-semibold">Cadena de Suministro del E-commerce:</span>
+          <span>Recorre el flujo físico desde el clic hasta la entrega final y la logística inversa.</span>
+        </div>
+        <span class="text-amber-700 font-mono text-[11px]">Flujo + Riesgos</span>
+      </div>
+
+      <!-- Banda Horizontal Interactiva -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs overflow-x-auto">
+        <div class="min-w-[820px] flex items-center justify-between relative py-2">
+          
+          <button onclick="selectLogisticsStep('compra')" id="l-step-compra" class="l-step-btn flex-1 text-center p-3 rounded-xl border-2 border-amber-500 bg-amber-50 text-slate-800 transition font-medium text-xs">
+            <div class="text-lg">🛒</div>
+            <div class="font-bold mt-1">Compra confirmada</div>
+            <div class="text-[10px] text-slate-500">Validación de stock</div>
+          </button>
+          
+          <div class="px-2 text-slate-300 font-bold">→</div>
+
+          <button onclick="selectLogisticsStep('preparacion')" id="l-step-preparacion" class="l-step-btn flex-1 text-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition font-medium text-xs">
+            <div class="text-lg">📋</div>
+            <div class="font-bold mt-1">Preparación</div>
+            <div class="text-[10px] text-slate-500">Picking & Packing</div>
+          </button>
+
+          <div class="px-2 text-slate-300 font-bold">→</div>
+
+          <button onclick="selectLogisticsStep('almacen')" id="l-step-almacen" class="l-step-btn flex-1 text-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition font-medium text-xs">
+            <div class="text-lg">🏬</div>
+            <div class="font-bold mt-1">Almacenamiento</div>
+            <div class="text-[10px] text-slate-500">Fulfillment Hub</div>
+          </button>
+
+          <div class="px-2 text-slate-300 font-bold">→</div>
+
+          <button onclick="selectLogisticsStep('transporte')" id="l-step-transporte" class="l-step-btn flex-1 text-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition font-medium text-xs">
+            <div class="text-lg">🚛</div>
+            <div class="font-bold mt-1">Transporte troncal</div>
+            <div class="text-[10px] text-slate-500">Lima ↔ Provincias</div>
+          </button>
+
+          <div class="px-2 text-slate-300 font-bold">→</div>
+
+          <button onclick="selectLogisticsStep('ultimamilla')" id="l-step-ultimamilla" class="l-step-btn flex-1 text-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition font-medium text-xs">
+            <div class="text-lg">🛵</div>
+            <div class="font-bold mt-1">Última milla</div>
+            <div class="text-[10px] text-slate-500">El tramo más crítico</div>
+          </button>
+
+          <div class="px-2 text-slate-300 font-bold">→</div>
+
+          <button onclick="selectLogisticsStep('entrega')" id="l-step-entrega" class="l-step-btn flex-1 text-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition font-medium text-xs">
+            <div class="text-lg">📦</div>
+            <div class="font-bold mt-1">Entrega efectiva</div>
+            <div class="text-[10px] text-slate-500">Firma / OTP / Foto</div>
+          </button>
+
+          <div class="px-2 text-slate-300 font-bold">→</div>
+
+          <button onclick="selectLogisticsStep('devolucion')" id="l-step-devolucion" class="l-step-btn flex-1 text-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 transition font-medium text-xs">
+            <div class="text-lg">↩️</div>
+            <div class="font-bold mt-1">Devolución</div>
+            <div class="text-[10px] text-slate-500">Logística inversa</div>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Detail Panel: Izquierda (Qué ocurre) | Derecha (Riesgos / Decisiones) -->
+      <div id="logistics-detail-card" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        <!-- Izquierda -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+            <span id="l-detail-tag" class="text-xs font-bold uppercase tracking-wider text-amber-700">Fase Operativa</span>
+          </div>
+          <h3 id="l-detail-title" class="text-lg font-bold font-display text-slate-900 mb-2">Compra confirmada y validación</h3>
+          <p id="l-detail-what" class="text-xs text-slate-700 leading-relaxed font-medium">
+            Se realiza la sincronización en tiempo real del inventario físico contra la base de datos de la tienda online para evitar sobreventas (quiebres de stock).
+          </p>
+
+          <div class="mt-5 pt-4 border-t border-slate-100">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Operadores y Soluciones de Referencia en Perú</div>
+            <div id="l-detail-operators" class="flex flex-wrap gap-1.5 text-xs">
+              <span class="px-2.5 py-1 rounded-md bg-slate-100 font-mono text-slate-700 font-medium">ERP SAP / Odoo</span>
+              <span class="px-2.5 py-1 rounded-md bg-slate-100 font-mono text-slate-700 font-medium">VTEX OMS</span>
+              <span class="px-2.5 py-1 rounded-md bg-slate-100 font-mono text-slate-700 font-medium">Shopify Inventory</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Derecha -->
+        <div class="bg-amber-50/50 rounded-2xl p-6 border border-amber-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-2 text-amber-900 font-bold text-xs uppercase tracking-wider">
+              <span>⚠️</span> Riesgos Críticos & Decisiones Gerenciales
+            </div>
+            <h4 class="text-sm font-bold text-slate-900 mb-2">¿Dónde se pierde el margen o la confianza?</h4>
+            <p id="l-detail-risks" class="text-xs text-slate-800 leading-relaxed">
+              El riesgo principal es la venta de productos sin existencia real ("fantasmas"), generando quejas en Indecopi y cancelación forzada. La decisión es implementar un OMS (Order Management System) centralizado.
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-amber-200/60 text-[11px] text-amber-900 font-medium">
+            💡 En Perú, la logística de última milla representa entre el 40% y el 53% del costo total de envío de un e-commerce.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 8: SÍNTESIS
+         ========================================== -->
+    <section id="section-sintesis" class="hidden space-y-6">
+      <div class="bg-slate-100 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between text-xs text-slate-700">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-slate-900"></span>
+          <span class="font-semibold">Modelo de Cadena de Valor Integrada:</span>
+          <span>De la visibilidad a la recompra sostenible en el mercado peruano.</span>
+        </div>
+        <span class="font-mono text-[11px]">Embudo Sistémico</span>
+      </div>
+
+      <!-- Stepped Funnel -->
+      <div class="max-w-3xl mx-auto space-y-3">
+        
+        <!-- Step 1 -->
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs">01</span>
+            <div>
+              <div class="font-bold text-sm text-slate-900">VISIBILIDAD</div>
+              <div class="text-xs text-slate-500">¿Me encuentran en el mar digital?</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-600">SEO / Social / Ads</span>
+        </div>
+
+        <div class="flex justify-center text-slate-400 text-xs font-bold">↓</div>
+
+        <!-- Step 2 -->
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">02</span>
+            <div>
+              <div class="font-bold text-sm text-slate-900">EXPERIENCIA (UX/UI)</div>
+              <div class="text-xs text-slate-500">¿Es fácil, veloz y claro comprar desde un móvil?</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-600">Mobile First / Velocidad</span>
+        </div>
+
+        <div class="flex justify-center text-slate-400 text-xs font-bold">↓</div>
+
+        <!-- Step 3 -->
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs">03</span>
+            <div>
+              <div class="font-bold text-sm text-slate-900">COMPRA Y CONVERSIÓN</div>
+              <div class="text-xs text-slate-500">¿El checkout genera confianza o desconfianza?</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-600">Transparencia de Costos</span>
+        </div>
+
+        <div class="flex justify-center text-slate-400 text-xs font-bold">↓</div>
+
+        <!-- Step 4 -->
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-xs">04</span>
+            <div>
+              <div class="font-bold text-sm text-slate-900">PAGO DIGITAL</div>
+              <div class="text-xs text-slate-500">¿Es fácil y seguro pagar con mi método preferido?</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-600">Yape / Plin / Tarjetas</span>
+        </div>
+
+        <div class="flex justify-center text-slate-400 text-xs font-bold">↓</div>
+
+        <!-- Step 5 -->
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-xs">05</span>
+            <div>
+              <div class="font-bold text-sm text-slate-900">LOGÍSTICA Y ÚLTIMA MILLA</div>
+              <div class="text-xs text-slate-500">¿Cumplo con la promesa de entrega en tiempo y forma?</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-600">Trazabilidad / Courier</span>
+        </div>
+
+        <div class="flex justify-center text-slate-400 text-xs font-bold">↓</div>
+
+        <!-- Step 6 -->
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 font-bold flex items-center justify-center text-xs">06</span>
+            <div>
+              <div class="font-bold text-sm text-slate-900">FIDELIZACIÓN & REPUTACIÓN</div>
+              <div class="text-xs text-slate-500">¿Regresa el cliente y me recomienda con su comunidad?</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-600">NPS / Post-venta</span>
+        </div>
+
+      </div>
+
+      <!-- Frase Destacada de Cierre Pedagógico -->
+      <div class="max-w-3xl mx-auto mt-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-7 rounded-2xl shadow-md text-center border border-slate-800">
+        <span class="text-2xl block mb-2">⚖️</span>
+        <blockquote class="text-base sm:text-lg font-bold font-display leading-relaxed tracking-tight text-blue-50">
+          “La venta digital no termina cuando el cliente hace clic en comprar; termina cuando el pago se procesa y la entrega resulta satisfactoria.”
+        </blockquote>
+        <div class="mt-4 text-xs font-mono text-blue-300">
+          Principio rector del comercio electrónico moderno
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECCIÓN 9: FUENTES BIBLIOGRÁFICAS
+         ========================================== -->
+    <section id="section-fuentes" class="hidden space-y-6">
+      <div class="bg-slate-100 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between text-xs text-slate-700">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-slate-800"></span>
+          <span class="font-semibold">Respaldo Académico y Documental:</span>
+          <span>Fuentes contrastadas para la formación universitaria en e-commerce y negocios digitales.</span>
+        </div>
+        <span class="font-mono text-[11px]">Rigor metodológico</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Fuentes Principales -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <span class="text-lg">🏛️</span>
+            <div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900">Fuentes Principales del Curso</h2>
+              <p class="text-xs text-slate-500">Material oficial y casos de estudio académicos</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Fuente 1 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                Semana 5 — Guía Teórica
+              </span>
+              <h3 class="font-bold text-xs text-slate-900 mt-1">Material de clase — Diseño de Negocios Digitales</h3>
+              <p class="text-xs text-slate-600 mt-0.5">“Medios de pagos electrónicos y operadores logísticos en el ecosistema nacional”.</p>
+            </div>
+
+            <!-- Fuente 2 -->
+            <div class="p-3.5 rounded-xl bg-purple-50/50 border border-purple-200">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[#781577] bg-white px-2 py-0.5 rounded border border-purple-200">
+                Caso de Estudio — 2025
+              </span>
+              <h3 class="font-bold text-xs text-slate-900 mt-1">Universidad ESAN (2025)</h3>
+              <p class="text-xs text-slate-600 mt-0.5">“Yape: revolucionando el mercado de pagos digitales en el Perú”. <em>ESAN Management Case Studies</em>, vol. 1.</p>
+            </div>
+
+            <!-- Fuente 3 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                Reporte Oficial de la Industria
+              </span>
+              <h3 class="font-bold text-xs text-slate-900 mt-1">Cámara Peruana de Comercio Electrónico (CAPECE)</h3>
+              <p class="text-xs text-slate-600 mt-0.5">“Reporte oficial de la industria Ecommerce en Perú”. Observatorio Ecommerce 2022–2023, 4.ª edición.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fuentes Complementarias -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <span class="text-lg">📊</span>
+            <div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900">Fuentes Complementarias & Reguladores</h2>
+              <p class="text-xs text-slate-500">Datos cuantitativos y normativos actualizados</p>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="font-bold text-xs text-slate-900">CAPECE — Observatorio Ecommerce Perú (2024–2025)</div>
+              <p class="text-xs text-slate-500 mt-0.5">Actualización de volumen transaccional (US$ 15.6B) y adopción de marketplaces.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="font-bold text-xs text-slate-900">Banco Central de Reserva del Perú (BCRP)</div>
+              <p class="text-xs text-slate-500 mt-0.5">Reportes de Sistemas de Pago, interoperabilidad de billeteras electrónicas y estadísticas de transferencias inmediatas.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="font-bold text-xs text-slate-900">Cámara de Comercio de Lima (CCL)</div>
+              <p class="text-xs text-slate-500 mt-0.5">Estudios de hábitos del consumidor digital durante campañas Cyber Wow y Cyber Days.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="font-bold text-xs text-slate-900">Payments and Commerce Market Intelligence (PCMI)</div>
+              <p class="text-xs text-slate-500 mt-0.5">Proyecciones de medios de pago en América Latina y penetración del m-commerce.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        <span class="font-semibold text-slate-700">Explorador Interactivo del E-commerce en Perú</span> — Diseñado para análisis pedagógico universitario
+      </div>
+      <div class="flex items-center gap-4 text-slate-400">
+        <span>Datos actualizados a 2024–2025</span>
+        <span>•</span>
+        <span>CAPECE • ESAN • BCRP</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // State management
+    let currentTab = 'panorama';
+    let chartInstance = null;
+
+    // Navigation Switcher
+    function switchTab(tabId) {
+      currentTab = tabId;
+      
+      // Sections
+      const sections = ['panorama', 'consumidor', 'tendencias', 'viaje', 'pagos', 'yape', 'logistica', 'sintesis', 'fuentes'];
+      sections.forEach(sec => {
+        const el = document.getElementById(`section-${sec}`);
+        if (el) {
+          if (sec === tabId) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+
+      // Tab styles
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      tabButtons.forEach(btn => {
+        btn.classList.remove('tab-active');
+        btn.classList.add('text-slate-600');
+      });
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('tab-active');
+        activeBtn.classList.remove('text-slate-600');
+      }
+
+      // If switching back to panorama, redraw chart cleanly
+      if (tabId === 'panorama') {
+        setTimeout(initOrUpdateChart, 50);
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function initOrUpdateChart() {
+      const ctx = document.getElementById('growthChart');
+      if (!ctx) return;
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      // Exact historical data from CAPECE reports
+      const years = ['2010', '2016', '2019', '2020 (Pandemia)', '2021', '2022', '2023', '2024–2025 (Est.)'];
+      const values = [0.28, 1.9, 4.0, 6.0, 9.3, 12.1, 14.0, 15.6]; // In US$ Billions
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [{
+            label: 'Volumen E-commerce en Perú (US$ Miles de Millones)',
+            data: values,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            fill: true,
+            borderWidth: 3,
+            tension: 0.35,
+            pointBackgroundColor: '#2563eb',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                boxWidth: 12,
+                font: {
+                  family: 'Inter',
+                  size: 12,
+                  weight: 500
+                },
+                color: '#475569'
+              }
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { family: 'Inter', size: 12, weight: 'bold' },
+              bodyFont: { family: 'Inter', size: 12 },
+              padding: 10,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  return ` US$ ${context.parsed.y} mil millones (B)`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: '#f1f5f9'
+              },
+              ticks: {
+                color: '#64748b',
+                font: { family: 'Inter', size: 11 },
+                callback: function(val) {
+                  return 'US$ ' + val + 'B';
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#64748b',
+                font: { family: 'Inter', size: 11 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    const consumerData = {
+      dispositivo: {
+        icon: '📱',
+        title: '1. Dispositivo: Smartphone como canal prioritario',
+        source: 'CAPECE / PCMI (2024–2025)',
+        dato: 'Más del 82% del tráfico de tiendas virtuales peruanas proviene de celulares. 7 de cada 10 compras se concretan íntegramente desde la pantalla móvil.',
+        significado: 'El comprador peruano aprovecha tiempos muertos, trayectos en transporte público y momentos de descanso inmediato para comprar.',
+        negocio: 'Si tu experiencia en celular tiene tipografías pequeñas o formularios tediosos, la tasa de rebote superará el 80% sin importar la oferta.'
+      },
+      descubrimiento: {
+        icon: '🔍',
+        title: '2. Descubrimiento: Algoritmos sociales sobre motores de búsqueda',
+        source: 'CCL / Ipsos Perú (2024)',
+        dato: 'TikTok e Instagram concentran más del 65% del descubrimiento inicial de marcas de moda, belleza, gastronomía y tecnología en jóvenes de 18 a 35 años.',
+        significado: 'La búsqueda activa tradicional ("escribir en Google") ha sido sustituida por el descubrimiento pasivo algorítmico guiado por micro-videos.',
+        negocio: 'El catálogo estático es insuficiente; las empresas requieren creación constante de video corto nativo y colaboración con creadores creíbles.'
+      },
+      compra: {
+        icon: '🛍️',
+        title: '3. Compra: Ecosistema multicanal fragmentado',
+        source: 'CAPECE Observatorio (2023-2024)',
+        dato: 'El 58% de las compras retail online ocurre en Marketplaces (Falabella, Mercado Libre), mientras el 30% ocurre mediante WhatsApp / Instagram.',
+        significado: 'El usuario no es leal a una única web: navega en tiendas reconocidas por seguridad, pero compra artículos personalizados en redes sociales.',
+        negocio: 'Estrategia omnicanal obligatoria: estar en marketplaces para volumen y visibilidad, y en canal propio o WhatsApp para rentabilidad y margen.'
+      },
+      pago: {
+        icon: '💳',
+        title: '4. Pago: Triunfo del QR y Billeteras Digitales',
+        source: 'BCRP / ESAN (2024-2025)',
+        dato: 'Yape y Plin representan más del 48% de las transacciones volumétricas en compras en línea menores a S/ 200, desplazando al efectivo contraentrega.',
+        significado: 'La bancarización informal permitió que millones de peruanos sin historial crediticio puedan pagar al instante con código QR.',
+        negocio: 'Cualquier pasarela que no acepte botón de Yape / Plin nativo está perdiendo la mitad de sus compradores potenciales en tickets bajos y medianos.'
+      },
+      entrega: {
+        icon: '🚚',
+        title: '5. Entrega: Ansiedad logística y valor de la trazabilidad',
+        source: 'CAPECE / Envíos Perú (2024)',
+        dato: 'El 62% de reclamos en e-commerce peruano se origina por retrasos en el plazo prometido o falta de comunicación sobre la ubicación del paquete.',
+        significado: 'El consumidor peruano tolera pagar el envío si se le garantiza una ventana horaria exacta y un enlace GPS en vivo con el repartidor.',
+        negocio: 'Implementar mensajería automática vía WhatsApp con número de seguimiento y múltiples couriers para no depender de un solo operador.'
+      }
+    };
+
+    function selectConsumerNode(nodeKey) {
+      const data = consumerData[nodeKey];
+      if (!data) return;
+
+      // Update styling on nodes
+      document.querySelectorAll('.c-node').forEach(node => {
+        node.classList.remove('border-2', 'border-blue-400', 'bg-blue-50/70', 'ring-2', 'ring-blue-200');
+        node.classList.add('border-slate-200', 'bg-slate-50');
+      });
+      const selected = document.getElementById(`c-node-${nodeKey}`);
+      if (selected) {
+        selected.classList.remove('border-slate-200', 'bg-slate-50');
+        selected.classList.add('border-2', 'border-blue-500', 'bg-blue-50/70', 'ring-2', 'ring-blue-200');
+      }
+
+      // Update detail card with smooth content replacement
+      document.getElementById('c-detail-icon').textContent = data.icon;
+      document.getElementById('c-detail-title').textContent = data.title;
+      document.getElementById('c-detail-source').textContent = `Fuente: ${data.source}`;
+      document.getElementById('c-detail-dato').textContent = data.dato;
+      document.getElementById('c-detail-significado').textContent = data.significado;
+      document.getElementById('c-detail-negocio').textContent = data.negocio;
+    }
+
+    const trendsData = {
+      mobile: {
+        category: 'Cambia cómo compramos',
+        title: 'Mobile Commerce (M-Commerce)',
+        source: 'CAPECE | Observatorio 2024–2025',
+        desc: 'El traslado prioritario de la navegación, comparación y compra total desde la web de escritorio hacia el smartphone a través de apps y navegadores móviles ligeros.',
+        peru: 'En Perú, más del 82% del tráfico en tiendas virtuales y más del 70% de las órdenes de compra efectivas se ejecutan desde celulares.',
+        example: 'Aplicaciones nativas como Falabella, Ripley, PedidosYa o tiendas WooCommerce integradas con botón directo de Yape.',
+        why: 'Obliga a optimizar la velocidad en conexiones 4G/3G de provincias y reducir formularios de registro a menos de tres campos de contacto.'
+      },
+      social: {
+        category: 'Cambia cómo compramos',
+        title: 'Social Commerce',
+        source: 'CCL / Material de Clase Sem 5 (2024)',
+        desc: 'Las redes sociales dejan de ser meros escaparates de marketing publicitario y se convierten en el canal directo y completo de venta.',
+        peru: 'Miles de microempresarios de Gamarra y Polvos Azules transmiten en vivo ("Live Shopping") en TikTok y cierran pedidos directamente vía chat.',
+        example: 'Instagram / TikTok → WhatsApp → Confirmación de stock → Yape con captura → Envío por Olva o Shalom.',
+        why: 'Un negocio emergente puede validar productos y generar miles de soles en ventas mensuales sin invertir al inicio en una tienda web compleja.'
+      },
+      conversational: {
+        category: 'Cambia cómo compramos',
+        title: 'Conversational Commerce (WhatsApp Commerce)',
+        source: 'CAPECE / Meta Business Latam (2024)',
+        desc: 'Uso de mensajería instantánea asistida por agentes humanos o chatbots de IA para responder consultas, negociar y cerrar pedidos.',
+        peru: 'WhatsApp es la aplicación con mayor tiempo de permanencia en el usuario peruano. Es el canal predilecto para compras donde el cliente exige "hablar con alguien".',
+        example: 'Farmacias o tiendas de tecnología que envían enlaces de catálogo dinámico de WhatsApp Business con botón de pago directo.',
+        why: 'Reduce la desconfianza del consumidor peruano, que suele temer a los formularios fríos y prefiere la confirmación humana de stock.'
+      },
+      crossborder: {
+        category: 'Cambia cómo compramos',
+        title: 'Cross-border Commerce (Compras Transfronterizas)',
+        source: 'PCMI / SUNAT Aduanas (2024)',
+        desc: 'Adquisición directa por parte de consumidores peruanos en plataformas internacionales con entrega importada bajo el régimen de envíos postales.',
+        peru: 'Crecimiento acelerado de plataformas como AliExpress, Shein, Temu y Amazon (que habilitó envíos gratuitos a Perú en compras mayores a US$ 49).',
+        example: 'Comprar ropa en Shein o accesorios en Temu pagando en soles con tarjetas locales o PagoEfectivo con entrega en 10-15 días.',
+        why: 'Los retailers nacionales ya no compiten solo entre sí, sino contra catálogos globales con precios de fábrica y subsidios logísticos agresivos.'
+      },
+      marketplaces: {
+        category: 'Cambia cómo venden las empresas',
+        title: 'Marketplaces Unificados',
+        source: 'CAPECE / PCMI (2024)',
+        desc: 'Plataformas donde múltiples vendedores terceros comercializan sus productos bajo una misma marca sombrilla, medios de pago y logística consolidada.',
+        peru: 'Concentran cerca del 58% del volumen de retail digital. Líderes como Falabella.com, Mercado Libre, Ripley y Platanitos actúan como centros comerciales virtuales.',
+        example: 'Un fabricante textil de ropa deportiva vende a nivel nacional usando la bodega y la pasarela de Mercado Libre Fulfillment.',
+        why: 'Permite a una pyme tener alcance inmediato a millones de visitantes sin gastar en pauta web propia, a cambio de una comisión de venta (10% al 20%).'
+      },
+      unificado: {
+        category: 'Cambia cómo venden las empresas',
+        title: 'Comercio Unificado y Consumidores Híbridos',
+        source: 'Material Clase Sem 5 (2024)',
+        desc: 'Evolución de la omnicanalidad que integra el stock físico, catálogo web, puntos de retiro y promociones en un solo sistema de datos en tiempo real.',
+        peru: 'El consumidor peruano investiga en su celular dentro del centro comercial y solicita "Retiro en tienda" (Click & Collect) para no pagar flete.',
+        example: 'Platanitos o Promart: comprar por la app y recoger a los 60 minutos en un casillero inteligente o tienda física cercana.',
+        why: 'Elimina fricciones de costo de despacho y reduce las devoluciones, ya que el cliente puede probarse el producto en el punto físico si lo desea.'
+      },
+      ia: {
+        category: 'Cambia cómo venden las empresas',
+        title: 'Inteligencia Artificial y Personalización',
+        source: 'CAPECE Observatorio (2024-2025)',
+        desc: 'Algoritmos de aprendizaje automático para predecir carritos de compra, sugerir tallas y automatizar atención al cliente 24/7.',
+        peru: 'Adopción en tiendas retail de chatbots con modelos LLM y motores de recomendación predictiva ("quienes vieron esto también llevaron...").',
+        example: 'Asistentes virtuales de tiendas que reconocen fotos enviadas por el usuario para buscar productos similares en el catálogo.',
+        why: 'Eleva el ticket promedio hasta en un 25% mediante recomendaciones personalizadas oportunas y reduce el costo de soporte de primer nivel.'
+      },
+      pagos_digitales: {
+        category: 'Cambia la infraestructura',
+        title: 'Pagos Account-to-Account (A2A) e Interoperabilidad',
+        source: 'BCRP / ESAN (2025)',
+        desc: 'Transferencias directas entre cuentas bancarias sin requerir el plástico físico de la tarjeta, operadas mediante códigos QR o números telefónicos.',
+        peru: 'El mandato del BCRP obligó a la interoperabilidad entre Yape, Plin y todas las entidades financieras del país, unificando el ecosistema.',
+        example: 'Pagar en una tienda online escaneando un código QR desde la app de Yape de un banco hacia una cuenta de Plin de una caja municipal.',
+        why: 'Disminuye drásticamente las comisiones bancarias frente a tarjetas de crédito internacionales y reduce el fraude por suplantación de plástico.'
+      },
+      ultimamilla: {
+        category: 'Cambia la infraestructura',
+        title: 'Multicourier y Puntos Pickup & Dropoff (PUDO)',
+        source: 'Material Clase Sem 5 (2024)',
+        desc: 'Redes de distribución que combinan múltiples transportistas y puntos físicos de entrega (bodegas aliadas, farmacias o lockers automáticos).',
+        peru: 'Plataformas multicourier que integran a Olva, Shalom, Chazki y couriers locales bajo un solo algoritmo que elige la opción más barata o rápida.',
+        example: 'Escoger retirar un pedido online en una botica cercana a tu casa o casillero en lugar de esperar al repartidor en domicilio.',
+        why: 'Resuelve el problema de ausencia del comprador en casa y reduce el flete en un 30% al consolidar paquetes en una sola parada física.'
+      }
+    };
+
+    function renderTrend(trendKey) {
+      const data = trendsData[trendKey];
+      if (!data) return;
+
+      // Update button active state
+      document.querySelectorAll('.trend-nav-btn').forEach(btn => {
+        btn.classList.remove('bg-purple-100', 'text-purple-900', 'font-semibold');
+        btn.classList.add('text-slate-600', 'font-medium');
+      });
+      const activeBtn = document.getElementById(`t-btn-${trendKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-600', 'font-medium');
+        activeBtn.classList.add('bg-purple-100', 'text-purple-900', 'font-semibold');
+      }
+
+      // Update Detail UI
+      document.getElementById('trend-tag').textContent = data.category;
+      document.getElementById('trend-title').textContent = data.title;
+      document.getElementById('trend-source').textContent = data.source;
+      document.getElementById('trend-desc').textContent = data.desc;
+      document.getElementById('trend-peru').textContent = data.peru;
+      document.getElementById('trend-example').textContent = data.example;
+      document.getElementById('trend-why').textContent = data.why;
+    }
+
+    const journeyData = {
+      1: {
+        badge: 'Fase 1: Atracción',
+        title: '1. Descubrir: La génesis del deseo de compra',
+        occurs: 'El usuario no busca un producto determinado; se topa con un video en TikTok, un reel o una búsqueda de recomendación ante una necesidad cotidiana.',
+        tools: 'TikTok Ads, Meta Ads (Instagram/Facebook), Google Search (SEO), micro-creadores peruanos y catálogos patrocinados.',
+        frictions: 'Publicidad engañosa, productos mostrados que luego no tienen stock, o enlaces rotos que no llevan al producto específico del video.',
+        decisions: 'Invertir en contenido orgánico auténtico en lugar de comerciales fríos; implementar enlaces directos al producto con parámetros de seguimiento (UTMs).'
+      },
+      2: {
+        badge: 'Fase 2: Consideración',
+        title: '2. Evaluar: Comparación de precios y validación de confianza',
+        occurs: 'El comprador analiza opiniones de otros peruanos en redes sociales, compara precios en Google o marketplaces y revisa si la tienda es formal.',
+        tools: 'Secciones de calificaciones con fotos reales, Google Reviews, comparadores de precio y sellos de confianza (CAPECE, RUC en Sunat).',
+        frictions: 'Tiendas sin opiniones verificables, falta de fotos reales del producto o comentarios negativos sin respuesta de la gerencia.',
+        decisions: 'Incentivar que compradores anteriores dejen fotos reales mediante cupones; publicar de forma transparente el RUC y dirección física en Lima o regiones.'
+      },
+      3: {
+        badge: 'Fase 3: Asistencia',
+        title: '3. Conversar: Validación humana de disponibilidad y detalles',
+        occurs: 'En Perú, el comprador recurre frecuentemente a WhatsApp o al chat de la web para preguntar "¿tienes stock en talla M?" o "¿cuándo llega a Arequipa?".',
+        tools: 'WhatsApp Business API, chatbots con inteligencia artificial híbrida y widgets de mensajería instantánea en pantalla.',
+        frictions: 'Respuestas automáticas lentas ("espera a un asesor"), respuestas desactualizadas o falta de atención en horarios nocturnos.',
+        decisions: 'Capacitar a asesores comerciales con catálogos actualizados y configurar respuestas automáticas con horarios claros y preguntas frecuentes.'
+      },
+      4: {
+        badge: 'Fase 4: Decisión',
+        title: '4. Comprar: Configuración del carrito y cálculo de costos',
+        occurs: 'El usuario define cantidades, especifica variantes (color, talla), ingresa sus datos personales y el distrito o provincia de destino.',
+        tools: 'Plataformas de checkout optimizado (Shopify, VTEX, WooCommerce) con cálculo automático de costo de envío según ubigeo.',
+        frictions: 'Sorpresa con costos ocultos de envío al final del proceso ("el producto cuesta S/ 50 pero el flete S/ 35"), obligatoriedad de crear cuentas complejas.',
+        decisions: 'Implementar "Checkout como invitado" (Guest Checkout) y mostrar estimación clara del costo de flete antes de solicitar los datos de pago.'
+      },
+      5: {
+        badge: 'Fase 5: Transacción',
+        title: '5. Pagar: Autorización y procesamiento del dinero',
+        occurs: 'El usuario selecciona su medio favorito: digita los datos de su tarjeta, escanea un código QR de Yape/Plin o genera un código CIP.',
+        tools: 'Pasarelas locales (Niubiz, Culqi, Mercado Pago, Izipay), sistemas de tokenización segura y soporte de 3D Secure 2.0.',
+        frictions: 'Rechazo inexplicable de tarjetas bancarias ("fondos insuficientes" erróneo por filtros de seguridad), pasarela que redirige a páginas lentas.',
+        decisions: 'Ofrecer una pasarela con alta tasa de aceptación bancaria local y fallback automático (si la tarjeta falla, sugerir pagar con Yape o CIP).'
+      },
+      6: {
+        badge: 'Fase 6: Fulfillment',
+        title: '6. Recibir: El momento de la verdad en la puerta',
+        occurs: 'El courier transporta el paquete, contacta al cliente al llegar al domicilio y confirma la entrega mediante firma digital o código OTP.',
+        tools: 'Couriers urbanos y nacionales (Olva, Shalom, Chazki, Urbano) con tracking GPS en tiempo real y notificaciones por WhatsApp o SMS.',
+        frictions: 'Repartidor que llega sin avisar y no encuentra a nadie en el domicilio; paquetes dañados en el trayecto o retrasos de varios días.',
+        decisions: 'Contratar operadores con multicourier y trazabilidad activa; ofrecer opciones de retiro en puntos autorizados (bodegas/lockers PUDO).'
+      },
+      7: {
+        badge: 'Fase 7: Post-Venta',
+        title: '7. Compartir / Recomprar: La construcción de reputación',
+        occurs: 'El cliente abre su paquete ("unboxing"), valida la calidad del producto y decide si publica una mención positiva o un reclamo en redes.',
+        tools: 'Encuestas automáticas de satisfacción (NPS), correos de recompra personalizada, programas de puntos y logística inversa.',
+        frictions: 'Políticas de devolución imposibles ("no aceptamos cambios en ropa"), falta de canales de atención si el producto llegó defectuoso.',
+        decisions: 'Facilitar la logística inversa (devolución sin costo en tiendas físicas o vía courier) para transformar un reclamo en un cliente fiel de por vida.'
+      }
+    };
+
+    function selectJourneyStep(stepNumber) {
+      const data = journeyData[stepNumber];
+      if (!data) return;
+
+      // Update pipeline buttons
+      for (let i = 1; i <= 7; i++) {
+        const node = document.getElementById(`j-step-${i}`);
+        if (!node) continue;
+        const circle = node.querySelector('div:first-child');
+        const text = node.querySelector('div:last-child span:first-child');
+        
+        if (i === stepNumber) {
+          circle.className = 'w-12 h-12 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shadow-md ring-4 ring-blue-100 group-hover:scale-105 transition-all text-sm';
+          text.className = 'text-xs font-bold text-blue-600 block';
+        } else {
+          circle.className = 'w-12 h-12 rounded-full bg-white text-slate-700 border-2 border-slate-300 font-bold flex items-center justify-center shadow-xs ring-4 ring-transparent group-hover:scale-105 transition-all text-sm';
+          text.className = 'text-xs font-bold text-slate-700 block';
+        }
+      }
+
+      // Update detail card
+      document.getElementById('j-detail-badge').textContent = data.badge;
+      document.getElementById('j-detail-title').textContent = data.title;
+      document.getElementById('j-detail-occurs').textContent = data.occurs;
+      document.getElementById('j-detail-tools').textContent = data.tools;
+      document.getElementById('j-detail-frictions').textContent = data.frictions;
+      document.getElementById('j-detail-decisions').textContent = data.decisions;
+    }
+
+    const paymentMethodsData = {
+      tarjetas: {
+        name: 'Tarjetas de Crédito y Débito',
+        how: 'El cliente ingresa los 16 dígitos, fecha de vencimiento y CVV. La pasarela autoriza la operación con la marca (Visa/Mastercard) y el banco emisor.',
+        pros: 'Permite compras en cuotas sin intereses, acumulación de millas/puntos y el ticket promedio más alto en productos tecnológicos.',
+        cons: 'Riesgo de fraude y contracargos; comisiones más elevadas para el comercio (aprox. 3.4% a 4.2% + IGV) y desconfianza en sitios poco conocidos.',
+        example: 'Checkout web de Saga Falabella o Platanitos con autenticación 3D Secure enviando código por SMS al celular.',
+        source: 'Material Clase Sem 5 / BCRP (2024)'
+      },
+      yapeplin: {
+        name: 'Billeteras Digitales (Yape / Plin)',
+        how: 'Se genera un código QR dinámico en la pantalla o se solicita el número de teléfono con código de aprobación generado en la app de la billetera.',
+        pros: 'Confirmación instantánea de fondos sin tarjetas de crédito; máxima penetración nacional en jóvenes y adultos bancarizados.',
+        cons: 'Límite de monto diario por transacción (fijado por seguridad bancaria) y menor aplicabilidad en compras de montos corporativos elevados.',
+        example: 'Pagar una pizza o una entrada de cine escaneando el QR de Niubiz / Culqi directamente con Yape o Plin.',
+        source: 'ESAN Management Case Studies (2025)'
+      },
+      transferencia: {
+        name: 'Transferencia Bancaria Inmediata (CCI)',
+        how: 'El comercio suministra una cuenta corriente o interbancaria (CCI). El cliente transfiere desde su banca móvil y remite el comprobante para validación.',
+        pros: 'Cero comisión de adquirencia de pasarelas de pago; ideal para ventas B2B o productos industriales de alto valor unitario.',
+        cons: 'Proceso manual y lento de validación; alta fricción que incrementa el abandono de carrito frente a compras impulsivas nocturnas.',
+        example: 'Compras de maquinaria, insumos médicos al por mayor o pagos de matrículas institucionales en Perú.',
+        source: 'Material Clase Sem 5 (2024)'
+      },
+      pagoefectivo: {
+        name: 'PagoEfectivo / Agentes (Código CIP)',
+        how: 'La pasarela genera un código CIP de 8 dígitos con fecha límite. El usuario acude a un agente bancario (bodega, farmacia) o paga en su banca web.',
+        pros: 'Permite comprar por internet a personas que no confían en colocar sus tarjetas en línea o que únicamente disponen de efectivo.',
+        cons: 'Desfase temporal entre la orden de compra y el pago real (hasta 48 horas); retención de inventario mientras el cliente decide pagar.',
+        example: 'Compra de pasajes en avión en temporada de promociones o compras en tiendas asiáticas como Temu o AliExpress.',
+        source: 'CAPECE / PCMI (2024)'
+      }
+    };
+
+    function selectPaymentMethod(methodKey) {
+      const data = paymentMethodsData[methodKey];
+      if (!data) return;
+
+      // Update button styling
+      document.querySelectorAll('.pm-btn').forEach(btn => {
+        btn.classList.remove('border-2', 'border-emerald-600', 'bg-white', 'shadow-xs');
+        btn.classList.add('border', 'border-slate-200', 'bg-white');
+      });
+      const activeBtn = document.getElementById(`pm-btn-${methodKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-200');
+        activeBtn.classList.add('border-2', 'border-emerald-600', 'shadow-xs');
+      }
+
+      // Update right panel
+      document.getElementById('pm-detail-name').textContent = data.name;
+      document.getElementById('pm-detail-how').textContent = data.how;
+      document.getElementById('pm-detail-pros').textContent = data.pros;
+      document.getElementById('pm-detail-cons').textContent = data.cons;
+      document.getElementById('pm-detail-example').textContent = data.example;
+      document.getElementById('pm-detail-source').textContent = data.source;
+    }
+
+    function toggleGatewayCriteriaModal() {
+      const panel = document.getElementById('gateway-criteria-panel');
+      if (panel) {
+        panel.classList.toggle('hidden');
+      }
+    }
+
+    const yapeTimelineData = {
+      '2016_problem': {
+        year: '2016 — El Problema Identificado',
+        title: 'La fricción del efectivo y las transferencias tradicionales',
+        dato: 'Estudios de innovación del BCP identifican que jóvenes universitarios gastaban hasta 15 minutos buscando billetes o monedas pequeñas para pagar almuerzos.',
+        exp: 'Las transferencias bancarias de la época exigían números de cuenta de 20 dígitos (CCI), tokens físicos y esperas de 24 a 48 horas entre bancos distintos.',
+        impact: 'Se define la oportunidad: crear una solución móvil que permita transferir dinero instantáneamente conociendo solo el número de teléfono celular.'
+      },
+      '2016_mvp': {
+        year: '2016 — Experimento y MVP',
+        title: 'Producto Mínimo Viable probado en campus universitarios',
+        dato: 'Se lanza un piloto beta con grupos cerrados de estudiantes universitarios en Lima para validar la propuesta de valor sin campañas masivas.',
+        exp: 'El foco absoluto del equipo de producto fue la velocidad y la simplicidad: enviar dinero en menos de 5 segundos con solo dos toques en pantalla.',
+        impact: 'Aprobación inmediata entre pares: el boca a boca comprobó que la juventud estaba dispuesta a sustituir el efectivo por saldo en el móvil.'
+      },
+      '2017': {
+        year: '2017 — Lanzamiento Oficial',
+        title: 'Apertura al mercado: De 20 mil a 90 mil usuarios en meses',
+        dato: 'Se inicia la campaña pública formal con 20 mil usuarios registrados. En cuestión de tres trimestres se superan los 90 mil usuarios activos en Lima.',
+        exp: 'Se promociona para dividir consumos de comida, taxis o pagos grupales familiares bajo la premisa de "cero comisiones entre particulares".',
+        impact: 'Nacimiento del verbo popular "yapear", instalando la marca en la cultura lingüística de la vida cotidiana urbana peruana.'
+      },
+      '2018': {
+        year: '2018 — De P2P a Micronegocios',
+        title: '330 mil yaperos y el salto a bodegas y mercados de abastos',
+        dato: 'Yape supera los 330 mil usuarios y los comerciantes informales comienzan a colocar sus números telefónicos en carteles de cartón en sus puestos.',
+        exp: 'Se produce la transición estratégica crucial de P2P (amigos) a P2MB (Persona a Micronegocio). El comerciante descubre que reduce el robo y el vuelto faltante.',
+        impact: 'Comienza la mayor bancarización informal en la historia económica del Perú, democratizando el cobro digital sin requerir un POS de tarjeta.'
+      },
+      '2020': {
+        year: '2020 — La Pandemia y "Yape con DNI"',
+        title: 'Catalizador epidemiológico y masificación de inclusión financiera',
+        dato: 'Lanzamiento de la cuenta digital que permite afiliarse solo con el documento de identidad (DNI), sin poseer previamente una tarjeta o cuenta en el BCP.',
+        exp: 'El confinamiento social obligatorio y el miedo al contagio mediante billetes físicos dispararon el uso de códigos QR en mercados y transporte público.',
+        impact: 'Más de 2.5 millones de peruanos vulnerables accedieron a su primera billetera digital y recibieron bonos gubernamentales de forma inmediata.'
+      },
+      '2022': {
+        year: '2022 — Escala Masiva: 10.7 Millones de Usuarios',
+        title: 'Liderazgo hegemónico del ecosistema transaccional peruano',
+        dato: 'Yape alcanza 10.7 millones de usuarios y comienza a integrar pagos de servicios básicos (luz, agua), recargas de saldo móvil y microcréditos.',
+        exp: 'La aplicación evoluciona de ser una simple herramienta de transferencia entre conocidos a convertirse en el centro financiero diario de las familias.',
+        impact: 'Transforma la economía informal urbana: no tener el código QR de Yape visible en una tienda equivale a perder ventas inmediatas.'
+      },
+      '2023': {
+        year: '2023 — Mandato de Interoperabilidad',
+        title: 'Interoperabilidad obligatoria Yape ↔ Plin impuesta por el BCRP',
+        dato: 'A partir de abril y mayo de 2023, usuarios de Yape pueden enviar dinero sin costo hacia usuarios de Plin (BBVA, Scotiabank, Interbank) y viceversa.',
+        exp: 'El Banco Central de Reserva del Perú garantizó que las redes cerradas de billeteras debían comunicarse para no crear monopolios artificiales.',
+        impact: 'Unificación de la infraestructura nacional: el código QR pasa a ser un estándar público universal en cualquier comercio del territorio peruano.'
+      },
+      '2024_2025': {
+        year: '2024–2025 — Consolidación de la Superapp',
+        title: 'Ecosistema integral: Créditos, marketplace, seguros y remesas',
+        dato: 'Más de 16.5 millones de yaperos y más de 3.5 millones de micronegocios afiliados con soluciones corporativas como Yape Empresa.',
+        exp: 'Lanzamiento de Yape Tienda (comercio electrónico directo de productos físicos dentro de la app), otorgamiento de créditos rápidos y venta de entradas.',
+        impact: 'Monetización exitosa del modelo: el BCP convierte una aplicación de transferencias gratuitas en su principal motor de colocación y fidelización comercial.'
+      }
+    };
+
+    function selectYapeYear(yearKey) {
+      const data = yapeTimelineData[yearKey];
+      if (!data) return;
+
+      // Update button styling
+      document.querySelectorAll('.y-btn').forEach(btn => {
+        btn.classList.remove('border-2', 'border-[#781577]', 'bg-purple-50', 'font-bold', 'shadow-xs');
+        btn.classList.add('border', 'border-slate-200', 'bg-slate-50');
+      });
+      const activeBtn = document.getElementById(`y-btn-${yearKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-200', 'bg-slate-50');
+        activeBtn.classList.add('border-2', 'border-[#781577]', 'bg-purple-50', 'font-bold', 'shadow-xs');
+      }
+
+      // Update milestone card
+      document.getElementById('y-detail-year').textContent = data.year;
+      document.getElementById('y-detail-title').textContent = data.title;
+      document.getElementById('y-detail-dato').textContent = data.dato;
+      document.getElementById('y-detail-exp').textContent = data.exp;
+      document.getElementById('y-detail-impact').textContent = data.impact;
+    }
+
+    const yapeFactorsData = {
+      simplicidad: {
+        title: 'Simplicidad radical (UX intuitiva)',
+        desc: 'El usuario no necesita recordar códigos interbancarios ni contraseñas bancarias largas. La interfaz fue concebida para funcionar con números de teléfono que el cliente ya tiene en su agenda.'
+      },
+      friccion: {
+        title: 'Eliminación radical de fricción',
+        desc: 'Cero comisiones para el usuario habitual, transferencias procesadas en menos de 3 segundos y confirmación audiovisual clara tanto para quien envía como para quien cobra.'
+      },
+      red: {
+        title: 'Efecto de red bilateral (Network Effects)',
+        desc: 'Cuantos más amigos o comerciantes usan Yape, más indispensable se vuelve para el resto descargarlo. El costo de no tener Yape en Perú pasó a ser el perder ventas cotidianas o quedar excluido de transacciones sociales.'
+      },
+      smartphone: {
+        title: 'Smartphone nativo y ubicuo',
+        desc: 'Aprovechó el auge de planes móviles accesibles prepago y pospago en Perú, convirtiendo cada teléfono en una terminal de punto de venta (POS) gratuita.'
+      },
+      micronegocios: {
+        title: 'Micronegocios y bodegas de barrio',
+        desc: 'Los comerciantes minoristas adoptaron Yape porque evitaba el manejo de billetes falsos, solucionaba la eterna falta de cambio en monedas y reducía el asalto callejero.'
+      },
+      qr: {
+        title: 'Código QR en acrílico impreso',
+        desc: 'Una innovación de bajo costo pero impacto colosal: un cartón o soporte de acrílico plastificado en el mostrador permitió cobrar a clientes sin necesidad de que el comerciante saque su celular.'
+      },
+      pandemia: {
+        title: 'Catalizador de emergencia sanitaria 2020',
+        desc: 'El miedo generalizado a manipular dinero físico y la necesidad de recibir bonos solidarios del Estado impulsaron la digitalización forzosa de millones de hogares no bancarizados.'
+      },
+      inclusion: {
+        title: 'Inclusión financiera real (Yape con DNI)',
+        desc: 'Rompieron la barrera bancaria: no se exigió tener una cuenta bancaria previa. Con solo el número de DNI y una selfie de validación facial, cualquier ciudadano peruano abrió su billetera.'
+      },
+      interoperabilidad: {
+        title: 'Interoperabilidad regulatoria (Yape ↔ Plin)',
+        desc: 'La disposición del BCRP unificó las transferencias entre todos los bancos y cajas del Perú, garantizando que el dinero fluya entre cualquier usuario sin muros artificiales.'
+      },
+      confianza: {
+        title: 'Respaldo Institucional del BCP',
+        desc: 'La pertenencia al banco más grande y antiguo del país infundió tranquilidad y seguridad psicológica a los usuarios frente al temor tradicional a las estafas virtuales.'
+      }
+    };
+
+    function showYapeFactor(factorKey) {
+      const data = yapeFactorsData[factorKey];
+      if (!data) return;
+
+      document.querySelectorAll('.y-factor-btn').forEach(btn => {
+        btn.classList.remove('bg-purple-100', 'border-purple-300', 'text-[#781577]');
+        btn.classList.add('bg-white', 'text-slate-700');
+      });
+      event.currentTarget.classList.remove('bg-white', 'text-slate-700');
+      event.currentTarget.classList.add('bg-purple-100', 'border-purple-300', 'text-[#781577]');
+
+      document.getElementById('yape-factor-title').textContent = data.title;
+      document.getElementById('yape-factor-desc').textContent = data.desc;
+    }
+
+    const logisticsData = {
+      compra: {
+        tag: 'Fase 1: Confirmación y Pedido',
+        title: 'Compra confirmada y validación de inventario',
+        what: 'El sistema valida en tiempo real la existencia física del ítem en bodega, reserva el stock y emite la orden de preparación al centro de distribución o tienda física.',
+        operators: ['VTEX OMS', 'Shopify Inventory', 'Odoo ERP', 'SAP Retail'],
+        risks: 'Vender productos agotados ("fantasmas"), generando reclamos en Indecopi y frustración del cliente. Requiere sincronización de stock multi-almacén cada 60 segundos.'
+      },
+      preparacion: {
+        tag: 'Fase 2: Almacén y Empaque',
+        title: 'Preparación (Picking & Packing)',
+        what: 'El personal de bodega o la tienda física recoge el producto (picking), valida el código de barras y lo embala en cajas protectoras con guía de remisión (packing).',
+        operators: ['Ransa Fulfillment', 'Yobel SCM', 'Almacenes Falabella', 'Dinet'],
+        risks: 'Errores al enviar una talla o color equivocado. Un error en empaque eleva los costos logísticos al forzar una recolección y segundo envío duplicado.'
+      },
+      almacen: {
+        tag: 'Fase 3: Centro de Distribución',
+        title: 'Almacenamiento y Cross-docking',
+        what: 'Consolidación de paquetes por sectores geográficos (zonas urbanas de Lima o destinos departamentales) en muelles de despacho rápido sin almacenamiento prolongado.',
+        operators: ['Ransa', 'Dinet', 'Mercado Libre Fulfillment Lurín', 'DHL Supply Chain'],
+        risks: 'Cuellos de botella en fechas de alta demanda (Cyber Days / Navidad). Sin automatización, los tiempos de procesamiento pueden triplicarse.'
+      },
+      transporte: {
+        tag: 'Fase 4: Despacho Troncal',
+        title: 'Transporte troncal (Lima ↔ Provincias)',
+        what: 'Movimiento de carga consolidada mediante camiones de larga distancia o flete aéreo desde la capital hacia centros de distribución en ciudades del interior.',
+        operators: ['Shalom', 'Olva Courier', 'Marvisur', 'Latam Cargo', 'Cruz del Sur Cargo'],
+        risks: 'Bloqueos carreteros, factores climáticos (huaycos, lluvias en la sierra o selva) y retrasos en despachos interprovinciales.'
+      },
+      ultimamilla: {
+        tag: 'Fase 5: Tramo Crítico Urbano',
+        title: 'Última Milla (Last-Mile Delivery)',
+        what: 'El traslado final desde el micro-hub urbano hasta la puerta del comprador en furgonetas, motocicletas o mensajeros a pie.',
+        operators: ['Chazki', 'Olva Express', 'Moova', '99Minutos', 'Urbano Express'],
+        risks: 'Concentra entre el 40% y 53% del costo logístico total. Riesgos: direcciones incompletas ("Mz A Lt 3 sin número"), congestión vehicular y ausencia del cliente.'
+      },
+      entrega: {
+        tag: 'Fase 6: Recepción y Conclusión',
+        title: 'Entrega efectiva y constancia',
+        what: 'El repartidor entrega el paquete al cliente final, valida su identidad y registra la prueba digital de entrega (POD) con fotografía o firma en app móvil.',
+        operators: ['Couriers certificados con app', 'Lockers automáticos inteligentes', 'Puntos PUDO'],
+        risks: 'Robo de paquetes, suplantación de identidad o reclamo de "no me llegó" si el mensajero no tomó la fotografía de entrega con geolocalización GPS.'
+      },
+      devolucion: {
+        tag: 'Fase 7: Post-venta y Retorno',
+        title: 'Logística Inversa (Devoluciones)',
+        what: 'El proceso de recoger el producto insatisfactorio en el domicilio del cliente o permitirle dejarlo en una sucursal física para reintegrarlo al stock disponible.',
+        operators: ['Red de oficinas Olva', 'Shalom agencias', 'Puntos de tienda física'],
+        risks: 'Costo financiero y operacional alto. Si el proceso de cambio es engorroso, el 70% de compradores insatisfechos no vuelve a comprar en esa tienda en línea.'
+      }
+    };
+
+    function selectLogisticsStep(stepKey) {
+      const data = logisticsData[stepKey];
+      if (!data) return;
+
+      // Update buttons
+      document.querySelectorAll('.l-step-btn').forEach(btn => {
+        btn.classList.remove('border-2', 'border-amber-500', 'bg-amber-50');
+        btn.classList.add('border', 'border-slate-200', 'bg-white');
+      });
+      const activeBtn = document.getElementById(`l-step-${stepKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-200', 'bg-white');
+        activeBtn.classList.add('border-2', 'border-amber-500', 'bg-amber-50');
+      }
+
+      // Update detail card
+      document.getElementById('l-detail-tag').textContent = data.tag;
+      document.getElementById('l-detail-title').textContent = data.title;
+      document.getElementById('l-detail-what').textContent = data.what;
+      document.getElementById('l-detail-risks').textContent = data.risks;
+
+      // Update operators pills
+      const opContainer = document.getElementById('l-detail-operators');
+      opContainer.innerHTML = '';
+      data.operators.forEach(op => {
+        const span = document.createElement('span');
+        span.className = 'px-2.5 py-1 rounded-md bg-slate-100 font-mono text-slate-700 font-medium';
+        span.textContent = op;
+        opContainer.appendChild(span);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initOrUpdateChart();
+      // Initialize with mobile trend
+      renderTrend('mobile');
+    });
+  </script>
+</body>
+</html>
