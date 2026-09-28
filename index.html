@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Repositorio Docente · Recursos y Simuladores Interactivos</title>
+<title>Repositorio Docente · Recursos, Simuladores y Prompts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 16px;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
   }
 
@@ -88,6 +88,61 @@
     height: 7px;
     border-radius: 50%;
     background: #10b981;
+  }
+
+  /* Segmented View Tabs */
+  .view-tabs {
+    display: inline-flex;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+
+  .view-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .view-tab:hover {
+    color: var(--text-main);
+  }
+
+  .view-tab.active {
+    background: #ffffff;
+    color: var(--text-main);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .tab-badge {
+    font-size: 0.75rem;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .view-tab.active .tab-badge {
+    background: #0f172a;
+    color: #ffffff;
+  }
+
+  .tab-icon {
+    width: 16px;
+    height: 16px;
   }
 
   /* Controls */
@@ -223,7 +278,7 @@
     opacity: 0.75;
   }
 
-  /* Grid & Cards */
+  /* Grid & Standard Resource Cards */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -317,6 +372,163 @@
     color: var(--text-main);
   }
 
+  /* Prompt Cards Architecture */
+  .prompt-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .prompt-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 6px 20px -3px rgba(15, 23, 42, 0.06);
+  }
+
+  .prompt-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .model-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .prompt-card h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+
+  .prompt-desc {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .prompt-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    font-family: inherit;
+    white-space: pre-wrap;
+    max-height: 180px;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .var-pill {
+    background: #e0e7ff;
+    color: #3730a3;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+
+  .prompt-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-copy:hover {
+    background: #1e293b;
+  }
+
+  .btn-copy.copied {
+    background: #10b981;
+    color: #ffffff;
+  }
+
+  .btn-toggle-vars {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+
+  .btn-toggle-vars:hover {
+    color: var(--text-main);
+    background: #f1f5f9;
+  }
+
+  .variables-drawer {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.8rem;
+    display: none;
+    margin-top: 6px;
+  }
+
+  .variables-drawer.open {
+    display: block;
+  }
+
+  .var-item {
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .var-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .var-item strong {
+    color: var(--text-main);
+  }
+
   /* Empty State */
   .vacio {
     text-align: center;
@@ -380,7 +592,7 @@
   <header class="header">
     <div class="header-main">
       <h1>Repositorio Docente</h1>
-      <p>Simuladores, modelos interactivos y herramientas pedagógicas universitarias.</p>
+      <p>Simuladores, modelos interactivos y prompts pedagógicos universitarios.</p>
     </div>
     <div class="header-badge" id="total-badge" aria-live="polite">
       <span class="badge-dot"></span>
@@ -388,10 +600,28 @@
     </div>
   </header>
 
+  <!-- Selector de Sección / Pestañas -->
+  <div class="view-tabs" role="tablist" aria-label="Tipo de recurso">
+    <button type="button" class="view-tab active" id="tab-apps" role="tab" aria-selected="true" data-seccion="apps">
+      <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+      Simuladores y Apps
+      <span class="tab-badge" id="apps-tab-count">19</span>
+    </button>
+    <button type="button" class="view-tab" id="tab-prompts" role="tab" aria-selected="false" data-seccion="prompts">
+      <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+      </svg>
+      Prompts de IA
+      <span class="tab-badge" id="prompts-tab-count">2</span>
+    </button>
+  </div>
+
   <div class="controls-bar">
     <div class="search-wrapper">
       <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
       <input type="search" id="buscador" placeholder="Buscar por título, concepto o descripción..." autocomplete="off">
       <span class="search-shortcut" id="shortcut-hint" aria-hidden="true">/</span>
@@ -409,23 +639,18 @@
     <svg class="vacio-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
-    <h2 class="vacio-title">No se encontraron recursos</h2>
+    <h2 class="vacio-title">No se encontraron resultados</h2>
     <p>Intenta con otros términos o elimina los filtros activos.</p>
     <button type="button" class="btn-reset" id="btn-reset">Restablecer filtros</button>
   </div>
 
   <footer>
-    Repositorio Docente · Plataforma de Recursos Interactivos · 2026
+    Repositorio Docente · Plataforma de Recursos y Prompts Educativos · 2026
   </footer>
 </div>
 
-<!-- 
-  INSTRUCCIÓN PARA DESARROLLO:
-  Para agregar un recurso nuevo:
-  1. Copia su carpeta dentro de recursos/<curso>/<nombre-recurso>/
-  2. Añade un objeto al array RECURSOS a continuación.
--->
 <script>
+// --- DATOS DE SIMULADORES Y APLICACIONES ---
 const RECURSOS = [
   {
     titulo: "Simulador de Ecuaciones e Inecuaciones Lineales (2x2)",
@@ -543,6 +768,47 @@ const RECURSOS = [
   }
 ];
 
+// --- DATOS DE PROMPTS PEDAGÓGICOS ---
+const PROMPTS = [
+  {
+    id: "imagen-realista-producto",
+    titulo: "Fotografía de Producto & Escenas Hiperrealistas",
+    curso: "IA para Negocios",
+    modelo: "Midjourney v6 / Imagen 3 / DALL-E 3",
+    descripcion: "Estructura fotográfica profesional para generar tomas publicitarias de producto con control de iluminación de estudio, distancia focal, textura y ángulo.",
+    variables: [
+      { clave: "PRODUCTO", desc: "El artículo o empaque que se desea destacar (ej. Frasco de perfume de vidrio esmerilado)" },
+      { clave: "ENTORNO", desc: "Escenario o superficie de soporte (ej. Podio de mármol blanco pulido sobre fondo neutro minimalista)" },
+      { clave: "ILUMINACION", desc: "Esquema de luces de estudio (ej. Luz softbox difusa a 45 grados con sutil luz de borde dorada)" },
+      { clave: "LENTE_CAMARA", desc: "Distancia focal y apertura (ej. 85mm f/1.8 macro con enfoque nítido y bokeh suave)" }
+    ],
+    textoPrompt: `Fotografía comercial publicitaria de ultra alta definición de [PRODUCTO], situado sobre [ENTORNO]. Iluminación profesional: [ILUMINACION], destacando texturas táctiles, reflejos físicos precisos y acabados de material prémium. Composición limpia y simétrica, profundidad de campo reducida capturada con lente de [LENTE_CAMARA], balance de blancos neutro, resolución 8K, hiperrealista, estilo editorial de catálogo de lujo, sin artefactos digitales.`
+  },
+  {
+    id: "analisis-propuesta-valor",
+    titulo: "Tutor Analista de Propuesta de Valor y Modelo de Negocio",
+    curso: "Diseño de Negocios Digitales",
+    modelo: "Claude 3.5 Sonnet / GPT-4o",
+    descripcion: "Asistente socrático que guía a estudiantes en la definición del lienzo de propuesta de valor (Value Proposition Canvas), identificando dolores y ganancias reales.",
+    variables: [
+      { clave: "TIPO_CLIENTE", desc: "Segmento o perfil de usuario objetivo (ej. Estudiantes universitarios foráneos)" },
+      { clave: "PROBLEMA_CENTRAL", desc: "La fricción o dolor prioritario detectado (ej. Altos costos y falta de tiempo para cocinar saludable)" },
+      { clave: "SOLUCION_PROPUESTA", desc: "La propuesta de producto o servicio (ej. Suscripción de kits de viandas pre-porcionadas económicas)" }
+    ],
+    textoPrompt: `Actúa como un profesor universitario experto en Estrategia y Diseño de Negocios Digitales. Tu objetivo es ayudarme a estructurar el Value Proposition Canvas para el siguiente caso:
+
+- Segmento de Clientes: [TIPO_CLIENTE]
+- Problema o Fricción Detectada: [PROBLEMA_CENTRAL]
+- Idea Preliminar de Solución: [SOLUCION_PROPUESTA]
+
+Por favor realiza un análisis riguroso y estructurado en 4 fases:
+1. Perfil del Cliente: Lista 3 'Trabajos del Cliente' (Jobs-to-be-done), 3 'Frustraciones' (Pains) agudas y 3 'Alegrías' (Gains) deseadas.
+2. Mapa de Valor: Define 3 'Creadores de Alegrías' y 3 'Aliviadores de Frustraciones' que nuestra solución debe ofrecer para generar tracción.
+3. Evaluación de Encaje (Fit): Califica del 1 al 10 qué tan fuerte es el encaje problema-solución e identifica el supuesto más riesgoso que debemos validar de inmediato.
+4. Desafío Socrático: Hazme exactamente 2 preguntas críticas y punzantes para poner a prueba la viabilidad del modelo antes de invertir recursos.`
+  }
+];
+
 // Paleta sutil y armónica de etiquetas por curso/disciplina
 const CATEGORIA_STYLES = {
   "Matemáticas": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
@@ -562,26 +828,37 @@ const shortcutHint = document.getElementById("shortcut-hint");
 const badgeCount = document.getElementById("badge-count");
 const chipsContainer = document.getElementById("chips-container");
 const btnReset = document.getElementById("btn-reset");
+const tabApps = document.getElementById("tab-apps");
+const tabPrompts = document.getElementById("tab-prompts");
+const appsTabCount = document.getElementById("apps-tab-count");
+const promptsTabCount = document.getElementById("prompts-tab-count");
 
+let seccionActiva = "apps"; // "apps" | "prompts"
 let cursoSeleccionado = "";
 
-// Inicializar Chips de Filtro
+// Actualizar contadores de las pestañas
+appsTabCount.textContent = RECURSOS.length;
+promptsTabCount.textContent = PROMPTS.length;
+
+// Inicializar Chips de Filtro según la sección activa
 function initChips() {
-  const cursosUnicos = [...new Set(RECURSOS.map(r => r.curso))].sort();
+  chipsContainer.innerHTML = "";
+  const listaBase = seccionActiva === "apps" ? RECURSOS : PROMPTS;
+  const cursosUnicos = [...new Set(listaBase.map(r => r.curso))].sort();
   
   // Chip 'Todos'
   const todosBtn = document.createElement("button");
-  todosBtn.className = "chip-btn active";
+  todosBtn.className = "chip-btn" + (cursoSeleccionado === "" ? " active" : "");
   todosBtn.dataset.curso = "";
-  todosBtn.innerHTML = `Todos <span class="chip-count">(${RECURSOS.length})</span>`;
+  todosBtn.innerHTML = `Todos <span class="chip-count">(${listaBase.length})</span>`;
   todosBtn.addEventListener("click", () => seleccionarCurso(""));
   chipsContainer.appendChild(todosBtn);
 
   // Chips por Curso
   cursosUnicos.forEach(c => {
-    const totalEnCurso = RECURSOS.filter(r => r.curso === c).length;
+    const totalEnCurso = listaBase.filter(r => r.curso === c).length;
     const btn = document.createElement("button");
-    btn.className = "chip-btn";
+    btn.className = "chip-btn" + (cursoSeleccionado === c ? " active" : "");
     btn.dataset.curso = c;
     btn.innerHTML = `${c} <span class="chip-count">(${totalEnCurso})</span>`;
     btn.addEventListener("click", () => seleccionarCurso(c));
@@ -601,10 +878,56 @@ function seleccionarCurso(curso) {
   render();
 }
 
+function cambiarSeccion(nuevaSeccion) {
+  seccionActiva = nuevaSeccion;
+  cursoSeleccionado = "";
+  
+  if (seccionActiva === "apps") {
+    tabApps.classList.add("active");
+    tabApps.setAttribute("aria-selected", "true");
+    tabPrompts.classList.remove("active");
+    tabPrompts.setAttribute("aria-selected", "false");
+    buscador.placeholder = "Buscar por título, concepto o descripción...";
+  } else {
+    tabPrompts.classList.add("active");
+    tabPrompts.setAttribute("aria-selected", "true");
+    tabApps.classList.remove("active");
+    tabApps.setAttribute("aria-selected", "false");
+    buscador.placeholder = "Buscar por título, modelo o contenido del prompt...";
+  }
+
+  initChips();
+  render();
+}
+
+tabApps.addEventListener("click", () => cambiarSeccion("apps"));
+tabPrompts.addEventListener("click", () => cambiarSeccion("prompts"));
+
+// Formatear texto del prompt resaltando [VARIABLES]
+function highlightPromptVariables(texto) {
+  return texto.replace(/\[([A-Z0-9_]+)\]/g, '<span class="var-pill">[$1]</span>');
+}
+
+// Copiar al portapapeles
+function copiarTexto(texto, btnElement) {
+  navigator.clipboard.writeText(texto).then(() => {
+    const originalText = btnElement.innerHTML;
+    btnElement.classList.add("copied");
+    btnElement.innerHTML = `
+      <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      ¡Copiado!
+    `;
+    setTimeout(() => {
+      btnElement.classList.remove("copied");
+      btnElement.innerHTML = originalText;
+    }, 2000);
+  });
+}
+
 function render() {
   const texto = buscador.value.trim().toLowerCase();
 
-  // Control de visibilidad del botón borrar y atajo
+  // Control del botón borrar y atajo
   if (texto.length > 0) {
     searchClear.style.display = "flex";
     shortcutHint.style.display = "none";
@@ -613,46 +936,117 @@ function render() {
     shortcutHint.style.display = "block";
   }
 
-  const filtrados = RECURSOS.filter(r => {
-    const coincideTexto = !texto || r.titulo.toLowerCase().includes(texto) || r.descripcion.toLowerCase().includes(texto);
-    const coincideCurso = !cursoSeleccionado || r.curso === cursoSeleccionado;
+  const listaBase = seccionActiva === "apps" ? RECURSOS : PROMPTS;
+
+  const filtrados = listaBase.filter(item => {
+    const coincideCurso = !cursoSeleccionado || item.curso === cursoSeleccionado;
+    let coincideTexto = false;
+    
+    if (seccionActiva === "apps") {
+      coincideTexto = !texto || item.titulo.toLowerCase().includes(texto) || item.descripcion.toLowerCase().includes(texto);
+    } else {
+      coincideTexto = !texto || 
+        item.titulo.toLowerCase().includes(texto) || 
+        item.descripcion.toLowerCase().includes(texto) || 
+        item.modelo.toLowerCase().includes(texto) ||
+        item.textoPrompt.toLowerCase().includes(texto);
+    }
+
     return coincideTexto && coincideCurso;
   });
 
   grid.innerHTML = "";
   vacio.hidden = filtrados.length > 0;
 
-  // Actualizar contador del badge
+  // Actualizar contador del badge principal
+  const labelTipo = seccionActiva === "apps" ? "simuladores y apps" : "prompts de IA";
   if (texto || cursoSeleccionado) {
-    badgeCount.textContent = `${filtrados.length} de ${RECURSOS.length} recursos`;
+    badgeCount.textContent = `${filtrados.length} de ${listaBase.length} ${labelTipo}`;
   } else {
-    badgeCount.textContent = `${RECURSOS.length} recursos activos`;
+    badgeCount.textContent = `${listaBase.length} ${labelTipo} activos`;
   }
 
-  filtrados.forEach(r => {
-    const st = CATEGORIA_STYLES[r.curso] || { bg: "#f1f5f9", text: "#334155", border: "#cbd5e1" };
-    const a = document.createElement("a");
-    a.className = "card";
-    a.href = r.ruta;
-    a.innerHTML = `
-      <div class="card-top">
-        <span class="tag" style="background:${st.bg}; color:${st.text}; border: 1px solid ${st.border};">${r.curso}</span>
-        <svg class="card-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17"/>
-        </svg>
-      </div>
-      <h2>${r.titulo}</h2>
-      <p title="${r.descripcion.replace(/"/g, '&quot;')}">${r.descripcion}</p>
-      <div class="card-footer">
-        <span>Abrir recurso</span>
-        <span>→</span>
-      </div>
-    `;
-    grid.appendChild(a);
-  });
+  if (seccionActiva === "apps") {
+    // RENDERIZAR TARJETAS DE APLICACIONES
+    filtrados.forEach(r => {
+      const st = CATEGORIA_STYLES[r.curso] || { bg: "#f1f5f9", text: "#334155", border: "#cbd5e1" };
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = r.ruta;
+      a.innerHTML = `
+        <div class="card-top">
+          <span class="tag" style="background:${st.bg}; color:${st.text}; border: 1px solid ${st.border};">${r.curso}</span>
+          <svg class="card-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17"/>
+          </svg>
+        </div>
+        <h2>${r.titulo}</h2>
+        <p title="${r.descripcion.replace(/"/g, '&quot;')}">${r.descripcion}</p>
+        <div class="card-footer">
+          <span>Abrir recurso</span>
+          <span>→</span>
+        </div>
+      `;
+      grid.appendChild(a);
+    });
+  } else {
+    // RENDERIZAR TARJETAS DE PROMPTS
+    filtrados.forEach(p => {
+      const st = CATEGORIA_STYLES[p.curso] || { bg: "#f1f5f9", text: "#334155", border: "#cbd5e1" };
+      const card = document.createElement("div");
+      card.className = "prompt-card";
+
+      const varsHtml = p.variables.map(v => `
+        <div class="var-item">
+          <span class="var-pill">[${v.clave}]</span> <strong>${v.desc}</strong>
+        </div>
+      `).join("");
+
+      card.innerHTML = `
+        <div class="prompt-top">
+          <span class="tag" style="background:${st.bg}; color:${st.text}; border: 1px solid ${st.border};">${p.curso}</span>
+          <span class="model-tag">
+            <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            ${p.modelo}
+          </span>
+        </div>
+        <div>
+          <h2>${p.titulo}</h2>
+          <p class="prompt-desc">${p.descripcion}</p>
+        </div>
+        <div class="prompt-box">${highlightPromptVariables(p.textoPrompt)}</div>
+        <div class="variables-drawer" id="vars-${p.id}">
+          <div style="font-weight: 700; margin-bottom: 8px; color: var(--text-main);">Variables a sustituir:</div>
+          ${varsHtml}
+        </div>
+        <div class="prompt-actions">
+          <button type="button" class="btn-copy" id="btn-copy-${p.id}">
+            <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            Copiar Prompt
+          </button>
+          <button type="button" class="btn-toggle-vars" id="btn-toggle-${p.id}">
+            Ver variables (${p.variables.length})
+          </button>
+        </div>
+      `;
+
+      grid.appendChild(card);
+
+      // Eventos de los botones de la tarjeta
+      const copyBtn = card.querySelector(`#btn-copy-${p.id}`);
+      copyBtn.addEventListener("click", () => copiarTexto(p.textoPrompt, copyBtn));
+
+      const toggleBtn = card.querySelector(`#btn-toggle-${p.id}`);
+      const drawer = card.querySelector(`#vars-${p.id}`);
+      toggleBtn.addEventListener("click", () => {
+        const isOpen = drawer.classList.toggle("open");
+        toggleBtn.textContent = isOpen ? "Ocultar variables" : `Ver variables (${p.variables.length})`;
+      });
+    });
+  }
 }
 
-// Event Listeners
+// Event Listeners globales
 buscador.addEventListener("input", render);
 
 searchClear.addEventListener("click", () => {
@@ -666,7 +1060,7 @@ btnReset.addEventListener("click", () => {
   seleccionarCurso("");
 });
 
-// Atajo de teclado: presionar '/' para enfocar buscador, 'Esc' para limpiar
+// Atajo de teclado: '/' enfoca el buscador; 'Esc' limpia
 window.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement !== buscador) {
     e.preventDefault();

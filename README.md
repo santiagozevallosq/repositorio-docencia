@@ -5,12 +5,11 @@ Portal único (GitHub Pages) para consolidar los dashboards, simuladores y HTML 
 ## Estructura
 
 ```
-index.html              <- portal principal (lista todos los recursos)
-recursos/
-  <curso>/
-    <nombre-recurso>/
-      index.html
-      css/, js/, ...
+index.html              <- portal principal (Simuladores, Apps y Prompts)
+recursos/               <- aplicaciones web interactivas
+  <curso>/<nombre-recurso>/index.html
+prompts/                <- biblioteca de prompts pedagógicos
+  <curso>/<nombre-prompt>.md
 ```
 
 ## Cómo agregar un recurso nuevo
@@ -56,3 +55,5 @@ recursos/
 - **Matemática Básica para Ciencias Políticas 1 / La Función de Producción: Fenómenos Económicos y Sociales** — Cobb-Douglas, giro conceptual hacia bienestar e inversión pública, estimación econométrica MCO en modelos log-log y simulador de elasticidades de pobreza.
 - **Uso Personal / VelociRead — Lector de Lectura Veloz (RSVP)** — entrenamiento visual serial con fijación en el punto óptimo de reconocimiento (ORP), control de ritmo PPM y evaluación de comprensión con opción de IA / motor heurístico.
 - **Recurso de Maestría / Simulador de 4 Reinas con Look-Back (Backjumping CSP)** — laboratorio interactivo de satisfacción de restricciones con tracking de Conflict Sets, depuración paso a paso y poda eficiente frente al backtracking tradicional.
+- **[Prompt] IA para Negocios / Fotografía de Producto & Escenas Hiperrealistas** — directivas fotográficas avanzadas para Midjourney v6, Imagen 3 y DALL-E 3 con control de iluminación, óptica y textura.
+- **[Prompt] Diseño de Negocios Digitales / Tutor Analista de Propuesta de Valor** — asistente socrático para análisis del *Value Proposition Canvas* en Claude 3.5 y GPT-4o.
