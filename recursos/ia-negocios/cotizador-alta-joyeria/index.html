@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atelier Aurum — Cotizador de Alta Joyería</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            alabaster: '#FBFBF9',
+            champagne: {
+              50: '#FAF7F0',
+              100: '#F3EDE0',
+              200: '#E5D6BD',
+              300: '#D5BD97',
+              400: '#C5A574',
+              500: '#B89056',
+              600: '#A47A41',
+              700: '#866133',
+              800: '#6E4E2C',
+              900: '#593F25',
+            },
+            noir: '#181716',
+            charcoal: '#282725',
+            bone: '#F4F2EC',
+            parchment: '#EBE7DD',
+          },
+          boxShadow: {
+            'luxury': '0 20px 40px -15px rgba(24, 23, 22, 0.05), 0 0 1px 1px rgba(24, 23, 22, 0.03)',
+            'floating': '0 25px 50px -12px rgba(184, 144, 86, 0.12), 0 0 0 1px rgba(184, 144, 86, 0.08)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Luxury Range Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: #EBE7DD;
+      border-radius: 9999px;
+      transition: all 0.2s ease;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 2.5px solid #B89056;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -7px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      box-shadow: 0 4px 10px rgba(184, 144, 86, 0.35);
+    }
+
+    /* Number inputs without default spinner */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Subtle backdrop blur */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+
+<body class="bg-alabaster text-charcoal font-sans antialiased min-h-screen selection:bg-champagne-100 selection:text-champagne-800">
+
+  <header class="border-b border-parchment/70 bg-white/80 sticky top-0 z-30 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full border border-champagne-300 flex items-center justify-center bg-champagne-50">
+          <svg class="w-5 h-5 text-champagne-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polygon points="12 2 2 8.5 12 15 22 8.5 12 2" />
+            <path d="M2 15.5L12 22L22 15.5" />
+            <path d="M12 2v13" />
+          </svg>
+        </div>
+        <div>
+          <span class="text-xs uppercase tracking-[0.25em] text-champagne-600 font-semibold block">Haute Joaillerie</span>
+          <h1 class="font-serif text-xl sm:text-2xl text-noir tracking-wider font-medium">ATELIER AURUM</h1>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <a href="../../../index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-parchment bg-white hover:bg-bone text-charcoal text-xs font-medium transition shadow-xs">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Repositorio Docente
+        </a>
+
+        <!-- Currency Selector -->
+        <div class="inline-flex items-center bg-bone rounded-full p-1 border border-parchment text-xs font-medium">
+          <button id="curr-USD" onclick="setCurrency('USD', '$', 1)" class="curr-btn px-3 py-1 rounded-full bg-white text-noir shadow-sm transition-all duration-200">USD ($)</button>
+          <button id="curr-PEN" onclick="setCurrency('PEN', 'S/', 3.75)" class="curr-btn px-3 py-1 rounded-full text-charcoal/70 hover:text-noir transition-all duration-200">PEN (S/)</button>
+          <button id="curr-EUR" onclick="setCurrency('EUR', '€', 0.92)" class="curr-btn px-3 py-1 rounded-full text-charcoal/70 hover:text-noir transition-all duration-200">EUR (€)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    
+    <div class="mb-10 text-center max-w-2xl mx-auto">
+      <div class="inline-block px-3 py-1 rounded-full bg-champagne-100/70 border border-champagne-200 text-champagne-800 text-[11px] uppercase tracking-widest font-semibold mb-3">
+        Calculadora Profesional de Costos & Márgenes
+      </div>
+      <h2 class="font-serif text-3xl sm:text-4xl text-noir font-normal tracking-tight">Cotizador de Piezas a Medida</h2>
+      <p class="text-sm text-charcoal/60 mt-2 font-light">Calcula con precisión de taller la manufactura, materiales nobles y rentabilidad de piezas exclusivas.</p>
+    </div>
+
+    <!-- Main Grid: Controls Left, Floating Summary Right -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Card: Información de la Pieza -->
+        <div class="bg-white rounded-2xl border border-parchment/80 p-6 shadow-luxury">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-lg text-noir font-medium flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-champagne-50 text-champagne-700 text-xs flex items-center justify-center font-sans font-semibold">1</span>
+              Identificación de la Joya
+            </h3>
+            <span class="text-xs text-charcoal/40 uppercase tracking-wider">Referencia</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-charcoal/80 mb-1.5">Nombre / Modelo de la pieza</label>
+              <input type="text" id="piece-name" value="Anillo Solitario 'Éternité'" class="w-full bg-alabaster border border-parchment rounded-xl px-3.5 py-2 text-sm text-noir focus:outline-none focus:border-champagne-400 focus:bg-white transition-colors">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-charcoal/80 mb-1.5">Nombre del Cliente / Colección</label>
+              <input type="text" id="client-name" value="Colección Privada" class="w-full bg-alabaster border border-parchment rounded-xl px-3.5 py-2 text-sm text-noir focus:outline-none focus:border-champagne-400 focus:bg-white transition-colors">
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Metal Base y Peso -->
+        <div class="bg-white rounded-2xl border border-parchment/80 p-6 shadow-luxury">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-lg text-noir font-medium flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-champagne-50 text-champagne-700 text-xs flex items-center justify-center font-sans font-semibold">2</span>
+              Metal Precioso & Peso
+            </h3>
+            <button onclick="toggleCustomMetalPrice()" id="edit-metal-btn" class="text-xs text-champagne-600 hover:text-champagne-700 underline font-medium">Ajustar cotización/g</button>
+          </div>
+
+          <!-- Metal Pills -->
+          <label class="block text-xs font-medium text-charcoal/80 mb-2">Selecciona la aleación base:</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5" id="metal-pills-container">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Custom Metal Price input (collapsible) -->
+          <div id="custom-metal-box" class="hidden mb-5 p-3.5 bg-champagne-50/70 border border-champagne-200/80 rounded-xl">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-charcoal/80 font-medium">Precio de mercado por gramo (<span class="currency-symbol">$</span>):</span>
+              <div class="flex items-center gap-1.5 w-28">
+                <input type="number" step="0.1" id="metal-price-gram" class="w-full bg-white border border-champagne-300 rounded-lg px-2.5 py-1 text-right text-xs font-medium text-noir focus:outline-none" oninput="calculate()">
+                <span class="text-charcoal/50 text-[11px]">/g</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gram Slider & Input -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-xs font-medium text-charcoal/80">Peso estimado en bruto (con merma del 7% incluida)</label>
+              <div class="flex items-center space-x-1.5">
+                <input type="number" id="metal-weight-input" min="0.5" max="150" step="0.1" value="4.8" class="w-20 bg-alabaster border border-parchment rounded-lg px-2.5 py-1 text-right text-sm font-semibold text-noir focus:outline-none focus:border-champagne-400" oninput="syncWeightSlider(this.value)">
+                <span class="text-xs text-charcoal/60 font-medium">g</span>
+              </div>
+            </div>
+            <input type="range" id="metal-weight-slider" min="0.5" max="50" step="0.1" value="4.8" class="w-full" oninput="syncWeightInput(this.value)">
+            <div class="flex justify-between text-[11px] text-charcoal/40 mt-1">
+              <span>0.5g (Delicado)</span>
+              <span>25g</span>
+              <span>50g+ (Alta joyería)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Piedras Preciosas & Gemas -->
+        <div class="bg-white rounded-2xl border border-parchment/80 p-6 shadow-luxury">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-lg text-noir font-medium flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-champagne-50 text-champagne-700 text-xs flex items-center justify-center font-sans font-semibold">3</span>
+              Gemas, Diamantes & Engaste
+            </h3>
+            <button onclick="addGemItem()" class="text-xs flex items-center gap-1 text-champagne-600 hover:text-champagne-700 font-medium transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Añadir gema
+            </button>
+          </div>
+
+          <!-- Gem dynamic items container -->
+          <div id="gems-list" class="space-y-3">
+            <!-- Initial items injected via JS -->
+          </div>
+
+          <!-- Engaste cost note -->
+          <div class="mt-4 pt-3 border-t border-parchment flex justify-between items-center text-xs">
+            <span class="text-charcoal/60">Subtotal de gemas & engaste:</span>
+            <span class="font-semibold text-noir font-mono text-sm" id="gems-subtotal-display">$0.00</span>
+          </div>
+        </div>
+
+        <!-- Card: Mano de Obra y Taller -->
+        <div class="bg-white rounded-2xl border border-parchment/80 p-6 shadow-luxury">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-lg text-noir font-medium flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-champagne-50 text-champagne-700 text-xs flex items-center justify-center font-sans font-semibold">4</span>
+              Mano de Obra & Oficio de Joyero
+            </h3>
+            <span class="text-xs text-champagne-600 bg-champagne-50 px-2.5 py-0.5 rounded-full border border-champagne-200">Maestría artesanal</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-medium text-charcoal/80 mb-1.5">Horas de orfebre dedicadas</label>
+              <div class="relative">
+                <input type="number" id="labor-hours" min="0" step="0.5" value="6" class="w-full bg-alabaster border border-parchment rounded-xl px-3.5 py-2 text-sm text-noir focus:outline-none focus:border-champagne-400 focus:bg-white" oninput="calculate()">
+                <span class="absolute right-3.5 top-2.5 text-xs text-charcoal/40">horas</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-charcoal/80 mb-1.5">Tarifa horaria del maestro joyero</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-2.5 text-xs text-charcoal/50 currency-symbol">$</span>
+                <input type="number" id="labor-rate" min="0" step="1" value="28" class="w-full bg-alabaster border border-parchment rounded-xl pl-8 pr-3.5 py-2 text-sm text-noir focus:outline-none focus:border-champagne-400 focus:bg-white" oninput="calculate()">
+                <span class="absolute right-3.5 top-2.5 text-xs text-charcoal/40">/hr</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-charcoal/80 mb-1.5">Modelado 3D / Prototipado en Cera (opcional)</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-2.5 text-xs text-charcoal/50 currency-symbol">$</span>
+              <input type="number" id="cad-cost" min="0" step="1" value="35" class="w-full bg-alabaster border border-parchment rounded-xl pl-8 pr-3.5 py-2 text-sm text-noir focus:outline-none focus:border-champagne-400 focus:bg-white" oninput="calculate()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Acabados, Packaging y Certificados -->
+        <div class="bg-white rounded-2xl border border-parchment/80 p-6 shadow-luxury">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-lg text-noir font-medium flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-champagne-50 text-champagne-700 text-xs flex items-center justify-center font-sans font-semibold">5</span>
+              Acabados & Presentación de Lujo
+            </h3>
+            <span class="text-xs text-charcoal/40">Experiencia unboxing</span>
+          </div>
+
+          <div class="space-y-3">
+            <!-- Packaging Toggle -->
+            <label class="flex items-center justify-between p-3 rounded-xl border border-parchment hover:border-champagne-300 bg-alabaster/40 cursor-pointer transition-all duration-150">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" id="pack-box" checked class="w-4 h-4 rounded text-champagne-600 focus:ring-champagne-400 accent-champagne-600" onchange="calculate()">
+                <div>
+                  <p class="text-xs font-semibold text-noir">Cofre de Terciopelo & Bolsa Textil Fina</p>
+                  <p class="text-[11px] text-charcoal/50">Incluye cinta satinada y paño de microfibra abrillantador</p>
+                </div>
+              </div>
+              <span class="text-xs font-medium text-charcoal/80">+<span class="currency-symbol">$</span><span id="pack-cost-val">22</span></span>
+            </label>
+
+            <!-- Certificate Toggle -->
+            <label class="flex items-center justify-between p-3 rounded-xl border border-parchment hover:border-champagne-300 bg-alabaster/40 cursor-pointer transition-all duration-150">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" id="cert-box" checked class="w-4 h-4 rounded text-champagne-600 focus:ring-champagne-400 accent-champagne-600" onchange="calculate()">
+                <div>
+                  <p class="text-xs font-semibold text-noir">Certificado de Autenticidad Gemológica</p>
+                  <p class="text-[11px] text-charcoal/50">Tarjeta grabada con especificaciones de quilataje y pureza</p>
+                </div>
+              </div>
+              <span class="text-xs font-medium text-charcoal/80">+<span class="currency-symbol">$</span><span id="cert-cost-val">15</span></span>
+            </label>
+
+            <!-- Rhodium / Gold Plating Toggle -->
+            <label class="flex items-center justify-between p-3 rounded-xl border border-parchment hover:border-champagne-300 bg-alabaster/40 cursor-pointer transition-all duration-150">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" id="plating-box" class="w-4 h-4 rounded text-champagne-600 focus:ring-champagne-400 accent-champagne-600" onchange="calculate()">
+                <div>
+                  <p class="text-xs font-semibold text-noir">Baño de Rodio / Oro Electrolítico de Alta Pureza</p>
+                  <p class="text-[11px] text-charcoal/50">Capa protectora antialérgica y brillo de alta refracción</p>
+                </div>
+              </div>
+              <span class="text-xs font-medium text-charcoal/80">+<span class="currency-symbol">$</span><span id="plating-cost-val">30</span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Card: Margen Comercial e Impuestos -->
+        <div class="bg-white rounded-2xl border border-parchment/80 p-6 shadow-luxury">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-lg text-noir font-medium flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-champagne-50 text-champagne-700 text-xs flex items-center justify-center font-sans font-semibold">6</span>
+              Margen Comercial & Pasarela
+            </h3>
+            <span id="margin-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-champagne-100 text-champagne-800 font-medium">Margen: 80%</span>
+          </div>
+
+          <!-- Profit Margin Slider -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-xs font-medium text-charcoal/80">Margen de ganancia sobre costo total operativo</label>
+              <span class="text-sm font-semibold text-champagne-700" id="margin-display">80%</span>
+            </div>
+            <input type="range" id="margin-slider" min="20" max="220" step="5" value="80" class="w-full" oninput="updateMargin(this.value)">
+            <div class="flex justify-between text-[11px] text-charcoal/40 mt-1">
+              <span>20% (Mayorista)</span>
+              <span>80% (Estándar Atelier)</span>
+              <span>180%+ (Pieza de Autor)</span>
+            </div>
+          </div>
+
+          <!-- Toggles for Tax & Payment gateway -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-parchment">
+            <!-- Tax Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-alabaster border border-parchment">
+              <div>
+                <span class="text-xs font-medium text-noir block">Impuestos de Ley (IGV / IVA)</span>
+                <span class="text-[11px] text-charcoal/50">Tasa legal (+18%)</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="tax-toggle" class="sr-only peer" onchange="calculate()">
+                <div class="w-9 h-5 bg-parchment peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-champagne-600"></div>
+              </label>
+            </div>
+
+            <!-- Gateway Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-alabaster border border-parchment">
+              <div>
+                <span class="text-xs font-medium text-noir block">Comisión Pasarela / Tarjeta</span>
+                <span class="text-[11px] text-charcoal/50">Stripe / POS (+4.2%)</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="gateway-toggle" checked class="sr-only peer" onchange="calculate()">
+                <div class="w-9 h-5 bg-parchment peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-champagne-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="lg:col-span-5 lg:sticky lg:top-28 space-y-5">
+        
+        <!-- Main Luxury Quotation Card -->
+        <div class="bg-white rounded-3xl border border-champagne-200/90 p-6 sm:p-8 shadow-floating relative overflow-hidden">
+          
+          <!-- Subtle Decorative luxury watermarks -->
+          <div class="absolute -right-12 -top-12 w-40 h-40 bg-champagne-50 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="absolute -left-12 -bottom-12 w-32 h-32 bg-champagne-100/40 rounded-full blur-xl pointer-events-none"></div>
+
+          <div class="relative z-10">
+            
+            <!-- Top Tag -->
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[10px] tracking-[0.2em] uppercase font-semibold text-champagne-700 bg-champagne-50 px-3 py-1 rounded-full border border-champagne-200/80">
+                PVP Estimado de Venta
+              </span>
+              <span class="text-[11px] text-charcoal/40 font-mono" id="quote-timestamp">12/09/2026</span>
+            </div>
+
+            <h4 class="font-serif text-lg text-charcoal/80 font-normal truncate" id="summary-piece-name">Anillo Solitario 'Éternité'</h4>
+
+            <!-- Big PVP Display -->
+            <div class="my-4 pb-5 border-b border-parchment flex items-baseline gap-1.5">
+              <span class="font-serif text-2xl sm:text-3xl text-champagne-700 font-light currency-symbol">$</span>
+              <span class="font-serif text-4xl sm:text-5xl font-semibold text-noir tracking-tight" id="total-pvp-display">0.00</span>
+              <span class="text-xs font-sans text-charcoal/50 tracking-wider ml-1" id="currency-code-display">USD</span>
+            </div>
+
+            <!-- Cost Distribution Mini-Bar -->
+            <div class="mb-6">
+              <div class="flex justify-between text-[11px] text-charcoal/60 mb-1.5">
+                <span>Distribución del Precio</span>
+                <span class="font-semibold text-noir" id="margin-percent-badge">+80% margen</span>
+              </div>
+              <div class="h-2 w-full bg-bone rounded-full overflow-hidden flex" title="Composición del costo">
+                <div id="bar-metal" class="bg-champagne-500 h-full transition-all duration-300" style="width: 35%"></div>
+                <div id="bar-gems" class="bg-amber-400 h-full transition-all duration-300" style="width: 20%"></div>
+                <div id="bar-labor" class="bg-stone-500 h-full transition-all duration-300" style="width: 15%"></div>
+                <div id="bar-margin" class="bg-emerald-600 h-full transition-all duration-300" style="width: 30%"></div>
+              </div>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-charcoal/50 mt-2">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-champagne-500 inline-block"></span> Metal</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> Gemas</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-stone-500 inline-block"></span> Taller</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-600 inline-block"></span> Beneficio</span>
+              </div>
+            </div>
+
+            <!-- Itemized breakdown table -->
+            <div class="space-y-2.5 text-xs text-charcoal/70 mb-6">
+              
+              <div class="flex justify-between items-center py-1">
+                <span class="text-charcoal/80 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-champagne-400"></span>
+                  Metal (<span id="summary-metal-name">Oro 18k</span> · <span id="summary-metal-weight">4.8</span>g)
+                </span>
+                <span class="font-mono text-noir font-medium" id="summary-metal-cost">$0.00</span>
+              </div>
+
+              <div class="flex justify-between items-center py-1">
+                <span class="text-charcoal/80 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  Gemas & Engaste
+                </span>
+                <span class="font-mono text-noir font-medium" id="summary-gems-cost">$0.00</span>
+              </div>
+
+              <div class="flex justify-between items-center py-1">
+                <span class="text-charcoal/80 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
+                  Taller & Modelado (<span id="summary-labor-hours">6</span>h)
+                </span>
+                <span class="font-mono text-noir font-medium" id="summary-labor-cost">$0.00</span>
+              </div>
+
+              <div class="flex justify-between items-center py-1 border-b border-parchment/60 pb-2">
+                <span class="text-charcoal/80 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-parchment"></span>
+                  Packaging, Acabados & Cert.
+                </span>
+                <span class="font-mono text-noir font-medium" id="summary-extras-cost">$0.00</span>
+              </div>
+
+              <!-- Subtotal Costo Directo -->
+              <div class="flex justify-between items-center text-xs font-medium text-noir pt-1">
+                <span>Costo Total de Producción:</span>
+                <span class="font-mono font-semibold" id="summary-total-cost">$0.00</span>
+              </div>
+
+              <!-- Estimated Gross Profit -->
+              <div class="flex justify-between items-center text-emerald-800 bg-emerald-50/60 p-2 rounded-lg border border-emerald-100">
+                <span class="font-medium">Ganancia Bruta Estimada:</span>
+                <span class="font-mono font-bold text-emerald-900" id="summary-gross-profit">$0.00</span>
+              </div>
+
+              <!-- Taxes & Surcharges if active -->
+              <div id="taxes-row" class="flex justify-between items-center text-[11px] text-charcoal/60 pt-1">
+                <span id="taxes-label">Impuestos (18%) + Pasarela (4.2%):</span>
+                <span class="font-mono" id="summary-taxes-amount">$0.00</span>
+              </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-2.5">
+              <button onclick="copyQuoteToClipboard()" id="copy-btn" class="w-full bg-noir hover:bg-charcoal text-white rounded-xl py-3.5 px-4 text-xs font-medium tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow active:scale-[0.99]">
+                <svg class="w-4 h-4 text-champagne-300" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8 2.52 1.09 2.52.73 2.98.68.45-.04 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.29z"/>
+                </svg>
+                <span>Copiar Cotización WhatsApp</span>
+              </button>
+
+              <button onclick="downloadQuotePDF()" id="pdf-btn" class="w-full bg-champagne-50 hover:bg-champagne-100/80 text-champagne-900 border border-champagne-300 rounded-xl py-3 px-4 text-xs font-semibold tracking-wider uppercase transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow active:scale-[0.99]">
+                <svg class="w-4 h-4 text-champagne-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span>Descargar Cotización (PDF)</span>
+              </button>
+
+              <button onclick="resetDefaults()" class="w-full bg-bone hover:bg-parchment/60 text-charcoal/70 hover:text-noir rounded-xl py-2.5 px-4 text-xs font-medium tracking-wide transition-all duration-150">
+                Restablecer Parámetros
+              </button>
+            </div>
+
+            <!-- Small Footer note -->
+            <p class="text-[11px] text-center text-charcoal/40 mt-4 leading-relaxed">
+              *Los precios de metales finos están sujetos a fluctuaciones bursátiles del día. Esta cotización tiene una vigencia de 7 días.
+            </p>
+
+          </div>
+        </div>
+
+        <!-- Quick Tips Mini-Card -->
+        <div class="bg-champagne-50/50 rounded-2xl border border-champagne-200/50 p-4 text-xs text-charcoal/70 flex items-start gap-3">
+          <div class="text-champagne-700 mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="leading-snug">
+            <span class="font-medium text-noir block mb-0.5">Consejo de Taller:</span>
+            Para piezas con engaste pavé intrincado, se recomienda un margen no menor al 100% para amortizar el riesgo de calibración de gemas finas.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Message Box (No alerts) -->
+  <div id="toast-notification" class="fixed bottom-6 right-6 max-w-sm bg-noir text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 translate-y-24 opacity-0 pointer-events-none transition-all duration-300 z-50 border border-champagne-500/30">
+    <div class="w-8 h-8 rounded-full bg-champagne-600/20 text-champagne-300 flex items-center justify-center shrink-0">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <div>
+      <h5 class="text-xs font-semibold text-champagne-100" id="toast-title">¡Copiado con éxito!</h5>
+      <p class="text-[11px] text-gray-300 mt-0.5" id="toast-message">El desglose de cotización ha sido copiado para WhatsApp.</p>
+    </div>
+  </div>
+
+  <script>
+    /* Global State and Metal Catalog */
+    const METALS_DATA = [
+      { id: 'oro-18k', name: 'Oro 18K (750)', priceGramUSD: 66.5, purity: '75.0% Au', tag: 'Más solicitado' },
+      { id: 'oro-14k', name: 'Oro 14K (585)', priceGramUSD: 52.0, purity: '58.5% Au', tag: 'Durable' },
+      { id: 'plata-925', name: 'Plata 925 Esterlina', priceGramUSD: 1.45, purity: '92.5% Ag', tag: 'Accesible' },
+      { id: 'platino', name: 'Platino 950', priceGramUSD: 39.0, purity: '95.0% Pt', tag: 'Alta Nobleza' }
+    ];
+
+    let currentCurrency = {
+      code: 'USD',
+      symbol: '$',
+      rate: 1.0 // Multiplier relative to USD
+    };
+
+    let selectedMetalId = 'oro-18k';
+    let customMetalPricePerGramUSD = null; // When overridden
+
+    // Gems dynamic list in state (prices in USD)
+    let gemsData = [
+      { id: 1, name: 'Diamante Natural Central (0.45 ct, F-VS1)', qty: 1, priceUnitUSD: 550, settingCostUSD: 25 },
+      { id: 2, name: 'Diamantes Pavé Laterales (12 x 0.015 ct)', qty: 12, priceUnitUSD: 14, settingCostUSD: 4 }
+    ];
+
+    function renderMetalPills() {
+      const container = document.getElementById('metal-pills-container');
+      if (!container) return;
+
+      container.innerHTML = METALS_DATA.map(metal => {
+        const isSelected = metal.id === selectedMetalId;
+        const currentPriceLocal = (metal.priceGramUSD * currentCurrency.rate).toFixed(1);
+        
+        return `
+          <button type="button" onclick="selectMetal('${metal.id}')" class="p-3 rounded-xl border text-left transition-all duration-150 relative ${
+            isSelected 
+              ? 'border-champagne-500 bg-champagne-50/70 shadow-sm ring-1 ring-champagne-500' 
+              : 'border-parchment bg-alabaster hover:border-champagne-300 hover:bg-white'
+          }">
+            <div class="flex justify-between items-start mb-1">
+              <span class="text-xs font-semibold ${isSelected ? 'text-noir' : 'text-charcoal'}">${metal.name}</span>
+            </div>
+            <p class="text-[10px] text-charcoal/50">${metal.purity}</p>
+            <p class="text-xs font-mono font-medium text-champagne-700 mt-1">${currentCurrency.symbol}${currentPriceLocal}<span class="text-[10px] text-charcoal/40">/g</span></p>
+          </button>
+        `;
+      }).join('');
+
+      // Update current metal price in the custom price box
+      const activeMetal = METALS_DATA.find(m => m.id === selectedMetalId);
+      const activePrice = customMetalPricePerGramUSD !== null ? customMetalPricePerGramUSD : activeMetal.priceGramUSD;
+      const priceInput = document.getElementById('metal-price-gram');
+      if (priceInput) {
+        priceInput.value = (activePrice * currentCurrency.rate).toFixed(2);
+      }
+    }
+
+    function selectMetal(metalId) {
+      selectedMetalId = metalId;
+      customMetalPricePerGramUSD = null; // Reset manual override on change
+      renderMetalPills();
+      calculate();
+    }
+
+    function toggleCustomMetalPrice() {
+      const box = document.getElementById('custom-metal-box');
+      const btn = document.getElementById('edit-metal-btn');
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        btn.textContent = 'Restaurar mercado';
+      } else {
+        box.classList.add('hidden');
+        btn.textContent = 'Ajustar cotización/g';
+        customMetalPricePerGramUSD = null;
+        renderMetalPills();
+        calculate();
+      }
+    }
+
+    function syncWeightSlider(val) {
+      const slider = document.getElementById('metal-weight-slider');
+      slider.value = Math.min(val, slider.max);
+      calculate();
+    }
+
+    function syncWeightInput(val) {
+      document.getElementById('metal-weight-input').value = val;
+      calculate();
+    }
+
+    function updateMargin(val) {
+      document.getElementById('margin-display').textContent = val + '%';
+      document.getElementById('margin-badge').textContent = 'Margen: ' + val + '%';
+      document.getElementById('margin-percent-badge').textContent = '+' + val + '% margen';
+      calculate();
+    }
+
+    function renderGemsList() {
+      const container = document.getElementById('gems-list');
+      if (!container) return;
+
+      if (gemsData.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-5 border border-dashed border-parchment rounded-xl text-charcoal/40 text-xs">
+            Sin gemas seleccionadas. Puedes cotizar una pieza de metal liso o añadir piedras arriba.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = gemsData.map((gem, index) => {
+        const unitPriceLocal = (gem.priceUnitUSD * currentCurrency.rate).toFixed(2);
+        const setCostLocal = (gem.settingCostUSD * currentCurrency.rate).toFixed(2);
+        const totalGemCost = ((gem.priceUnitUSD + gem.settingCostUSD) * gem.qty * currentCurrency.rate).toFixed(2);
+
+        return `
+          <div class="p-3 bg-alabaster/70 border border-parchment rounded-xl text-xs space-y-2">
+            <div class="flex justify-between items-center gap-2">
+              <input type="text" value="${gem.name}" onchange="updateGemName(${index}, this.value)" class="bg-transparent font-medium text-noir focus:bg-white px-1.5 py-0.5 rounded border border-transparent focus:border-champagne-300 w-full outline-none" placeholder="Descripción de la gema">
+              <button onclick="removeGemItem(${index})" class="text-charcoal/40 hover:text-red-500 p-1 transition-colors" title="Eliminar gema">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-[11px] text-charcoal/70 items-center">
+              <div>
+                <span class="block text-[10px] text-charcoal/50">Cantidad:</span>
+                <input type="number" min="1" value="${gem.qty}" oninput="updateGemQty(${index}, this.value)" class="w-16 bg-white border border-parchment rounded px-1.5 py-0.5 font-mono text-center">
+              </div>
+              <div>
+                <span class="block text-[10px] text-charcoal/50">Gema + Engaste (${currentCurrency.symbol}):</span>
+                <span class="font-mono text-noir">${currentCurrency.symbol}${(parseFloat(unitPriceLocal) + parseFloat(setCostLocal)).toFixed(2)}</span>
+              </div>
+              <div class="text-right">
+                <span class="block text-[10px] text-charcoal/50">Total Línea:</span>
+                <span class="font-mono font-semibold text-noir">${currentCurrency.symbol}${totalGemCost}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addGemItem() {
+      gemsData.push({
+        id: Date.now(),
+        name: 'Gema / Brillante adicional',
+        qty: 1,
+        priceUnitUSD: 45,
+        settingCostUSD: 10
+      });
+      renderGemsList();
+      calculate();
+    }
+
+    function removeGemItem(index) {
+      gemsData.splice(index, 1);
+      renderGemsList();
+      calculate();
+    }
+
+    function updateGemName(index, val) {
+      gemsData[index].name = val;
+    }
+
+    function updateGemQty(index, val) {
+      const parsed = parseInt(val) || 1;
+      gemsData[index].qty = Math.max(1, parsed);
+      renderGemsList();
+      calculate();
+    }
+
+    function setCurrency(code, symbol, rate) {
+      currentCurrency = { code, symbol, rate };
+      
+      // Update toggle buttons styling
+      document.querySelectorAll('.curr-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-noir', 'shadow-sm');
+        btn.classList.add('text-charcoal/70');
+      });
+      const activeBtn = document.getElementById(`curr-${code}`);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-white', 'text-noir', 'shadow-sm');
+        activeBtn.classList.remove('text-charcoal/70');
+      }
+
+      // Update all symbol labels in document
+      document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = symbol);
+      document.getElementById('currency-code-display').textContent = code;
+
+      // Update package addon display costs
+      document.getElementById('pack-cost-val').textContent = (22 * rate).toFixed(0);
+      document.getElementById('cert-cost-val').textContent = (15 * rate).toFixed(0);
+      document.getElementById('plating-cost-val').textContent = (30 * rate).toFixed(0);
+
+      renderMetalPills();
+      renderGemsList();
+      calculate();
+    }
+
+    function calculate() {
+      // 1. Metal calculation
+      const activeMetal = METALS_DATA.find(m => m.id === selectedMetalId);
+      const customPriceInput = document.getElementById('metal-price-gram');
+      let pricePerGramLocal;
+      
+      if (customPriceInput && !document.getElementById('custom-metal-box').classList.contains('hidden')) {
+        pricePerGramLocal = parseFloat(customPriceInput.value) || 0;
+      } else {
+        pricePerGramLocal = activeMetal.priceGramUSD * currentCurrency.rate;
+      }
+
+      const weight = parseFloat(document.getElementById('metal-weight-input').value) || 0;
+      const metalTotalCost = weight * pricePerGramLocal;
+
+      // 2. Gems calculation
+      let gemsTotalCost = 0;
+      gemsData.forEach(gem => {
+        const itemCost = (gem.priceUnitUSD + gem.settingCostUSD) * gem.qty * currentCurrency.rate;
+        gemsTotalCost += itemCost;
+      });
+
+      // 3. Labor & Workshop calculation
+      const hours = parseFloat(document.getElementById('labor-hours').value) || 0;
+      const hourlyRateLocal = (parseFloat(document.getElementById('labor-rate').value) || 0) * (currentCurrency.rate > 1 ? 1 : 1); // direct input
+      const cadCost = (parseFloat(document.getElementById('cad-cost').value) || 0) * (currentCurrency.rate > 1 ? currentCurrency.rate : 1);
+      const laborTotalCost = (hours * hourlyRateLocal) + cadCost;
+
+      // 4. Extras / Packaging
+      let extrasCost = 0;
+      if (document.getElementById('pack-box').checked) extrasCost += 22 * currentCurrency.rate;
+      if (document.getElementById('cert-box').checked) extrasCost += 15 * currentCurrency.rate;
+      if (document.getElementById('plating-box').checked) extrasCost += 30 * currentCurrency.rate;
+
+      // 5. Direct and Operational Total
+      const directProductionCost = metalTotalCost + gemsTotalCost + laborTotalCost;
+      const totalOperativeCost = directProductionCost + extrasCost;
+
+      // 6. Commercial Margin
+      const marginPct = parseFloat(document.getElementById('margin-slider').value) || 80;
+      const grossProfit = totalOperativeCost * (marginPct / 100);
+      const priceBeforeTax = totalOperativeCost + grossProfit;
+
+      // 7. Taxes & Gateway surcharges
+      const applyTax = document.getElementById('tax-toggle').checked;
+      const applyGateway = document.getElementById('gateway-toggle').checked;
+      
+      const taxRate = applyTax ? 0.18 : 0.0;
+      const gatewayRate = applyGateway ? 0.042 : 0.0;
+
+      const taxAmount = priceBeforeTax * taxRate;
+      const gatewayAmount = priceBeforeTax * gatewayRate;
+      const totalSurcharges = taxAmount + gatewayAmount;
+
+      const finalPVP = priceBeforeTax + totalSurcharges;
+
+      // Update UI Elements
+      document.getElementById('gems-subtotal-display').textContent = formatCurrency(gemsTotalCost);
+      document.getElementById('summary-piece-name').textContent = document.getElementById('piece-name').value || 'Pieza a Medida';
+      document.getElementById('summary-metal-name').textContent = activeMetal.name;
+      document.getElementById('summary-metal-weight').textContent = weight.toFixed(1);
+      document.getElementById('summary-labor-hours').textContent = hours;
+
+      document.getElementById('summary-metal-cost').textContent = formatCurrency(metalTotalCost);
+      document.getElementById('summary-gems-cost').textContent = formatCurrency(gemsTotalCost);
+      document.getElementById('summary-labor-cost').textContent = formatCurrency(laborTotalCost);
+      document.getElementById('summary-extras-cost').textContent = formatCurrency(extrasCost);
+      
+      document.getElementById('summary-total-cost').textContent = formatCurrency(totalOperativeCost);
+      document.getElementById('summary-gross-profit').textContent = `+${formatCurrency(grossProfit)}`;
+      
+      // Taxes breakdown row
+      const taxesRow = document.getElementById('taxes-row');
+      const taxesLabel = document.getElementById('taxes-label');
+      if (applyTax || applyGateway) {
+        taxesRow.classList.remove('hidden');
+        let label = [];
+        if (applyTax) label.push('IGV/IVA (18%)');
+        if (applyGateway) label.push('Pasarela (4.2%)');
+        taxesLabel.textContent = label.join(' + ') + ':';
+        document.getElementById('summary-taxes-amount').textContent = formatCurrency(totalSurcharges);
+      } else {
+        taxesRow.classList.add('hidden');
+      }
+
+      // Big PVP Hero
+      document.getElementById('total-pvp-display').textContent = finalPVP.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+      // Visual Breakdown Bar
+      updateDistributionBar(metalTotalCost, gemsTotalCost, laborTotalCost, grossProfit, finalPVP);
+    }
+
+    function formatCurrency(val) {
+      return `${currentCurrency.symbol}${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function updateDistributionBar(metal, gems, labor, profit, total) {
+      if (total <= 0) return;
+      const pMetal = Math.max(5, (metal / total) * 100);
+      const pGems = Math.max(4, (gems / total) * 100);
+      const pLabor = Math.max(4, (labor / total) * 100);
+      const pProfit = Math.max(8, (profit / total) * 100);
+
+      document.getElementById('bar-metal').style.width = `${pMetal}%`;
+      document.getElementById('bar-gems').style.width = `${pGems}%`;
+      document.getElementById('bar-labor').style.width = `${pLabor}%`;
+      document.getElementById('bar-margin').style.width = `${pProfit}%`;
+    }
+
+    function downloadQuotePDF() {
+      try {
+        const { jsPDF } = window.jspdf;
+        if (!jsPDF) {
+          showToast('Error', 'No se pudo cargar el motor PDF. Revisa tu conexión.');
+          return;
+        }
+
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        const pieceName = document.getElementById('piece-name').value || 'Joya a Medida';
+        const clientName = document.getElementById('client-name').value || 'Cliente Exclusivo';
+        const activeMetal = METALS_DATA.find(m => m.id === selectedMetalId);
+        const weight = document.getElementById('metal-weight-input').value;
+        const pvp = document.getElementById('total-pvp-display').textContent;
+        const currency = currentCurrency.code;
+        const symbol = currentCurrency.symbol;
+        const dateStr = document.getElementById('quote-timestamp').textContent;
+        const quoteCode = 'COT-' + Math.floor(100000 + Math.random() * 900000);
+
+        // Page setup & styling
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 18;
+        const contentWidth = pageWidth - (margin * 2);
+
+        // Background gentle tone
+        doc.setFillColor(251, 251, 249);
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+        // Elegant Gold/Champagne Header Bar
+        doc.setFillColor(24, 23, 22);
+        doc.rect(margin, 15, contentWidth, 32, 'F');
+
+        // Header Border Accent Line
+        doc.setDrawColor(184, 144, 86); // Champagne gold
+        doc.setLineWidth(1.2);
+        doc.line(margin, 47, margin + contentWidth, 47);
+
+        // Header typography
+        doc.setTextColor(235, 231, 221);
+        doc.setFont('times', 'normal');
+        doc.setFontSize(8.5);
+        doc.text('HAUTE JOAILLERIE & ORFEBRERÍA DE AUTOR', margin + 8, 24);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('times', 'bold');
+        doc.setFontSize(18);
+        doc.text('ATELIER AURUM', margin + 8, 33);
+
+        doc.setTextColor(197, 165, 116);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.text('PRESUPUESTO FORMAL', pageWidth - margin - 8, 24, { align: 'right' });
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.text(quoteCode, pageWidth - margin - 8, 33, { align: 'right' });
+
+        // Client & Piece Info Box
+        let y = 56;
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(229, 214, 189);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(margin, y, contentWidth, 26, 3, 3, 'FD');
+
+        doc.setTextColor(110, 78, 44);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.text('INFORMACIÓN DE LA ORDEN', margin + 6, y + 7);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(40, 39, 37);
+
+        doc.text(`Cliente:`, margin + 6, y + 14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${clientName}`, margin + 22, y + 14);
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Pieza:`, margin + 6, y + 21);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${pieceName}`, margin + 22, y + 21);
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Fecha Emisión:`, margin + 110, y + 14);
+        doc.text(`${dateStr}`, margin + 140, y + 14);
+
+        doc.text(`Validez Presupuesto:`, margin + 110, y + 21);
+        doc.text(`7 días calendario`, margin + 140, y + 21);
+
+        // Technical Specifications Table Title
+        y = 90;
+        doc.setFont('times', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(24, 23, 22);
+        doc.text('Especificaciones de Manufactura & Materiales', margin, y);
+
+        // Table Header
+        y += 5;
+        doc.setFillColor(244, 242, 236);
+        doc.rect(margin, y, contentWidth, 7, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(70, 65, 60);
+        doc.text('CONCEPTO / MATERIAL', margin + 4, y + 5);
+        doc.text('DETALLE TÉCNICO', margin + 85, y + 5);
+        doc.text('ESTADO', pageWidth - margin - 6, y + 5, { align: 'right' });
+
+        // Table rows
+        y += 7;
+        const rows = [
+          { label: 'Aleación Noble Base', detail: `${activeMetal.name} (${activeMetal.purity}) — ${weight} g bruto`, status: 'Garantizado' },
+          { label: 'Manufactura de Taller', detail: `${document.getElementById('labor-hours').value}h orfebrería artesanal + acabado al espejo`, status: 'Artesanal' }
+        ];
+
+        if (document.getElementById('cad-cost').value > 0) {
+          rows.push({ label: 'Modelado 3D / Matriz', detail: 'Prototipado en cera perdida y ajuste milimétrico', status: 'Incluido' });
+        }
+
+        gemsData.forEach((gem) => {
+          rows.push({
+            label: `Gema: ${gem.name}`,
+            detail: `Cantidad: ${gem.qty} pieza(s) montadas bajo microscopio`,
+            status: 'Certificado'
+          });
+        });
+
+        if (document.getElementById('pack-box').checked) {
+          rows.push({ label: 'Packaging Atelier', detail: 'Cofre rígido de terciopelo, bolsa y paño microfibra', status: 'Incluido' });
+        }
+        if (document.getElementById('cert-box').checked) {
+          rows.push({ label: 'Certificación Gemológica', detail: 'Ficha técnica con sello de autenticidad perpetua', status: 'Incluido' });
+        }
+        if (document.getElementById('plating-box').checked) {
+          rows.push({ label: 'Recubrimiento Especial', detail: 'Baño electrolítico de rodio / oro alta pureza', status: 'Aplicado' });
+        }
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        rows.forEach((r, idx) => {
+          doc.setFillColor(idx % 2 === 0 ? 255 : 251, 251, 249);
+          doc.rect(margin, y, contentWidth, 7.5, 'F');
+
+          doc.setDrawColor(235, 231, 221);
+          doc.setLineWidth(0.2);
+          doc.line(margin, y + 7.5, margin + contentWidth, y + 7.5);
+
+          doc.setTextColor(30, 30, 30);
+          doc.setFont('helvetica', 'bold');
+          doc.text(r.label, margin + 4, y + 5.2);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(80, 80, 80);
+          doc.text(r.detail, margin + 85, y + 5.2);
+
+          doc.setTextColor(184, 144, 86);
+          doc.setFont('helvetica', 'bold');
+          doc.text(r.status, pageWidth - margin - 6, y + 5.2, { align: 'right' });
+
+          y += 7.5;
+        });
+
+        // Price Summary Callout
+        y += 8;
+        doc.setFillColor(247, 244, 237);
+        doc.setDrawColor(213, 189, 151);
+        doc.roundedRect(margin, y, contentWidth, 38, 3, 3, 'FD');
+
+        doc.setFont('times', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(89, 63, 37);
+        doc.text('PRECIO TOTAL DE VENTA SUGERIDO (PVP)', margin + 8, y + 10);
+
+        doc.setFont('times', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(24, 23, 22);
+        doc.text(`${symbol} ${pvp} ${currency}`, margin + 8, y + 21);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.8);
+        doc.setTextColor(100, 100, 100);
+        
+        let taxNotes = [];
+        if (document.getElementById('tax-toggle').checked) taxNotes.push('Impuestos de ley (IGV/IVA 18%)');
+        if (document.getElementById('gateway-toggle').checked) taxNotes.push('Comisión de pasarela/tarjeta (4.2%)');
+        const taxStr = taxNotes.length > 0 ? `Incluye: ${taxNotes.join(' y ')}.` : 'Valores netos según condiciones de taller.';
+        
+        doc.text(`* ${taxStr}`, margin + 8, y + 29);
+        doc.text(`* Moneda oficial de transacción: ${currency}. Aceptamos transferencia bancaria y tarjetas autorizadas.`, margin + 8, y + 34);
+
+        // Workshop Stamp & Terms Section
+        y += 46;
+        doc.setDrawColor(229, 214, 189);
+        doc.setLineWidth(0.4);
+        doc.line(margin, y, margin + contentWidth, y);
+
+        y += 8;
+        doc.setFont('times', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(24, 23, 22);
+        doc.text('Garantía de Atelier & Políticas de Elaboración', margin, y);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(90, 88, 85);
+        const terms = [
+          '1. Cada pieza es elaborada de manera individual por maestros orfebres con estándares de alta joyería internacional.',
+          '2. La cotización está sujeta a variaciones en la cotización spot internacional del oro y metales preciosos luego del período de validez.',
+          '3. Se requiere un anticipo del 50% para dar inicio a la manufactura y compra de gemas; el saldo restante se abona a la entrega de la joya.',
+          '4. Se incluye servicio de mantenimiento y limpieza ultrasónica gratuito durante el primer año.'
+        ];
+
+        terms.forEach((t, i) => {
+          doc.text(t, margin, y + 6 + (i * 4.5));
+        });
+
+        // Signatures area
+        y += 28;
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
+        doc.line(margin + 20, y + 10, margin + 70, y + 10);
+        doc.line(pageWidth - margin - 70, y + 10, pageWidth - margin - 20, y + 10);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(110, 110, 110);
+        doc.text('Maestro Orfebre / Atelier Aurum', margin + 45, y + 15, { align: 'center' });
+        doc.text('Aceptación de Cliente', pageWidth - margin - 45, y + 15, { align: 'center' });
+
+        // Save PDF
+        const safeName = pieceName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        doc.save(`Cotizacion_Aurum_${safeName}.pdf`);
+
+        showToast('PDF Descargado', 'El archivo PDF de la cotización ha sido generado con éxito.');
+      } catch (e) {
+        console.error('Error generando PDF:', e);
+        showToast('Error', 'Ocurrió un inconveniente al generar el PDF.');
+      }
+    }
+
+    function generateWhatsAppQuotation() {
+      const pieceName = document.getElementById('piece-name').value || 'Pieza de Alta Joyería';
+      const clientName = document.getElementById('client-name').value || 'Estimado(a) Cliente';
+      const activeMetal = METALS_DATA.find(m => m.id === selectedMetalId);
+      const weight = document.getElementById('metal-weight-input').value;
+      const pvp = document.getElementById('total-pvp-display').textContent;
+      const currency = currentCurrency.code;
+      const symbol = currentCurrency.symbol;
+
+      let stonesSummary = '';
+      if (gemsData.length > 0) {
+        stonesSummary = '\n💎 *Gemas y Engaste:* \n' + gemsData.map(g => `   • ${g.name} (${g.qty} un)`).join('\n');
+      }
+
+      const text = `✨ *COTIZACIÓN EXCLUSIVA — ATELIER AURUM* ✨\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `👤 *Cliente / Proyecto:* ${clientName}\n` +
+        `💍 *Pieza:* ${pieceName}\n\n` +
+        `📜 *ESPECIFICACIONES TÉCNICAS:*\n` +
+        `• *Material Noble:* ${activeMetal.name}\n` +
+        `• *Peso de Taller:* ${weight} g aprox.\n` +
+        `${stonesSummary}\n` +
+        `• *Elaboración:* Manufactura artesanal y modelado de alta precisión\n` +
+        `• *Presentación:* Cofre de lujo y paño de conservación\n` +
+        `• *Garantía:* Certificado de autenticidad perpetua\n\n` +
+        `🏷️ *INVERSIÓN FINAL SUGERIDA:* *${symbol}${pvp} ${currency}*\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `_Nota: Validez de cotización: 7 días hábiles sujeta a precio spot del metal._\n` +
+        `Quedamos a su entera disposición para cualquier ajuste o detalle a medida.`;
+
+      return text;
+    }
+
+    function copyQuoteToClipboard() {
+      const quoteText = generateWhatsAppQuotation();
+
+      // Safe fallback copy using textarea
+      const tempArea = document.createElement('textarea');
+      tempArea.value = quoteText;
+      tempArea.style.position = 'fixed';
+      tempArea.style.left = '-9999px';
+      tempArea.style.top = '0';
+      document.body.appendChild(tempArea);
+      tempArea.focus();
+      tempArea.select();
+
+      let success = false;
+      try {
+        success = document.execCommand('copy');
+      } catch (err) {
+        success = false;
+      }
+      document.body.removeChild(tempArea);
+
+      if (success) {
+        showToast('¡Cotización Copiada!', 'El desglose formateado para WhatsApp está listo para pegar en el chat con tu cliente.');
+      } else {
+        showToast('Aviso', 'Selecciona y copia el texto manualmente.');
+      }
+    }
+
+    function showToast(title, msg) {
+      const toast = document.getElementById('toast-notification');
+      document.getElementById('toast-title').textContent = title;
+      document.getElementById('toast-message').textContent = msg;
+
+      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 4000);
+    }
+
+    function resetDefaults() {
+      selectedMetalId = 'oro-18k';
+      customMetalPricePerGramUSD = null;
+      document.getElementById('metal-weight-input').value = 4.8;
+      document.getElementById('metal-weight-slider').value = 4.8;
+      document.getElementById('labor-hours').value = 6;
+      document.getElementById('labor-rate').value = 28;
+      document.getElementById('cad-cost').value = 35;
+      document.getElementById('margin-slider').value = 80;
+      document.getElementById('pack-box').checked = true;
+      document.getElementById('cert-box').checked = true;
+      document.getElementById('plating-box').checked = false;
+      document.getElementById('tax-toggle').checked = false;
+      document.getElementById('gateway-toggle').checked = true;
+      
+      document.getElementById('custom-metal-box').classList.add('hidden');
+      document.getElementById('edit-metal-btn').textContent = 'Ajustar cotización/g';
+
+      gemsData = [
+        { id: 1, name: 'Diamante Natural Central (0.45 ct, F-VS1)', qty: 1, priceUnitUSD: 550, settingCostUSD: 25 },
+        { id: 2, name: 'Diamantes Pavé Laterales (12 x 0.015 ct)', qty: 12, priceUnitUSD: 14, settingCostUSD: 4 }
+      ];
+
+      updateMargin(80);
+      renderMetalPills();
+      renderGemsList();
+      calculate();
+      showToast('Restablecido', 'Se han cargado las variables predeterminadas del taller.');
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Set today's date formatted
+      const now = new Date();
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      document.getElementById('quote-timestamp').textContent = now.toLocaleDateString('es-ES', options);
+
+      // Render initial components
+      renderMetalPills();
+      renderGemsList();
+      calculate();
+
+      // Listeners for inputs
+      document.getElementById('piece-name').addEventListener('input', calculate);
+      document.getElementById('client-name').addEventListener('input', calculate);
+    });
+  </script>
+</body>
+</html>

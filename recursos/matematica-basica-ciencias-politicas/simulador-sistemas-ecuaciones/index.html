@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Sistemas de Ecuaciones Lineales</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for crisp mathematical notation -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    .font-mono-math {
+      font-family: 'Fira Code', monospace;
+    }
+    /* Custom canvas cursor */
+    canvas.cursor-grab {
+      cursor: grab;
+    }
+    canvas.cursor-grabbing {
+      cursor: grabbing;
+    }
+    /* Subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
+            Simulador de Sistemas de Ecuaciones Lineales
+          </h1>
+          <p class="text-xs text-slate-500 font-medium">
+            Matemática Básica • Geometría Analítica y Álgebra Lineal
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="../../../index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 rounded-lg border border-slate-200 transition-colors shadow-2xs">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Repositorio Docente
+        </a>
+        <button id="btn-example" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-colors active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Cargar Ejemplo (2x+y=8)
+        </button>
+        <button id="btn-clear" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Notice / Alert Banner -->
+    <div id="status-banner" class="hidden rounded-xl border p-4 text-sm transition-all duration-300">
+      <div class="flex items-start gap-3">
+        <div id="status-icon" class="flex-shrink-0 mt-0.5"></div>
+        <div class="flex-1" id="status-text"></div>
+        <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Top Input Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <!-- Tabs header -->
+      <div class="bg-slate-50/70 border-b border-slate-200 px-4 sm:px-6 pt-3 flex flex-wrap gap-2 sm:gap-4 items-center justify-between">
+        <div class="flex space-x-1 sm:space-x-2" role="tablist">
+          <button id="tab-btn-text" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-indigo-600 text-indigo-700 bg-white transition-all">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Escribir Ecuaciones
+            </span>
+          </button>
+          <button id="tab-btn-coef" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-all">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              Ingresar Coeficientes
+            </span>
+          </button>
+          <button id="tab-btn-ocr" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-all">
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Cargar Imagen
+            </span>
+          </button>
+        </div>
+        <span class="text-xs text-slate-400 py-2 hidden md:inline">Sistema de orden 2 × 2</span>
+      </div>
+
+      <div class="p-6">
+        <!-- Panel 1: Free Text Input -->
+        <div id="panel-text" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200">
+              <label class="block text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>Ecuación 1 (Recta L₁)</span>
+                <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-mono">Ej: 2x + 3y = 12</span>
+              </label>
+              <div class="relative">
+                <input type="text" id="eq1-text" value="2x + 3y = 12" placeholder="Ej: 2x + 3y = 12 o y = -x + 4"
+                  class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-800 font-mono-math text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none" />
+              </div>
+            </div>
+            <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200">
+              <label class="block text-xs font-semibold text-purple-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>Ecuación 2 (Recta L₂)</span>
+                <span class="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-mono">Ej: x - y = 1</span>
+              </label>
+              <div class="relative">
+                <input type="text" id="eq2-text" value="x - y = 1" placeholder="Ej: x - y = 1 o 3x - 2y = 4"
+                  class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-800 font-mono-math text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm outline-none" />
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500">
+            Acepta formatos como <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">2x + 3y = 12</code>, <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">y = 2x + 3</code>, <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">x + y = 10</code> o <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700">3x - 2y = 4</code>.
+          </p>
+        </div>
+
+        <!-- Panel 2: Direct Coefficients [a]x + [b]y = [c] -->
+        <div id="panel-coef" class="hidden space-y-4">
+          <p class="text-xs text-slate-600 mb-2 font-medium">
+            Completa la forma canónica <span class="font-mono text-indigo-700 font-semibold">a₁x + b₁y = c₁</span> y <span class="font-mono text-purple-700 font-semibold">a₂x + b₂y = c₂</span>:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Eq 1 Coefs -->
+            <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-200">
+              <span class="text-xs font-bold text-blue-700 block mb-3">Ecuación 1</span>
+              <div class="flex items-center gap-1.5 sm:gap-2 font-mono text-sm sm:text-base flex-wrap">
+                <input type="number" id="c-a1" step="any" value="2" class="w-16 sm:w-20 px-2 py-2 text-center bg-white border border-slate-300 rounded-md font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <span class="font-bold text-slate-700">x</span>
+                <span class="font-bold text-slate-500">+</span>
+                <input type="number" id="c-b1" step="any" value="3" class="w-16 sm:w-20 px-2 py-2 text-center bg-white border border-slate-300 rounded-md font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                <span class="font-bold text-slate-700">y</span>
+                <span class="font-bold text-slate-500">=</span>
+                <input type="number" id="c-c1" step="any" value="12" class="w-20 sm:w-24 px-2 py-2 text-center bg-white border border-slate-300 rounded-md font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+            <!-- Eq 2 Coefs -->
+            <div class="bg-purple-50/40 p-4 rounded-xl border border-purple-200">
+              <span class="text-xs font-bold text-purple-700 block mb-3">Ecuación 2</span>
+              <div class="flex items-center gap-1.5 sm:gap-2 font-mono text-sm sm:text-base flex-wrap">
+                <input type="number" id="c-a2" step="any" value="1" class="w-16 sm:w-20 px-2 py-2 text-center bg-white border border-slate-300 rounded-md font-semibold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                <span class="font-bold text-slate-700">x</span>
+                <span class="font-bold text-slate-500">+</span>
+                <input type="number" id="c-b2" step="any" value="-1" class="w-16 sm:w-20 px-2 py-2 text-center bg-white border border-slate-300 rounded-md font-semibold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+                <span class="font-bold text-slate-700">y</span>
+                <span class="font-bold text-slate-500">=</span>
+                <input type="number" id="c-c2" step="any" value="1" class="w-20 sm:w-24 px-2 py-2 text-center bg-white border border-slate-300 rounded-md font-semibold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: Image OCR Input -->
+        <div id="panel-ocr" class="hidden space-y-4">
+          <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-6 sm:p-8 text-center bg-slate-50/50 hover:bg-indigo-50/20 transition cursor-pointer">
+            <input type="file" id="image-input" accept="image/*" class="hidden" />
+            <div class="max-w-md mx-auto space-y-3">
+              <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mx-auto flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-800">
+                  Haz clic para seleccionar o arrastra una imagen aquí
+                </p>
+                <p class="text-xs text-slate-500 mt-1">
+                  Fotografía de un cuaderno, captura de pantalla o ejercicio con las dos ecuaciones (PNG, JPG, WebP)
+                </p>
+              </div>
+              <button type="button" onclick="document.getElementById('image-input').click()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 font-medium text-xs rounded-lg shadow-sm">
+                Explorar imagen
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview & Review container (Critical pedagogical requirement) -->
+          <div id="ocr-preview-container" class="hidden bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div id="ocr-spinner" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent"></div>
+                <span id="ocr-status-title" class="text-xs font-bold text-slate-800">Ecuaciones reconocidas</span>
+              </div>
+              <span class="text-[11px] bg-amber-100 text-amber-800 font-medium px-2 py-0.5 rounded-full">
+                Revisa y confirma antes de resolver
+              </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <img id="ocr-thumbnail" class="max-h-36 rounded-lg object-contain bg-black/5 mx-auto border" alt="Vista previa de imagen" />
+              </div>
+              <div class="space-y-2 flex flex-col justify-center">
+                <div>
+                  <label class="text-[11px] font-semibold text-slate-600 block">Ecuación 1 detectada:</label>
+                  <input type="text" id="ocr-eq1" class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                </div>
+                <div>
+                  <label class="text-[11px] font-semibold text-slate-600 block">Ecuación 2 detectada:</label>
+                  <input type="text" id="ocr-eq2" class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                </div>
+                <button id="btn-apply-ocr" class="mt-2 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                  Aplicar ecuaciones detectadas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Action Button -->
+        <div class="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="text-xs text-slate-500 flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            Cálculo instantáneo en navegador (sin retrasos)
+          </div>
+          <button id="btn-solve" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-base font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>RESOLVER SISTEMA</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="results-wrapper" class="space-y-6">
+      
+      <!-- Top Overview Row: Solution Card + Classification + Verification -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Card 1: Solution Values -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Solución Numérica</span>
+              <span id="badge-state" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">Listo</span>
+            </div>
+            
+            <div id="solution-values-container" class="space-y-3 my-2">
+              <div class="flex items-center justify-around bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <div class="text-center">
+                  <span class="text-xs text-slate-500 block font-medium">Valor de x</span>
+                  <span id="val-x" class="text-2xl sm:text-3xl font-bold font-mono text-indigo-600">--</span>
+                </div>
+                <div class="h-10 w-px bg-slate-200"></div>
+                <div class="text-center">
+                  <span class="text-xs text-slate-500 block font-medium">Valor de y</span>
+                  <span id="val-y" class="text-2xl sm:text-3xl font-bold font-mono text-purple-600">--</span>
+                </div>
+              </div>
+
+              <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">Punto de intersección:</span>
+                <span id="point-intersection" class="font-mono text-sm font-bold text-indigo-900 bg-white px-2.5 py-1 rounded border border-indigo-200">
+                  (x, y) = (?, ?)
+                </span>
+              </div>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">
+            El punto donde ambas rectas se cortan en el plano cartesiano.
+          </p>
+        </div>
+
+        <!-- Card 2: Classification of the System -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Tipo de Sistema</span>
+              <span class="text-xs text-indigo-600 font-semibold flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                Clasificación
+              </span>
+            </div>
+            <h3 id="class-title" class="text-lg font-bold text-slate-800 mb-1">
+              Esperando resolución...
+            </h3>
+            <p id="class-desc" class="text-xs text-slate-600 leading-relaxed">
+              Presiona "Resolver sistema" para analizar la relación entre las pendientes y ordenadas al origen.
+            </p>
+          </div>
+          <div id="class-pill" class="mt-4 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center gap-2">
+            <span id="class-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+            <span id="class-formal-name" class="font-medium">Forma algebraica estándar</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Algebraic Check / Comprobación -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Comprobación</span>
+              <span class="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Verificación
+              </span>
+            </div>
+            <div id="verification-content" class="space-y-2 text-xs font-mono">
+              <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-slate-500">
+                Sustitución en Eq 1: Pendiente...
+              </div>
+              <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-slate-500">
+                Sustitución en Eq 2: Pendiente...
+              </div>
+            </div>
+          </div>
+          <div id="verification-status" class="mt-3 text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+            <span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
+            Sin verificar aún
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Body: Interactive Graph & Step-by-Step Procedure -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                </svg>
+                Representación Gráfica Cartesiana
+              </h2>
+              <p class="text-xs text-slate-500">
+                Arrastra para mover el plano • Rueda del ratón o botones para Zoom
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg">
+              <button id="btn-zoom-in" title="Acercar zoom" class="p-1.5 hover:bg-white text-slate-700 rounded transition shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              </button>
+              <button id="btn-zoom-out" title="Alejar zoom" class="p-1.5 hover:bg-white text-slate-700 rounded transition shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+              </button>
+              <button id="btn-zoom-reset" title="Restablecer vista centrada" class="p-1.5 hover:bg-white text-slate-700 rounded transition shadow-sm text-xs font-semibold px-2">
+                Centrar
+              </button>
+            </div>
+          </div>
+
+          <!-- Canvas Container -->
+          <div class="relative w-full aspect-square sm:aspect-[4/3] rounded-xl overflow-hidden bg-slate-900 shadow-inner border border-slate-800 select-none">
+            <canvas id="cartesian-canvas" class="w-full h-full block cursor-grab"></canvas>
+            
+            <!-- Floating Hover Coordinates Badge -->
+            <div id="canvas-coords-badge" class="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-sm text-slate-300 px-2.5 py-1 rounded text-xs font-mono border border-slate-700 pointer-events-none">
+              x: 0.00, y: 0.00
+            </div>
+
+            <!-- Graph Legend in Canvas overlay -->
+            <div class="absolute top-3 right-3 bg-slate-900/85 backdrop-blur-sm p-2.5 rounded-lg border border-slate-700 text-xs space-y-1.5 text-white pointer-events-none shadow-lg">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-1 bg-blue-400 rounded"></span>
+                <span id="legend-line1" class="font-mono text-[11px] text-blue-200">L₁: y = mx + b</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-1 bg-purple-400 rounded"></span>
+                <span id="legend-line2" class="font-mono text-[11px] text-purple-200">L₂: y = mx + b</span>
+              </div>
+              <div id="legend-intersect-row" class="flex items-center gap-2 pt-1 border-t border-slate-700/80">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 border border-white"></span>
+                <span id="legend-point" class="font-mono text-[11px] text-amber-200 font-semibold">Intersección (x, y)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Graph Interpretation Card (Below canvas) -->
+          <div id="interpretation-box" class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs leading-relaxed text-slate-700">
+            <div class="font-bold text-slate-900 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14H8a4 4 0 01-.8-7.92 4.01 4.01 0 017.6 0A4 4 0 0112 14z"/></svg>
+              Interpretación Geométrica:
+            </div>
+            <p id="interpretation-text">
+              Cada ecuación lineal representa una recta infinita en el plano. La solución del sistema corresponde al conjunto de puntos compartidos por ambas rectas.
+            </p>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Procedimiento Paso a Paso
+              </h2>
+              <span class="text-xs text-slate-500">Método de Eliminación / Reducción</span>
+            </div>
+            <span class="text-[11px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded">Pedagógico</span>
+          </div>
+
+          <!-- Steps Accordion list -->
+          <div id="steps-container" class="space-y-3">
+            <!-- Step placeholder before solving -->
+            <div class="text-center py-10 px-4 text-slate-400">
+              <svg class="w-12 h-12 mx-auto mb-2 text-slate-300 stroke-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              <p class="text-sm font-medium">Haz clic en "Resolver Sistema" para desplegar la explicación detallada paso a paso.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-400">
+    <p>Simulador Educativo de Matemática Básica • Resolución Algebraica & Gráfica de Sistemas 2×2</p>
+  </footer>
+
+  <script>
+    const state = {
+      activeTab: 'text', // 'text', 'coef', 'ocr'
+      eq1: { a: 2, b: 3, c: 12, raw: '2x + 3y = 12' },
+      eq2: { a: 1, b: -1, c: 1, raw: 'x - y = 1' },
+      solution: null, // { type: 'unique'|'infinite'|'none', x, y, det, detX, detY }
+      // Canvas view coordinates
+      view: {
+        centerX: 0,
+        centerY: 0,
+        scale: 40, // pixels per mathematical unit
+        isDragging: false,
+        lastMouseX: 0,
+        lastMouseY: 0,
+        hoverCoords: { x: 0, y: 0 }
+      },
+      uploadedImageBase64: null
+    };
+
+    /**
+     * Converts a number or float into a tidy fraction or string
+     */
+    function formatNumber(num) {
+      if (Number.isInteger(num)) return num.toString();
+      const rounded = Math.round(num * 10000) / 10000;
+      return rounded.toString();
+    }
+
+    /**
+     * Parse single linear term string into coefficients a, b, c for a*x + b*y = c
+     * Handles formats like:
+     * 2x + 3y = 12
+     * x - y = 1
+     * y = 2x + 3  -> -2x + y = 3
+     * -3x = 6 - 2y -> -3x + 2y = 6
+     */
+    function parseLinearEquation(inputStr) {
+      if (!inputStr || typeof inputStr !== 'string') {
+        throw new Error("La ecuación no puede estar vacía.");
+      }
+
+      const clean = inputStr.replace(/\s+/g, '').toLowerCase();
+
+      if (!clean.includes('=')) {
+        throw new Error("La ecuación debe contener el signo '=' separando ambos miembros.");
+      }
+
+      const parts = clean.split('=');
+      if (parts.length !== 2) {
+        throw new Error("La ecuación debe tener exactamente un signo '='.");
+      }
+
+      // Check for non-linear characters like ^, *, /, etc.
+      if (/[^0-9a-z\+\-\.\/]/.test(parts[0]) || /[^0-9a-z\+\-\.\/]/.test(parts[1])) {
+        throw new Error("Se detectaron caracteres no permitidos en la ecuación.");
+      }
+
+      // Check for quadratic or higher degrees (x^2, xy, etc.)
+      if (/([xy]\^[0-9]+)|(xy)|(yx)/.test(clean)) {
+        throw new Error("Solo se admiten ecuaciones lineales de primer grado (sin x², y² ni productos xy).");
+      }
+
+      let coeffX = 0;
+      let coeffY = 0;
+      let constant = 0; // accumulated constant on RHS
+
+      // Parse side
+      function parseSide(expr, multiplier) {
+        // Regex to split into terms with their sign
+        const termRegex = /([+-]?[^+-]+)/g;
+        const terms = expr.match(termRegex);
+        if (!terms) return;
+
+        for (const term of terms) {
+          if (!term) continue;
+
+          // Check for division like 1/2
+          const parseVal = (valStr) => {
+            if (valStr === '' || valStr === '+') return 1;
+            if (valStr === '-') return -1;
+            if (valStr.includes('/')) {
+              const [num, den] = valStr.split('/').map(Number);
+              if (den === 0) throw new Error("División entre cero detectada en los coeficientes.");
+              return num / den;
+            }
+            const n = parseFloat(valStr);
+            if (isNaN(n)) throw new Error(`Coeficiente no válido: "${valStr}"`);
+            return n;
+          };
+
+          if (term.includes('x')) {
+            const numPart = term.replace('x', '');
+            coeffX += parseVal(numPart) * multiplier;
+          } else if (term.includes('y')) {
+            const numPart = term.replace('y', '');
+            coeffY += parseVal(numPart) * multiplier;
+          } else {
+            // Constant term
+            constant -= parseVal(term) * multiplier; // moving to RHS
+          }
+        }
+      }
+
+      // Left side: move x and y with +1
+      parseSide(parts[0], 1);
+      // Right side: subtract x and y (move to LHS), but constant moves to RHS
+      parseSide(parts[1], -1);
+
+      // Verify that at least one variable is present
+      if (coeffX === 0 && coeffY === 0) {
+        throw new Error("La ecuación debe contener al menos una variable (x o y).");
+      }
+
+      return {
+        a: coeffX,
+        b: coeffY,
+        c: constant
+      };
+    }
+
+    function showNotification(message, type = 'error') {
+      const banner = document.getElementById('status-banner');
+      const text = document.getElementById('status-text');
+      const icon = document.getElementById('status-icon');
+
+      banner.className = 'rounded-xl border p-4 text-sm transition-all duration-300 block ';
+      if (type === 'error') {
+        banner.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
+        icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`;
+      } else if (type === 'success') {
+        banner.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
+        icon.innerHTML = `<svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`;
+      } else {
+        banner.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
+        icon.innerHTML = `<svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`;
+      }
+
+      text.innerText = message;
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function clearNotification() {
+      document.getElementById('status-banner').classList.add('hidden');
+    }
+
+    function solveSystem(a1, b1, c1, a2, b2, c2) {
+      // Determinant of coefficients matrix
+      // | a1  b1 |
+      // | a2  b2 | = a1*b2 - a2*b1
+      const det = (a1 * b2) - (a2 * b1);
+      
+      // Determinants for Cramer's test and consistency
+      const detX = (c1 * b2) - (c2 * b1);
+      const detY = (a1 * c2) - (a2 * c1);
+
+      // Tolerance for floating point equality
+      const EPS = 1e-9;
+
+      if (Math.abs(det) > EPS) {
+        const x = detX / det;
+        const y = detY / det;
+        return {
+          type: 'unique',
+          x: x,
+          y: y,
+          det: det,
+          detX: detX,
+          detY: detY
+        };
+      } else {
+        // Parallel or Coincident
+        // If detX and detY are also 0, the lines are coincident (infinite solutions)
+        if (Math.abs(detX) < EPS && Math.abs(detY) < EPS) {
+          return {
+            type: 'infinite',
+            det: 0,
+            detX: 0,
+            detY: 0
+          };
+        } else {
+          return {
+            type: 'none',
+            det: 0,
+            detX: detX,
+            detY: detY
+          };
+        }
+      }
+    }
+
+    function generateProcedureSteps(a1, b1, c1, a2, b2, c2, sol) {
+      const container = document.getElementById('steps-container');
+      container.innerHTML = '';
+
+      const makeStepCard = (stepNum, title, explanation, mathSnippet) => {
+        const div = document.createElement('div');
+        div.className = "p-4 rounded-xl bg-slate-50 border border-slate-200 transition hover:border-indigo-300";
+        div.innerHTML = `
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">${stepNum}</span>
+            <h4 class="font-bold text-sm text-slate-800">${title}</h4>
+          </div>
+          <p class="text-xs text-slate-600 mb-2 leading-relaxed">${explanation}</p>
+          <div class="bg-white p-2.5 rounded-lg border border-slate-200/80 font-mono-math text-xs text-indigo-950 overflow-x-auto shadow-sm">
+            ${mathSnippet}
+          </div>
+        `;
+        return div;
+      };
+
+      // Step 1: Formulate canonical system
+      const step1Snippet = `
+        \\begin{aligned}
+        (1)&\\quad ${formatCoeff(a1, 'x', true)} ${formatCoeff(b1, 'y', false)} = ${formatNumber(c1)} \\\\
+        (2)&\\quad ${formatCoeff(a2, 'x', true)} ${formatCoeff(b2, 'y', false)} = ${formatNumber(c2)}
+        \\end{aligned}
+      `;
+      container.appendChild(makeStepCard(
+        1,
+        "Identificación del Sistema",
+        "Escribimos ambas ecuaciones en su forma general estándar $ax + by = c$ para alinear los coeficientes de $x$ e $y$:",
+        renderKatex(step1Snippet)
+      ));
+
+      if (sol.type === 'unique') {
+        // Step 2: Multiplication to eliminate one variable (let's eliminate y or x)
+        // Let's choose to eliminate x: multiply eq (1) by a2 and eq (2) by -a1
+        const mult1 = a2;
+        const mult2 = -a1;
+
+        const eq1ScaledA = a1 * mult1;
+        const eq1ScaledB = b1 * mult1;
+        const eq1ScaledC = c1 * mult1;
+
+        const eq2ScaledA = a2 * mult2;
+        const eq2ScaledB = b2 * mult2;
+        const eq2ScaledC = c2 * mult2;
+
+        const sumB = eq1ScaledB + eq2ScaledB;
+        const sumC = eq1ScaledC + eq2ScaledC;
+
+        const step2Snippet = `
+          \\begin{aligned}
+          ${formatNumber(mult1)} \\times (1):&\\quad ${formatCoeff(eq1ScaledA, 'x', true)} ${formatCoeff(eq1ScaledB, 'y', false)} = ${formatNumber(eq1ScaledC)} \\\\
+          ${formatNumber(mult2)} \\times (2):&\\quad ${formatCoeff(eq2ScaledA, 'x', true)} ${formatCoeff(eq2ScaledB, 'y', false)} = ${formatNumber(eq2ScaledC)}
+          \\end{aligned}
+        `;
+        container.appendChild(makeStepCard(
+          2,
+          "Igualar coeficientes para eliminación",
+          `Buscamos que los coeficientes de una variable sean opuestos para anularla al sumar. Multiplicamos la ecuación (1) por $${formatNumber(mult1)}$ y la ecuación (2) por $${formatNumber(mult2)}$:`,
+          renderKatex(step2Snippet)
+        ));
+
+        // Step 3: Sum equations
+        const step3Snippet = `
+          \\begin{aligned}
+          (${eq1ScaledA}x + (${eq2ScaledA}x)) + (${eq1ScaledB}y + (${eq2ScaledB}y)) &= ${eq1ScaledC} + (${eq2ScaledC}) \\\\
+          0x + (${formatNumber(sumB)})y &= ${formatNumber(sumC)} \\\\
+          y &= \\frac{${formatNumber(sumC)}}{${formatNumber(sumB)}} = ${formatNumber(sol.y)}
+          \\end{aligned}
+        `;
+        container.appendChild(makeStepCard(
+          3,
+          "Sumar miembro a miembro y despejar 'y'",
+          "Al sumar verticalmente ambas ecuaciones, los términos con $x$ se cancelan ($" + formatNumber(eq1ScaledA) + "x + (" + formatNumber(eq2ScaledA) + "x) = 0$), permitiéndonos despejar el valor exacto de $y$:",
+          renderKatex(step3Snippet)
+        ));
+
+        // Step 4: Substitute back to find x
+        const subStep = `
+          \\begin{aligned}
+          ${formatCoeff(a1, 'x', true)} + (${b1})(${formatNumber(sol.y)}) &= ${c1} \\\\
+          ${formatCoeff(a1, 'x', true)} + (${formatNumber(b1 * sol.y)}) &= ${c1} \\\\
+          ${formatCoeff(a1, 'x', true)} &= ${c1} - (${formatNumber(b1 * sol.y)}) \\\\
+          ${a1}x &= ${formatNumber(c1 - b1 * sol.y)} \\\\
+          x &= ${formatNumber(sol.x)}
+          \\end{aligned}
+        `;
+        container.appendChild(makeStepCard(
+          4,
+          "Sustituir 'y' para calcular 'x'",
+          `Reemplazamos el valor obtenido $y = ${formatNumber(sol.y)}$ en la primera ecuación original $(1)$:`,
+          renderKatex(subStep)
+        ));
+
+        // Step 5: Conclusión
+        const step5Snippet = `\\text{Punto de Intersección } P(x, y) = (${formatNumber(sol.x)},\\; ${formatNumber(sol.y)})`;
+        container.appendChild(makeStepCard(
+          5,
+          "Resultado Final",
+          "El sistema tiene solución única. Ambas rectas se cruzan en un único punto común:",
+          renderKatex(step5Snippet)
+        ));
+
+      } else if (sol.type === 'none') {
+        const mult1 = a2;
+        const mult2 = -a1;
+        const sumC = (c1 * mult1) + (c2 * mult2);
+        const stepAbsurd = `
+          \\begin{aligned}
+          0x + 0y &= ${formatNumber(sumC)} \\\\
+          0 &= ${formatNumber(sumC)} \\quad (\\text{FALSO / Contradicción})
+          \\end{aligned}
+        `;
+        container.appendChild(makeStepCard(
+          2,
+          "Intento de Reducción",
+          "Al multiplicar y sumar para eliminar variables, ambas incógnitas ($x$ e $y$) se anulan simultáneamente a la izquierda:",
+          renderKatex(stepAbsurd)
+        ));
+        container.appendChild(makeStepCard(
+          3,
+          "Inconsistencia Algebraica",
+          "Obtenemos una igualdad falsa ($0 = \\text{número diferente de cero}$). Esto demuestra algebraicamente que ningún par $(x,y)$ satisface simultáneamente ambas condiciones. Las rectas son paralelas no coincidentes.",
+          "\\text{Conjunto Solución } S = \\emptyset \\quad (\\text{Sin solución})"
+        ));
+      } else {
+        // Infinite
+        const stepIdentity = `
+          \\begin{aligned}
+          0x + 0y &= 0 \\\\
+          0 &= 0 \\quad (\\text{Identidad Verdadera})
+          \\end{aligned}
+        `;
+        container.appendChild(makeStepCard(
+          2,
+          "Intento de Reducción",
+          "Al sumar las ecuaciones, ambos lados se reducen exactamente a cero:",
+          renderKatex(stepIdentity)
+        ));
+        container.appendChild(makeStepCard(
+          3,
+          "Infinitas Soluciones",
+          "La expresión $0 = 0$ es válida para cualquier punto que pertenezca a la recta. Ambas ecuaciones corresponden en realidad a la misma recta superpuesta (rectas coincidentes).",
+          "\\text{Infinitas soluciones: todos los puntos de la recta } L_1"
+        ));
+      }
+    }
+
+    // Helper for KaTeX coefficient formatting
+    function formatCoeff(val, varName, isFirst) {
+      if (val === 0) return '';
+      if (val === 1) return isFirst ? varName : `+ ${varName}`;
+      if (val === -1) return `- ${varName}`;
+      if (val > 0) return isFirst ? `${formatNumber(val)}${varName}` : `+ ${formatNumber(val)}${varName}`;
+      return `- ${formatNumber(Math.abs(val))}${varName}`;
+    }
+
+    function renderKatex(latexStr) {
+      try {
+        if (window.katex) {
+          return window.katex.renderToString(latexStr, { throwOnError: false, displayMode: true });
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+      return `<pre class="text-xs">${latexStr}</pre>`;
+    }
+
+    function updateResultsUI(eq1, eq2, sol) {
+      const valX = document.getElementById('val-x');
+      const valY = document.getElementById('val-y');
+      const pointIntersect = document.getElementById('point-intersection');
+      const badgeState = document.getElementById('badge-state');
+      
+      const classTitle = document.getElementById('class-title');
+      const classDesc = document.getElementById('class-desc');
+      const classPill = document.getElementById('class-pill');
+      const classIndicator = document.getElementById('class-indicator');
+      const classFormalName = document.getElementById('class-formal-name');
+      
+      const verificationContent = document.getElementById('verification-content');
+      const verificationStatus = document.getElementById('verification-status');
+      const interpretationText = document.getElementById('interpretation-text');
+
+      // Update slopes and slope-intercept form for legend
+      updateLegendAndEquations(eq1, eq2);
+
+      if (sol.type === 'unique') {
+        valX.innerText = formatNumber(sol.x);
+        valY.innerText = formatNumber(sol.y);
+        pointIntersect.innerText = `P(${formatNumber(sol.x)}, ${formatNumber(sol.y)})`;
+        badgeState.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800";
+        badgeState.innerText = "Solución Única";
+
+        classTitle.innerText = "Una Solución (Rectas Secantes)";
+        classDesc.innerText = "Las dos rectas tienen diferentes pendientes y se cruzan en exactamente un punto. Existe un único par (x, y) que satisface ambas ecuaciones.";
+        classIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+        classFormalName.innerText = "Sistema Compatible Determinado";
+
+        // Verification
+        const check1 = (eq1.a * sol.x) + (eq1.b * sol.y);
+        const check2 = (eq2.a * sol.x) + (eq2.b * sol.y);
+        verificationContent.innerHTML = `
+          <div class="p-2.5 bg-emerald-50/60 rounded-lg border border-emerald-200 text-emerald-900">
+            <strong>Eq 1:</strong> ${formatNumber(eq1.a)}(${formatNumber(sol.x)}) + ${formatNumber(eq1.b)}(${formatNumber(sol.y)}) = <strong>${formatNumber(check1)}</strong> ${Math.abs(check1 - eq1.c) < 1e-6 ? '✓' : '✗'}
+          </div>
+          <div class="p-2.5 bg-emerald-50/60 rounded-lg border border-emerald-200 text-emerald-900">
+            <strong>Eq 2:</strong> ${formatNumber(eq2.a)}(${formatNumber(sol.x)}) + ${formatNumber(eq2.b)}(${formatNumber(sol.y)}) = <strong>${formatNumber(check2)}</strong> ${Math.abs(check2 - eq2.c) < 1e-6 ? '✓' : '✗'}
+          </div>
+        `;
+        verificationStatus.innerHTML = `
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="text-emerald-700 font-semibold">La solución satisface ambas ecuaciones correctamente.</span>
+        `;
+
+        interpretationText.innerHTML = `
+          Las rectas tienen direcciones distintas y se intersecan en el punto de coordenadas <strong class="text-indigo-600 font-mono">(${formatNumber(sol.x)}, ${formatNumber(sol.y)})</strong>. Este punto es común a ambas funciones lineales.
+        `;
+
+        document.getElementById('legend-intersect-row').classList.remove('hidden');
+
+      } else if (sol.type === 'none') {
+        valX.innerText = "∅";
+        valY.innerText = "∅";
+        pointIntersect.innerText = "No existe intersección";
+        badgeState.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800";
+        badgeState.innerText = "Sin Solución";
+
+        classTitle.innerText = "Ninguna Solución (Rectas Paralelas)";
+        classDesc.innerText = "Las dos rectas tienen la misma pendiente pero diferente ordenada al origen. Nunca se cortan en ningún punto del plano.";
+        classIndicator.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+        classFormalName.innerText = "Sistema Incompatible";
+
+        verificationContent.innerHTML = `
+          <div class="p-2.5 bg-red-50 rounded-lg border border-red-200 text-red-800">
+            Las pendientes son idénticas: m₁ = m₂. No existe ningún par (x, y) que verifique simultáneamente ambas igualdades.
+          </div>
+        `;
+        verificationStatus.innerHTML = `
+          <span class="inline-block w-2 h-2 rounded-full bg-red-500"></span>
+          <span class="text-red-700 font-semibold">Sistema sin solución real (Rectas paralelas).</span>
+        `;
+
+        interpretationText.innerHTML = `
+          Las rectas son estrictamente paralelas. Tienen el mismo ángulo de inclinación pero distinta posición vertical, por lo que su distancia es constante y jamás se tocan.
+        `;
+
+        document.getElementById('legend-intersect-row').classList.add('hidden');
+
+      } else {
+        // Infinite
+        valX.innerText = "∞";
+        valY.innerText = "∞";
+        pointIntersect.innerText = "Infinitos puntos comunes";
+        badgeState.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800";
+        badgeState.innerText = "Infinitas Soluciones";
+
+        classTitle.innerText = "Infinitas Soluciones (Rectas Coincidentes)";
+        classDesc.innerText = "Una ecuación es múltiplo de la otra. Ambas representan exactamente la misma recta sobrepuesta en el plano.";
+        classIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+        classFormalName.innerText = "Sistema Compatible Indeterminado";
+
+        verificationContent.innerHTML = `
+          <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-amber-900">
+            Cualquier punto (x, y) que pertenezca a la recta 1 también pertenece a la recta 2.
+          </div>
+        `;
+        verificationStatus.innerHTML = `
+          <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+          <span class="text-amber-700 font-semibold">Infinitas soluciones válidas.</span>
+        `;
+
+        interpretationText.innerHTML = `
+          Las dos ecuaciones representan la misma recta geométrica. Cada uno de los infinitos puntos que forman la primera recta satisface también la segunda.
+        `;
+
+        document.getElementById('legend-intersect-row').classList.add('hidden');
+      }
+
+      // Generate steps
+      generateProcedureSteps(eq1.a, eq1.b, eq1.c, eq2.a, eq2.b, eq2.c, sol);
+
+      // Auto-center view to intersection point if unique
+      if (sol.type === 'unique') {
+        state.view.centerX = sol.x;
+        state.view.centerY = sol.y;
+      } else {
+        state.view.centerX = 0;
+        state.view.centerY = 0;
+      }
+      drawCartesianPlane();
+    }
+
+    function updateLegendAndEquations(eq1, eq2) {
+      const leg1 = document.getElementById('legend-line1');
+      const leg2 = document.getElementById('legend-line2');
+      const pointLeg = document.getElementById('legend-point');
+
+      // Convert to y = mx + b
+      const toSlopeIntercept = (a, b, c) => {
+        if (Math.abs(b) < 1e-9) {
+          // Vertical line x = c/a
+          return `x = ${formatNumber(c / a)}`;
+        }
+        const m = -a / b;
+        const n = c / b;
+        let str = "y = ";
+        if (m !== 0) {
+          if (m === 1) str += "x";
+          else if (m === -1) str += "-x";
+          else str += `${formatNumber(m)}x`;
+        }
+        if (n !== 0 || m === 0) {
+          if (n > 0 && m !== 0) str += ` + ${formatNumber(n)}`;
+          else str += ` ${formatNumber(n)}`;
+        }
+        return str;
+      };
+
+      leg1.innerText = `L₁: ${toSlopeIntercept(eq1.a, eq1.b, eq1.c)}`;
+      leg2.innerText = `L₂: ${toSlopeIntercept(eq2.a, eq2.b, eq2.c)}`;
+
+      if (state.solution && state.solution.type === 'unique') {
+        pointLeg.innerText = `Intersección (${formatNumber(state.solution.x)}, ${formatNumber(state.solution.y)})`;
+      }
+    }
+
+    const canvas = document.getElementById('cartesian-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      drawCartesianPlane();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Coordinate conversion utilities
+    function toCanvasX(mathX) {
+      const rect = canvas.getBoundingClientRect();
+      const originX = rect.width / 2 - state.view.centerX * state.view.scale;
+      return originX + mathX * state.view.scale;
+    }
+
+    function toCanvasY(mathY) {
+      const rect = canvas.getBoundingClientRect();
+      const originY = rect.height / 2 + state.view.centerY * state.view.scale;
+      return originY - mathY * state.view.scale;
+    }
+
+    function toMathX(canvasX) {
+      const rect = canvas.getBoundingClientRect();
+      const originX = rect.width / 2 - state.view.centerX * state.view.scale;
+      return (canvasX - originX) / state.view.scale;
+    }
+
+    function toMathY(canvasY) {
+      const rect = canvas.getBoundingClientRect();
+      const originY = rect.height / 2 + state.view.centerY * state.view.scale;
+      return (originY - canvasY) / state.view.scale;
+    }
+
+    function drawCartesianPlane() {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+
+      // Clear background
+      ctx.fillStyle = '#0f172a'; // Slate-900 dark theme for crisp math contrast
+      ctx.fillRect(0, 0, width, height);
+
+      const originX = toCanvasX(0);
+      const originY = toCanvasY(0);
+
+      // Determine step grid according to scale
+      let gridStep = 1;
+      if (state.view.scale < 20) gridStep = 5;
+      if (state.view.scale < 8) gridStep = 10;
+      if (state.view.scale > 80) gridStep = 0.5;
+      if (state.view.scale > 160) gridStep = 0.2;
+
+      // Visible math bounds
+      const minX = toMathX(0);
+      const maxX = toMathX(width);
+      const minY = toMathY(height);
+      const maxY = toMathY(0);
+
+      // 1. Draw Grid Lines
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#1e293b'; // slate-800
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px Fira Code, monospace';
+
+      // Vertical grid lines
+      const startX = Math.floor(minX / gridStep) * gridStep;
+      for (let x = startX; x <= maxX; x += gridStep) {
+        const cx = toCanvasX(x);
+        ctx.beginPath();
+        ctx.strokeStyle = Math.abs(x) < 1e-6 ? '#334155' : '#1e293b';
+        ctx.moveTo(cx, 0);
+        ctx.lineTo(cx, height);
+        ctx.stroke();
+
+        // Label on X axis
+        if (Math.abs(x) > 1e-6) {
+          const labelY = Math.min(Math.max(originY + 14, 15), height - 8);
+          ctx.fillText(formatNumber(x), cx - 8, labelY);
+        }
+      }
+
+      // Horizontal grid lines
+      const startY = Math.floor(minY / gridStep) * gridStep;
+      for (let y = startY; y <= maxY; y += gridStep) {
+        const cy = toCanvasY(y);
+        ctx.beginPath();
+        ctx.strokeStyle = Math.abs(y) < 1e-6 ? '#334155' : '#1e293b';
+        ctx.moveTo(0, cy);
+        ctx.lineTo(width, cy);
+        ctx.stroke();
+
+        // Label on Y axis
+        if (Math.abs(y) > 1e-6) {
+          const labelX = Math.min(Math.max(originX + 6, 8), width - 30);
+          ctx.fillText(formatNumber(y), labelX, cy + 3);
+        }
+      }
+
+      // 2. Draw Main Axes
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = '#475569'; // slate-600
+      // X axis
+      ctx.beginPath();
+      ctx.moveTo(0, originY);
+      ctx.lineTo(width, originY);
+      ctx.stroke();
+
+      // Y axis
+      ctx.beginPath();
+      ctx.moveTo(originX, 0);
+      ctx.lineTo(originX, height);
+      ctx.stroke();
+
+      // Axis labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.fillText('X', width - 16, Math.min(Math.max(originY - 8, 14), height - 10));
+      ctx.fillText('Y', Math.min(Math.max(originX + 8, 6), width - 16), 16);
+
+      // Origin (0,0) label
+      ctx.fillText('0', originX - 10, originY + 12);
+
+      // 3. Draw Lines
+      drawLine(state.eq1, '#60a5fa', 2.5); // Blue-400
+      drawLine(state.eq2, '#c084fc', 2.5); // Purple-400
+
+      // 4. Draw Intersection Point if unique
+      if (state.solution && state.solution.type === 'unique') {
+        const px = toCanvasX(state.solution.x);
+        const py = toCanvasY(state.solution.y);
+
+        // Halo / Pulsing glow
+        ctx.beginPath();
+        ctx.arc(px, py, 9, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.25)';
+        ctx.fill();
+
+        // Outer dot
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#fbbf24'; // Amber-400
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        // Coordinate tag
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px Fira Code, monospace';
+        const tag = `(${formatNumber(state.solution.x)}, ${formatNumber(state.solution.y)})`;
+        ctx.fillText(tag, px + 8, py - 8);
+      }
+    }
+
+    function drawLine(eq, color, strokeWidth) {
+      if (!eq) return;
+      const { a, b, c } = eq;
+      const rect = canvas.getBoundingClientRect();
+      const minX = toMathX(-20);
+      const maxX = toMathX(rect.width + 20);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.lineWidth = strokeWidth;
+      ctx.strokeStyle = color;
+
+      if (Math.abs(b) < 1e-9) {
+        // Vertical line: x = c / a
+        if (Math.abs(a) > 1e-9) {
+          const vx = c / a;
+          const cx = toCanvasX(vx);
+          ctx.moveTo(cx, -10);
+          ctx.lineTo(cx, rect.height + 10);
+        }
+      } else {
+        // y = (c - a*x) / b
+        const y1 = (c - a * minX) / b;
+        const y2 = (c - a * maxX) / b;
+        ctx.moveTo(toCanvasX(minX), toCanvasY(y1));
+        ctx.lineTo(toCanvasX(maxX), toCanvasY(y2));
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      state.view.isDragging = true;
+      state.view.lastMouseX = e.clientX;
+      state.view.lastMouseY = e.clientY;
+      canvas.classList.remove('cursor-grab');
+      canvas.classList.add('cursor-grabbing');
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (state.view.isDragging) {
+        state.view.isDragging = false;
+        canvas.classList.remove('cursor-grabbing');
+        canvas.classList.add('cursor-grab');
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      // Update hover badge
+      const mx = toMathX(mouseX);
+      const my = toMathY(mouseY);
+      state.view.hoverCoords = { x: mx, y: my };
+      document.getElementById('canvas-coords-badge').innerText = `x: ${formatNumber(mx)}, y: ${formatNumber(my)}`;
+
+      if (state.view.isDragging) {
+        const dx = e.clientX - state.view.lastMouseX;
+        const dy = e.clientY - state.view.lastMouseY;
+
+        state.view.centerX -= dx / state.view.scale;
+        state.view.centerY += dy / state.view.scale;
+
+        state.view.lastMouseX = e.clientX;
+        state.view.lastMouseY = e.clientY;
+
+        drawCartesianPlane();
+      }
+    });
+
+    // Zoom via wheel
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+      applyZoom(zoomFactor);
+    }, { passive: false });
+
+    // Touch support for mobile & tablet
+    let initialTouchDist = null;
+    let initialTouchCenter = null;
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        state.view.isDragging = true;
+        state.view.lastMouseX = e.touches[0].clientX;
+        state.view.lastMouseY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        state.view.isDragging = false;
+        initialTouchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && state.view.isDragging) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - state.view.lastMouseX;
+        const dy = e.touches[0].clientY - state.view.lastMouseY;
+        state.view.centerX -= dx / state.view.scale;
+        state.view.centerY += dy / state.view.scale;
+        state.view.lastMouseX = e.touches[0].clientX;
+        state.view.lastMouseY = e.touches[0].clientY;
+        drawCartesianPlane();
+      } else if (e.touches.length === 2 && initialTouchDist) {
+        e.preventDefault();
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = currentDist / initialTouchDist;
+        applyZoom(factor);
+        initialTouchDist = currentDist;
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => {
+      state.view.isDragging = false;
+      initialTouchDist = null;
+    });
+
+    function applyZoom(factor) {
+      const newScale = state.view.scale * factor;
+      if (newScale >= 6 && newScale <= 350) {
+        state.view.scale = newScale;
+        drawCartesianPlane();
+      }
+    }
+
+    document.getElementById('btn-zoom-in').addEventListener('click', () => applyZoom(1.2));
+    document.getElementById('btn-zoom-out').addEventListener('click', () => applyZoom(0.8));
+    document.getElementById('btn-zoom-reset').addEventListener('click', () => {
+      if (state.solution && state.solution.type === 'unique') {
+        state.view.centerX = state.solution.x;
+        state.view.centerY = state.solution.y;
+      } else {
+        state.view.centerX = 0;
+        state.view.centerY = 0;
+      }
+      state.view.scale = 40;
+      drawCartesianPlane();
+    });
+
+    const tabBtnText = document.getElementById('tab-btn-text');
+    const tabBtnCoef = document.getElementById('tab-btn-coef');
+    const tabBtnOcr = document.getElementById('tab-btn-ocr');
+
+    const panelText = document.getElementById('panel-text');
+    const panelCoef = document.getElementById('panel-coef');
+    const panelOcr = document.getElementById('panel-ocr');
+
+    function switchTab(tab) {
+      state.activeTab = tab;
+      [tabBtnText, tabBtnCoef, tabBtnOcr].forEach(btn => {
+        btn.className = "tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-all";
+      });
+      [panelText, panelCoef, panelOcr].forEach(p => p.classList.add('hidden'));
+
+      if (tab === 'text') {
+        tabBtnText.className = "tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-indigo-600 text-indigo-700 bg-white transition-all";
+        panelText.classList.remove('hidden');
+      } else if (tab === 'coef') {
+        tabBtnCoef.className = "tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-indigo-600 text-indigo-700 bg-white transition-all";
+        panelCoef.classList.remove('hidden');
+        syncToCoeffsInputs();
+      } else {
+        tabBtnOcr.className = "tab-btn px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-indigo-600 text-indigo-700 bg-white transition-all";
+        panelOcr.classList.remove('hidden');
+      }
+    }
+
+    tabBtnText.addEventListener('click', () => switchTab('text'));
+    tabBtnCoef.addEventListener('click', () => switchTab('coef'));
+    tabBtnOcr.addEventListener('click', () => switchTab('ocr'));
+
+    function syncToCoeffsInputs() {
+      try {
+        const p1 = parseLinearEquation(document.getElementById('eq1-text').value);
+        const p2 = parseLinearEquation(document.getElementById('eq2-text').value);
+        document.getElementById('c-a1').value = p1.a;
+        document.getElementById('c-b1').value = p1.b;
+        document.getElementById('c-c1').value = p1.c;
+        document.getElementById('c-a2').value = p2.a;
+        document.getElementById('c-b2').value = p2.b;
+        document.getElementById('c-c2').value = p2.c;
+      } catch (e) {
+        // Keep existing if unparseable
+      }
+    }
+
+    const imageInput = document.getElementById('image-input');
+    const dropZone = document.getElementById('drop-zone');
+    const ocrPreviewContainer = document.getElementById('ocr-preview-container');
+    const ocrThumbnail = document.getElementById('ocr-thumbnail');
+    const ocrEq1 = document.getElementById('ocr-eq1');
+    const ocrEq2 = document.getElementById('ocr-eq2');
+    const ocrSpinner = document.getElementById('ocr-spinner');
+    const ocrStatusTitle = document.getElementById('ocr-status-title');
+    const btnApplyOcr = document.getElementById('btn-apply-ocr');
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-indigo-500', 'bg-indigo-50/40');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/40');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/40');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        processUploadedImage(e.dataTransfer.files[0]);
+      }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        processUploadedImage(e.target.files[0]);
+      }
+    });
+
+    function processUploadedImage(file) {
+      if (!file.type.startsWith('image/')) {
+        showNotification("El archivo seleccionado no es una imagen válida.", 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const fullBase64 = e.target.result;
+        ocrThumbnail.src = fullBase64;
+        ocrPreviewContainer.classList.remove('hidden');
+        ocrSpinner.classList.remove('hidden');
+        ocrStatusTitle.innerText = "Analizando ecuaciones en la imagen...";
+
+        // Split mime and raw base64 data
+        const [meta, base64Data] = fullBase64.split(',');
+        const mimeType = meta.match(/:(.*?);/)[1];
+
+        // Call Gemini Image Understanding API
+        try {
+          const prompt = `Analiza esta imagen y extrae el sistema de dos ecuaciones lineales con dos incógnitas (x e y).
+Retorna ÚNICAMENTE un objeto JSON con este formato exacto:
+{
+  "equation1": "2x + 3y = 12",
+  "equation2": "x - y = 1"
+}
+Si la imagen no es clara, haz tu mejor aproximación matemática limpia.`;
+
+          const apiKey = ""; // Runtime will provide it
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+          const payload = {
+            contents: [{
+              role: "user",
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: mimeType,
+                    data: base64Data
+                  }
+                }
+              ]
+            }],
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          };
+
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error del servicio: ${response.status}`);
+          }
+
+          const result = await response.json();
+          const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (jsonText) {
+            const parsed = JSON.parse(jsonText);
+            ocrEq1.value = parsed.equation1 || "2x + 3y = 12";
+            ocrEq2.value = parsed.equation2 || "x - y = 1";
+            ocrStatusTitle.innerText = "¡Ecuaciones detectadas!";
+            showNotification("Imagen procesada. Por favor revisa y confirma las dos ecuaciones detectadas antes de aplicar.", 'info');
+          } else {
+            throw new Error("No se obtuvo respuesta estructurada.");
+          }
+        } catch (err) {
+          console.warn("Fallo OCR inteligente, usando plantilla editable:", err);
+          // Graceful fallback: show sample and inform student to review
+          ocrEq1.value = "2x + 3y = 12";
+          ocrEq2.value = "x - y = 1";
+          ocrStatusTitle.innerText = "Ecuaciones listas para revisión manual";
+          showNotification("No fue posible reconocer automáticamente el texto con alta certeza. Hemos colocado una plantilla para que transcribas o corrijas las ecuaciones de tu imagen.", 'warning');
+        } finally {
+          ocrSpinner.classList.add('hidden');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    btnApplyOcr.addEventListener('click', () => {
+      const eq1Val = ocrEq1.value.trim();
+      const eq2Val = ocrEq2.value.trim();
+      if (!eq1Val || !eq2Val) {
+        showNotification("Debes ingresar ambas ecuaciones antes de aplicar.", 'error');
+        return;
+      }
+      document.getElementById('eq1-text').value = eq1Val;
+      document.getElementById('eq2-text').value = eq2Val;
+      switchTab('text');
+      showNotification("Ecuaciones de la imagen transferidas exitosamente a los campos de resolución.", 'success');
+      handleSolve();
+    });
+
+    function handleSolve() {
+      clearNotification();
+      let eq1Data, eq2Data;
+
+      try {
+        if (state.activeTab === 'coef') {
+          const a1 = parseFloat(document.getElementById('c-a1').value);
+          const b1 = parseFloat(document.getElementById('c-b1').value);
+          const c1 = parseFloat(document.getElementById('c-c1').value);
+
+          const a2 = parseFloat(document.getElementById('c-a2').value);
+          const b2 = parseFloat(document.getElementById('c-b2').value);
+          const c2 = parseFloat(document.getElementById('c-c2').value);
+
+          if ([a1, b1, c1, a2, b2, c2].some(v => isNaN(v))) {
+            throw new Error("Todos los campos de coeficientes deben contener números válidos.");
+          }
+
+          if (a1 === 0 && b1 === 0) throw new Error("En la Ecuación 1, 'a' y 'b' no pueden ser simultáneamente cero.");
+          if (a2 === 0 && b2 === 0) throw new Error("En la Ecuación 2, 'a' y 'b' no pueden ser simultáneamente cero.");
+
+          eq1Data = { a: a1, b: b1, c: c1, raw: `${a1}x + ${b1}y = ${c1}` };
+          eq2Data = { a: a2, b: b2, c: c2, raw: `${a2}x + ${b2}y = ${c2}` };
+
+          // Sync back to text inputs
+          document.getElementById('eq1-text').value = `${a1}x + ${b1}y = ${c1}`;
+          document.getElementById('eq2-text').value = `${a2}x + ${b2}y = ${c2}`;
+
+        } else {
+          const t1 = document.getElementById('eq1-text').value.trim();
+          const t2 = document.getElementById('eq2-text').value.trim();
+
+          if (!t1 || !t2) {
+            throw new Error("Por favor completa ambas ecuaciones.");
+          }
+
+          const parsed1 = parseLinearEquation(t1);
+          const parsed2 = parseLinearEquation(t2);
+
+          eq1Data = { a: parsed1.a, b: parsed1.b, c: parsed1.c, raw: t1 };
+          eq2Data = { a: parsed2.a, b: parsed2.b, c: parsed2.c, raw: t2 };
+
+          // Sync coefficients inputs
+          document.getElementById('c-a1').value = eq1Data.a;
+          document.getElementById('c-b1').value = eq1Data.b;
+          document.getElementById('c-c1').value = eq1Data.c;
+          document.getElementById('c-a2').value = eq2Data.a;
+          document.getElementById('c-b2').value = eq2Data.b;
+          document.getElementById('c-c2').value = eq2Data.c;
+        }
+
+        state.eq1 = eq1Data;
+        state.eq2 = eq2Data;
+
+        // Compute Solution
+        const sol = solveSystem(eq1Data.a, eq1Data.b, eq1Data.c, eq2Data.a, eq2Data.b, eq2Data.c);
+        state.solution = sol;
+
+        // Update UI
+        updateResultsUI(eq1Data, eq2Data, sol);
+
+      } catch (err) {
+        showNotification(err.message, 'error');
+      }
+    }
+
+    document.getElementById('btn-solve').addEventListener('click', handleSolve);
+
+    document.getElementById('btn-example').addEventListener('click', () => {
+      clearNotification();
+      document.getElementById('eq1-text').value = "2x + y = 8";
+      document.getElementById('eq2-text').value = "x - y = 1";
+      document.getElementById('c-a1').value = "2";
+      document.getElementById('c-b1').value = "1";
+      document.getElementById('c-c1').value = "8";
+      document.getElementById('c-a2').value = "1";
+      document.getElementById('c-b2').value = "-1";
+      document.getElementById('c-c2').value = "1";
+      switchTab('text');
+      handleSolve();
+      showNotification("Ejemplo pedagógico cargado: 2x + y = 8 y x - y = 1", 'info');
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      clearNotification();
+      document.getElementById('eq1-text').value = "";
+      document.getElementById('eq2-text').value = "";
+      document.getElementById('c-a1').value = "";
+      document.getElementById('c-b1').value = "";
+      document.getElementById('c-c1').value = "";
+      document.getElementById('c-a2').value = "";
+      document.getElementById('c-b2').value = "";
+      document.getElementById('c-c2').value = "";
+      document.getElementById('ocr-eq1').value = "";
+      document.getElementById('ocr-eq2').value = "";
+      ocrPreviewContainer.classList.add('hidden');
+      
+      state.eq1 = null;
+      state.eq2 = null;
+      state.solution = null;
+
+      document.getElementById('val-x').innerText = "--";
+      document.getElementById('val-y').innerText = "--";
+      document.getElementById('point-intersection').innerText = "(x, y) = (?, ?)";
+      document.getElementById('badge-state').className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700";
+      document.getElementById('badge-state').innerText = "Listo";
+      document.getElementById('class-title').innerText = "Esperando resolución...";
+      document.getElementById('class-desc').innerText = "Ingresa las ecuaciones y presiona 'Resolver sistema'.";
+      document.getElementById('class-indicator').className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+      document.getElementById('class-formal-name').innerText = "Forma algebraica estándar";
+      document.getElementById('verification-content').innerHTML = `
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-slate-500">Sustitución en Eq 1: Pendiente...</div>
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-slate-500">Sustitución en Eq 2: Pendiente...</div>
+      `;
+      document.getElementById('verification-status').innerHTML = `
+        <span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
+        Sin verificar aún
+      `;
+      document.getElementById('steps-container').innerHTML = `
+        <div class="text-center py-10 px-4 text-slate-400">
+          <p class="text-sm font-medium">Campos limpios. Ingresa un nuevo sistema para resolver.</p>
+        </div>
+      `;
+      drawCartesianPlane();
+    });
+
+    // Enter key shortcuts on text fields
+    ['eq1-text', 'eq2-text', 'c-a1', 'c-b1', 'c-c1', 'c-a2', 'c-b2', 'c-c2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') handleSolve();
+        });
+      }
+    });
+
+    window.onload = function() {
+      resizeCanvas();
+      // Solve initial default system: 2x + 3y = 12 and x - y = 1
+      handleSolve();
+    };
+  </script>
+</body>
+</html>

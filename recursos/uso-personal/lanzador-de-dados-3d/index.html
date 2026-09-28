@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lanzador de Dados 3D</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 3D Scene Perspective */
+    .dice-stage {
+      perspective: 1000px;
+    }
+
+    /* 3D Cube Container */
+    .cube {
+      width: 80px;
+      height: 80px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+    }
+
+    @media (min-width: 640px) {
+      .cube {
+        width: 100px;
+        height: 100px;
+      }
+    }
+
+    /* Cube Faces */
+    .face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(145deg, #ffffff, #e6e6e6);
+      border: 2px solid #cbd5e1;
+      border-radius: 16px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0,0,0,0.3);
+      display: grid;
+      grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+      padding: 8px;
+      box-sizing: border-box;
+    }
+
+    /* 3D Transformations for standard 6-sided die */
+    /* Half of 80px is 40px; Half of 100px is 50px */
+    .face-1 { transform: rotateY(0deg) translateZ(40px); }
+    .face-2 { transform: rotateX(-90deg) translateZ(40px); }
+    .face-3 { transform: rotateY(90deg) translateZ(40px); }
+    .face-4 { transform: rotateY(-90deg) translateZ(40px); }
+    .face-5 { transform: rotateX(90deg) translateZ(40px); }
+    .face-6 { transform: rotateY(180deg) translateZ(40px); }
+
+    @media (min-width: 640px) {
+      .face-1 { transform: rotateY(0deg) translateZ(50px); }
+      .face-2 { transform: rotateX(-90deg) translateZ(50px); }
+      .face-3 { transform: rotateY(90deg) translateZ(50px); }
+      .face-4 { transform: rotateY(-90deg) translateZ(50px); }
+      .face-5 { transform: rotateX(90deg) translateZ(50px); }
+      .face-6 { transform: rotateY(180deg) translateZ(50px); }
+    }
+
+    /* Dice Dots */
+    .dot {
+      width: 12px;
+      height: 12px;
+      background-color: #1e293b;
+      border-radius: 50%;
+      align-self: center;
+      justify-self: center;
+      box-shadow: inset 0 2px 3px rgba(0,0,0,0.6);
+    }
+
+    @media (min-width: 640px) {
+      .dot {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .red-dot {
+      background-color: #dc2626;
+    }
+
+    /* Shaking animation when launching */
+    @keyframes stageShake {
+      0% { transform: translateY(0); }
+      25% { transform: translateY(-8px) rotate(-1deg); }
+      50% { transform: translateY(4px) rotate(1deg); }
+      75% { transform: translateY(-2px); }
+      100% { transform: translateY(0); }
+    }
+
+    .shaking {
+      animation: stageShake 0.4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between items-center p-4 font-sans select-none">
+
+  <!-- Header -->
+  <header class="w-full max-w-md flex justify-between items-center pt-4 pb-2">
+    <div class="flex items-center gap-2">
+      <span class="text-3xl">🎲</span>
+      <h1 class="text-2xl font-bold tracking-wide text-amber-400">Dados 3D</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="../../../index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Repositorio
+      </a>
+      <!-- Sound Toggle Button -->
+      <button id="soundBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-full border border-slate-700 transition active:scale-95 flex items-center justify-center">
+        <svg id="soundIconOn" class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z"/>
+        </svg>
+        <svg id="soundIconOff" class="w-6 h-6 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Dice Stage Area -->
+  <main class="w-full max-w-md flex-1 flex flex-col justify-center items-center my-4">
+    
+    <!-- Total Score Display -->
+    <div class="mb-8 text-center min-h-[80px]">
+      <p class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">Resultado Total</p>
+      <div id="totalDisplay" class="text-6xl font-black text-amber-400 transition-all transform scale-100">
+        -
+      </div>
+      <p id="subResult" class="text-sm text-slate-400 mt-1 opacity-0 transition-opacity">
+        Dado 1: <span id="valDie1">-</span> | Dado 2: <span id="valDie2">-</span>
+      </p>
+    </div>
+
+    <!-- 3D Dice Display Container -->
+    <div id="diceStage" class="dice-stage flex justify-center items-center gap-10 sm:gap-16 my-6 py-8 w-full">
+      
+      <!-- Die 1 -->
+      <div id="cube1" class="cube">
+        <!-- Face 1 -->
+        <div class="face face-1">
+          <div></div><div></div><div></div>
+          <div></div><div class="dot red-dot"></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <!-- Face 2 -->
+        <div class="face face-2">
+          <div class="dot"></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 3 -->
+        <div class="face face-3">
+          <div class="dot"></div><div></div><div></div>
+          <div></div><div class="dot"></div><div></div>
+          <div></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 4 -->
+        <div class="face face-4">
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div></div><div></div><div></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 5 -->
+        <div class="face face-5">
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div></div><div class="dot"></div><div></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 6 -->
+        <div class="face face-6">
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+        </div>
+      </div>
+
+      <!-- Die 2 -->
+      <div id="cube2" class="cube">
+        <!-- Face 1 -->
+        <div class="face face-1">
+          <div></div><div></div><div></div>
+          <div></div><div class="dot red-dot"></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <!-- Face 2 -->
+        <div class="face face-2">
+          <div class="dot"></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 3 -->
+        <div class="face face-3">
+          <div class="dot"></div><div></div><div></div>
+          <div></div><div class="dot"></div><div></div>
+          <div></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 4 -->
+        <div class="face face-4">
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div></div><div></div><div></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 5 -->
+        <div class="face face-5">
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div></div><div class="dot"></div><div></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+        </div>
+        <!-- Face 6 -->
+        <div class="face face-6">
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+          <div class="dot"></div><div></div><div class="dot"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- History / Recent Rolls -->
+    <div class="w-full mt-6">
+      <p class="text-xs text-center text-slate-500 font-semibold uppercase tracking-wider mb-2">Historial de Lanzamientos</p>
+      <div id="historyList" class="flex justify-center gap-2 overflow-x-auto py-1 min-h-[36px]">
+        <span class="text-xs text-slate-600 self-center">Sin tiros recientes</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Control Section with Big Button -->
+  <footer class="w-full max-w-md pb-6 pt-2">
+    <button id="rollBtn" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-2xl py-5 px-6 rounded-2xl shadow-lg shadow-amber-500/25 active:scale-95 transition-all transform flex items-center justify-center gap-3 border-b-4 border-amber-700">
+      <span>¡LANZAR DADOS!</span>
+    </button>
+  </footer>
+
+  <!-- JavaScript Code -->
+  <script>
+    // State variables
+    let isRolling = false;
+    let soundEnabled = true;
+    let rollHistory = [];
+
+    // Current rotation accumulators for continuous spinning
+    let rot1X = 0, rot1Y = 0;
+    let rot2X = 0, rot2Y = 0;
+
+    // DOM Elements
+    const cube1 = document.getElementById('cube1');
+    const cube2 = document.getElementById('cube2');
+    const rollBtn = document.getElementById('rollBtn');
+    const soundBtn = document.getElementById('soundBtn');
+    const soundIconOn = document.getElementById('soundIconOn');
+    const soundIconOff = document.getElementById('soundIconOff');
+    const totalDisplay = document.getElementById('totalDisplay');
+    const subResult = document.getElementById('subResult');
+    const valDie1 = document.getElementById('valDie1');
+    const valDie2 = document.getElementById('valDie2');
+    const historyList = document.getElementById('historyList');
+    const diceStage = document.getElementById('diceStage');
+
+    // Base rotation angles required to show each face on front
+    const faceRotations = {
+      1: { x: 0, y: 0 },
+      2: { x: 90, y: 0 },
+      3: { x: 0, y: -90 },
+      4: { x: 0, y: 90 },
+      5: { x: -90, y: 0 },
+      6: { x: 0, y: 180 }
+    };
+
+    // Web Audio API Synthesizer for Dice Rolling Sounds
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Play synthesized dice clatter/impact sound
+    function playDiceSound() {
+      if (!soundEnabled) return;
+
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        // Generate a sequence of 6 to 9 realistic tumbling sounds
+        const impactCount = 7 + Math.floor(Math.random() * 3);
+
+        for (let i = 0; i < impactCount; i++) {
+          const impactTime = now + (i * 0.12) + (Math.random() * 0.04);
+          const isFinalHit = (i === impactCount - 1);
+
+          // Oscillator for sound tone (wood/plastic thuds)
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = isFinalHit ? 'sine' : (Math.random() > 0.5 ? 'triangle' : 'square');
+          
+          // Frequency tapers down as the dice lose speed
+          const baseFreq = 180 + Math.random() * 220;
+          osc.frequency.setValueAtTime(baseFreq, impactTime);
+          osc.frequency.exponentialRampToValueAtTime(30, impactTime + 0.06);
+
+          // Volume control
+          const vol = isFinalHit ? 0.4 : (0.15 + Math.random() * 0.25);
+          gain.gain.setValueAtTime(vol, impactTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, impactTime + 0.06);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(impactTime);
+          osc.stop(impactTime + 0.07);
+        }
+      } catch (e) {
+        console.error("Audio error:", e);
+      }
+    }
+
+    // Roll Logic
+    function rollDice() {
+      if (isRolling) return;
+      isRolling = true;
+
+      // Lock button interaction during roll
+      rollBtn.classList.add('opacity-75', 'cursor-not-allowed');
+      diceStage.classList.add('shaking');
+
+      // Play synthesized sound effect
+      playDiceSound();
+
+      // Reset score visibility during animation
+      totalDisplay.classList.add('scale-90', 'opacity-50');
+      subResult.classList.add('opacity-0');
+
+      // Generate random target values (1 to 6)
+      const val1 = Math.floor(Math.random() * 6) + 1;
+      const val2 = Math.floor(Math.random() * 6) + 1;
+
+      // Calculate extra rotations (3 to 5 full turns) to create animation effect
+      const extraTurns1X = (3 + Math.floor(Math.random() * 2)) * 360;
+      const extraTurns1Y = (3 + Math.floor(Math.random() * 2)) * 360;
+      const extraTurns2X = (3 + Math.floor(Math.random() * 2)) * 360;
+      const extraTurns2Y = (3 + Math.floor(Math.random() * 2)) * 360;
+
+      // Calculate new cumulative rotation angles
+      rot1X += extraTurns1X + faceRotations[val1].x - (rot1X % 360);
+      rot1Y += extraTurns1Y + faceRotations[val1].y - (rot1Y % 360);
+      rot2X += extraTurns2X + faceRotations[val2].x - (rot2X % 360);
+      rot2Y += extraTurns2Y + faceRotations[val2].y - (rot2Y % 360);
+
+      // Apply CSS transformations
+      cube1.style.transform = `rotateX(${rot1X}deg) rotateY(${rot1Y}deg)`;
+      cube2.style.transform = `rotateX(${rot2X}deg) rotateY(${rot2Y}deg)`;
+
+      // Handle roll outcome after animation finishes (1.2 seconds)
+      setTimeout(() => {
+        const total = val1 + val2;
+
+        // Update score UI
+        totalDisplay.textContent = total;
+        valDie1.textContent = val1;
+        valDie2.textContent = val2;
+
+        // Animate score elements
+        totalDisplay.classList.remove('scale-90', 'opacity-50');
+        totalDisplay.classList.add('scale-110');
+        setTimeout(() => totalDisplay.classList.remove('scale-110'), 200);
+        subResult.classList.remove('opacity-0');
+
+        // Stop stage shake effect
+        diceStage.classList.remove('shaking');
+
+        // Update history
+        updateHistory(val1, val2, total);
+
+        // Unlock roll button
+        isRolling = false;
+        rollBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }, 1200);
+    }
+
+    // History rendering function
+    function updateHistory(d1, d2, total) {
+      rollHistory.unshift({ d1, d2, total });
+      if (rollHistory.length > 5) rollHistory.pop();
+
+      historyList.innerHTML = rollHistory.map((item, index) => `
+        <div class="bg-slate-800 border border-slate-700 text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm animate-fade-in ${index === 0 ? 'border-amber-500/50 text-amber-300 font-bold' : 'text-slate-400'}">
+          <span>${item.d1}+${item.d2}</span>
+          <span class="text-slate-500">=</span>
+          <span class="text-sm font-extrabold ${index === 0 ? 'text-amber-400' : 'text-slate-200'}">${item.total}</span>
+        </div>
+      `).join('');
+    }
+
+    // Event Listeners
+    rollBtn.addEventListener('click', () => {
+      getAudioContext(); // Initialize audio context on user gesture
+      rollDice();
+    });
+
+    // Spacebar triggers roll
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        getAudioContext();
+        rollDice();
+      }
+    });
+
+    // Toggle sound settings
+    soundBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundIconOn.classList.toggle('hidden', !soundEnabled);
+      soundIconOff.classList.toggle('hidden', soundEnabled);
+    });
+  </script>
+</body>
+</html>

@@ -43,3 +43,7 @@ recursos/
 - **Recurso de Maestría / Simulador de Criptoanálisis de Ransomware y Detección con IA** — laboratorio interactivo de cifrado híbrido, cálculo de entropía de Shannon y telemetría defensiva.
 - **Uso Personal / FinanceLab - Panel Financiero Interactivo** — dashboard financiero personal con carga de hojas de cálculo (Excel/CSV), desglose de gastos y guía didáctica de fórmulas.
 - **Introducción a las Finanzas / InverTest - Test de Perfil de Inversión** — evaluación interactiva de aversión al riesgo y diagnóstico del perfil del inversionista con asignación de activos sugerida.
+- **IA para Negocios / Atelier Aurum — Cotizador de Alta Joyería** — simulador de costos, manufactura, gemas y rentabilidad para piezas de lujo con exportación a proforma en PDF.
+- **Recurso de Maestría / Laboratorio Visual de Redes Convolucionales (CNN)** — explorador visual de capas de convolución, cálculo matricial paso a paso, ReLU y max pooling interactivo.
+- **Matemática Básica para Ciencias Políticas 1 / Simulador de Sistemas de Ecuaciones Lineales** — resolución algebraica determinista con KaTeX, graficación en canvas interactivo y métodos matriciales.
+- **Uso Personal / Lanzador de Dados 3D y Estadísticas** — simulación interactiva con físicas y animaciones 3D para tiradas de dados y registro acumulado de resultados.

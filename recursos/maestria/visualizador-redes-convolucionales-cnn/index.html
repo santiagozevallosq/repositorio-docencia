@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio Visual e Interactivo de Redes Convolucionales (CNN)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    .cell-transition {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.4); }
+      50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.9); }
+    }
+    .active-kernel-window {
+      animation: pulseGlow 1.8s infinite;
+      outline: 3px solid #6366f1;
+      z-index: 20;
+    }
+    .active-output-cell {
+      outline: 3px solid #10b981 !important;
+      transform: scale(1.08);
+      z-index: 25;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col custom-scrollbar antialiased selection:bg-indigo-500 selection:text-white">
+
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white font-black text-xl">
+          ✦
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
+            CNN Visual Lab
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Explorador Interactivo</span>
+          </h1>
+          <p class="text-xs text-slate-400">Aprende convoluciones, kernels, ReLU, max pooling y extracción de patrones</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs sm:text-sm font-medium">
+        <button id="tab-btn-pipeline" onclick="switchView('pipeline')" class="tab-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition">
+          1. Pipeline Completo
+        </button>
+        <button id="tab-btn-math" onclick="switchView('math')" class="tab-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          2. Convolución Matemática
+        </button>
+        <button id="tab-btn-draw" onclick="switchView('draw')" class="tab-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition">
+          3. Dibuja & Filtra en Vivo
+        </button>
+      </div>
+
+      <!-- Back button & Quick Info -->
+      <div class="flex items-center gap-2">
+        <a href="../../../index.html" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Repositorio Docente
+        </a>
+        <button onclick="toggleHelpModal()" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          ¿Cómo funciona?
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- VIEW 1: COMPLETE PIPELINE -->
+    <div id="view-pipeline" class="space-y-6">
+      
+      <!-- Top Controller Bar -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <!-- Preset selector -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Patrón de Entrada:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="loadPreset('vertical')" class="preset-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Borde Vertical</button>
+            <button onclick="loadPreset('horizontal')" class="preset-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Borde Horizontal</button>
+            <button onclick="loadPreset('cross')" class="preset-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Cruz (+)</button>
+            <button onclick="loadPreset('diagonal')" class="preset-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Diagonal (/)</button>
+            <button onclick="loadPreset('circle')" class="preset-btn px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Círculo</button>
+          </div>
+        </div>
+
+        <!-- Filter Selector -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Filtro (Kernel):</span>
+          <select id="kernel-select" onchange="onKernelPresetChange(this.value)" class="bg-slate-950 text-xs text-indigo-300 font-medium px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500">
+            <option value="sobel-v">Sobel Vertical (Detecta bordes verticales)</option>
+            <option value="sobel-h">Sobel Horizontal (Detecta bordes horizontales)</option>
+            <option value="laplacian">Laplaciano (Detector de contornos/bordes)</option>
+            <option value="sharpen">Realzar / Nitidez (Sharpen)</option>
+            <option value="boxblur">Desenfoque uniforme (Box Blur)</option>
+            <option value="identity">Identidad (Paso directo)</option>
+          </select>
+        </div>
+
+        <!-- Animation Controls -->
+        <div class="flex items-center gap-2">
+          <button id="btn-play" onclick="togglePlay()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white flex items-center gap-1.5 shadow-md shadow-indigo-600/30 transition">
+            <svg id="play-icon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><polygon points="5,3 15,10 5,17"/></svg>
+            <span id="play-text">Animar Kernel</span>
+          </button>
+          <button onclick="stepForward()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700" title="Paso siguiente">
+            ⏭ Paso
+          </button>
+          <button onclick="resetPosition()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700" title="Reiniciar">
+            ↺
+          </button>
+        </div>
+      </div>
+
+      <!-- Visual Pipeline Stages Flow -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Stage 1: Input Matrix -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between relative shadow-lg">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">1. Imagen Entrada</h3>
+            </div>
+            <span class="text-[11px] font-mono bg-slate-800 px-2 py-0.5 rounded text-cyan-300 font-semibold">6x6 Píxeles</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Pasa el ratón o pulsa sobre las celdas para colocar la ventana 3x3 del filtro.</p>
+
+          <!-- Input Matrix Grid -->
+          <div class="flex justify-center items-center py-2">
+            <div id="pipeline-input-grid" class="grid gap-1 bg-slate-950 p-2 rounded-xl border border-slate-800 relative select-none">
+              <!-- Dynamically generated 6x6 cells -->
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-500 text-center mt-2 flex justify-center items-center gap-3">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-900 border border-slate-700"></span> 0 = Negro</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-white"></span> 1 = Blanco</span>
+          </div>
+        </div>
+
+        <!-- Stage 2: Convolution Feature Map -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between relative shadow-lg">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">2. Mapa de Convolución</h3>
+            </div>
+            <span class="text-[11px] font-mono bg-slate-800 px-2 py-0.5 rounded text-indigo-300 font-semibold">4x4 Feature Map</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Multiplica píxel por píxel con el Kernel 3x3 y suma los 9 productos.</p>
+
+          <!-- Conv output grid -->
+          <div class="flex justify-center items-center py-2">
+            <div id="pipeline-conv-grid" class="grid gap-1.5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 select-none">
+              <!-- Dynamically generated 4x4 cells -->
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-400 text-center mt-2">
+            Tamaño = <span class="font-mono text-indigo-300">(N - F + 1) = (6 - 3 + 1) = 4</span>
+          </div>
+        </div>
+
+        <!-- Stage 3: ReLU Activation -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between relative shadow-lg">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">3. Activación (ReLU)</h3>
+            </div>
+            <span class="text-[11px] font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300 font-semibold">f(x) = max(0, x)</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Introduce no-linealidad eliminando cualquier activación negativa (la vuelve 0).</p>
+
+          <!-- ReLU output grid -->
+          <div class="flex justify-center items-center py-2">
+            <div id="pipeline-relu-grid" class="grid gap-1.5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 select-none">
+              <!-- Dynamically generated 4x4 cells -->
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-400 text-center mt-2 flex items-center justify-center gap-2">
+            <span class="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono text-[10px] border border-amber-500/20">Si x &lt; 0 ➔ 0</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-mono text-[10px] border border-emerald-500/20">Si x ≥ 0 ➔ x</span>
+          </div>
+        </div>
+
+        <!-- Stage 4: Max Pooling Layer -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between relative shadow-lg">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">4. Max Pooling</h3>
+            </div>
+            <span class="text-[11px] font-mono bg-slate-800 px-2 py-0.5 rounded text-emerald-300 font-semibold">2x2 (Stride 2)</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Reduce la dimensión espacial conservando el valor más prominente de cada bloque.</p>
+
+          <!-- Max Pooling output grid -->
+          <div class="flex justify-center items-center py-2">
+            <div id="pipeline-pool-grid" class="grid gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 select-none">
+              <!-- Dynamically generated 2x2 cells -->
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-400 text-center mt-2">
+            Reducción al 25% de datos: <span class="font-mono text-emerald-300">4x4 ➔ 2x2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Computation Breakdown Banner -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+          
+          <!-- Kernel Matrix Inspection -->
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <div class="text-center sm:text-left">
+              <span class="text-[11px] font-bold text-indigo-400 uppercase tracking-wider block">Filtro / Kernel Activo (3x3)</span>
+              <span id="active-kernel-name" class="text-sm font-semibold text-slate-200">Sobel Vertical</span>
+              <p class="text-[11px] text-slate-400 mt-0.5">Pesos $W$ aprendibles en entrenamiento</p>
+            </div>
+
+            <div id="kernel-preview-grid" class="grid grid-cols-3 gap-1 bg-slate-950 p-1.5 rounded-lg border border-slate-800">
+              <!-- Kernel preview cells -->
+            </div>
+          </div>
+
+          <!-- Live Math Formula Display -->
+          <div class="flex-1 bg-slate-950 rounded-xl p-3.5 border border-slate-800/80 font-mono text-xs overflow-x-auto w-full">
+            <div class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-1 flex items-center justify-between">
+              <span>Desglose Matemático del píxel actual en (<span id="calc-coord" class="text-indigo-400">r:0, c:0</span>)</span>
+              <span id="calc-final-badge" class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold">Salida: +3.00</span>
+            </div>
+            <div id="calc-formula-str" class="text-slate-300 whitespace-nowrap text-[11px] leading-relaxed">
+              Cargando fórmula...
+            </div>
+            <div class="mt-1.5 flex flex-wrap items-center gap-3 text-[11px] text-slate-400 border-t border-slate-900 pt-1.5">
+              <span>Fórmula general: <span class="text-indigo-300">Y[i,j] = ∑ (X[i+u, j+v] · K[u,v]) + b</span></span>
+              <span>•</span>
+              <span>Activación ReLU: <span id="calc-relu-res" class="text-amber-300 font-bold">max(0, 3.00) = 3.00</span></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Flatten & Classification Preview Strip -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+              5. Aplanamiento (Flatten) y Vector de Características
+            </h4>
+            <p class="text-xs text-slate-400 mt-1">
+              Las 4 activaciones finales del Max Pooling se estiran en un vector 1D de 4 neuronas, listo para alimentar una Capa Densa (Fully Connected) o un clasificador Softmax.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3 self-center md:self-auto overflow-x-auto py-2">
+            <span class="text-xs font-mono text-slate-400">Vector = [</span>
+            <div id="flatten-vector-container" class="flex gap-1.5">
+              <!-- Dynamically populated 4 flattened cells -->
+            </div>
+            <span class="text-xs font-mono text-slate-400">]</span>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-300 border border-pink-500/30">
+              ➜ Capa Densa
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: CONVOLUTION MATHEMATICS DEEP-DIVE -->
+    <div id="view-math" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div class="max-w-3xl">
+          <h2 class="text-xl font-bold text-white mb-2">Microscopio de Convolución 2D</h2>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Una convolución es una operación matemática lineal donde una matriz pequeña llamada <strong>Kernel</strong> o <strong>Filtro</strong> se desliza sobre una imagen. En cada posición, se multiplican las celdas superpuestas elemento a elemento y se suman todos los resultados para producir un único número en el <em>Mapa de Características (Feature Map)</em>.
+          </p>
+        </div>
+
+        <!-- Interactive Playground -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 items-start">
+          
+          <!-- Editable 3x3 Kernel Box -->
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Editor de Kernel 3x3</h3>
+              <button onclick="resetCustomKernel()" class="text-[11px] text-slate-400 hover:text-white underline">Restaurar</button>
+            </div>
+            <p class="text-xs text-slate-400 mb-3">Edita directamente los valores numéricos del filtro para ver cómo reacciona la convolución:</p>
+            
+            <div class="grid grid-cols-3 gap-2 max-w-[220px] mx-auto" id="custom-kernel-inputs">
+              <!-- 9 inputs dynamically generated -->
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800 text-center">
+              <label class="text-xs text-slate-400 block mb-1">Sesgo (Bias, $b$):</label>
+              <input type="number" id="custom-bias-input" value="0" step="0.5" onchange="onBiasChange(this.value)" class="w-20 bg-slate-900 text-center text-xs font-mono font-bold text-cyan-400 py-1 rounded border border-slate-700 focus:outline-none focus:border-cyan-500">
+            </div>
+          </div>
+
+          <!-- Live Step Calculation Visualizer -->
+          <div class="lg:col-span-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Multiplicación Elemento por Elemento (Hadamard Product)</h3>
+            <p class="text-xs text-slate-400 mb-4">
+              A continuación puedes ver los 9 pares de celdas que se multiplican en la posición seleccionada de la ventana:
+            </p>
+
+            <div id="hadamard-visualizer" class="grid grid-cols-3 sm:grid-cols-3 gap-2">
+              <!-- Dynamically populated 9 mini product boxes -->
+            </div>
+
+            <div class="mt-4 p-3 rounded-lg bg-indigo-950/40 border border-indigo-800/40 flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs text-slate-300">Suma total de los 9 productos + Bias:</span>
+              <span id="hadamard-sum-text" class="text-sm font-mono font-bold text-emerald-400">+3.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concept Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <h4 class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">Invarianza Espacial</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Como el mismo filtro se desliza por toda la imagen, si un borde o patrón aparece arriba a la derecha o abajo a la izquierda, la CNN lo detectará con la misma eficacia.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Compartición de Pesos</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              En lugar de conectar cada píxel con una neurona (lo que requeriría millones de conexiones en una red tradicional), un kernel de 3x3 solo tiene <strong>9 parámetros</strong> reutilizados en toda la imagen.
+            </p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+            <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Jerarquía de Rasgos</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Las primeras capas aprenden bordes y curvas simples. Las capas más profundas combinan esos mapas para reconocer partes complejas: texturas, ojos, narices o ruedas.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: LIVE DRAWING CANVAS & REAL-TIME FILTERS -->
+    <div id="view-draw" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white mb-1">Dibuja y Observa los Filtros en Tiempo Real</h2>
+            <p class="text-xs text-slate-300">Haz clic y arrastra sobre el lienzo 8x8 para dibujar tu propio patrón y ver cómo reaccionan simultáneamente 4 filtros convolucionales distintos.</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="clearDrawingCanvas()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition">
+              Limpiar Lienzo
+            </button>
+            <button onclick="invertDrawingCanvas()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition">
+              Invertir Colores
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <!-- Interactive Drawing Board -->
+          <div class="lg:col-span-4 flex flex-col items-center bg-slate-950 p-4 rounded-2xl border border-slate-800">
+            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2">Lienzo Interactivo (8x8)</span>
+            <div id="drawing-grid" class="grid grid-cols-8 gap-1 p-2 bg-slate-900 rounded-xl border border-slate-700 touch-none select-none cursor-crosshair">
+              <!-- 64 drawing pixels -->
+            </div>
+            <span class="text-[11px] text-slate-400 mt-3 text-center">Haz clic o arrastra el cursor para pintar píxeles blancos.</span>
+          </div>
+
+          <!-- 4 Parallel CNN Filter Responses -->
+          <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            
+            <!-- Filter 1: Vertical Sobel -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
+              <span class="text-[11px] font-bold text-indigo-400 uppercase">Filtro Vertical</span>
+              <span class="text-[10px] text-slate-400 mb-2">Detecta bordes |</span>
+              <div id="draw-feat-v" class="grid grid-cols-6 gap-0.5 p-1 bg-slate-900 rounded border border-slate-800"></div>
+              <span class="text-[10px] font-mono text-slate-500 mt-2">6x6 Mapa</span>
+            </div>
+
+            <!-- Filter 2: Horizontal Sobel -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
+              <span class="text-[11px] font-bold text-amber-400 uppercase">Filtro Horizontal</span>
+              <span class="text-[10px] text-slate-400 mb-2">Detecta bordes —</span>
+              <div id="draw-feat-h" class="grid grid-cols-6 gap-0.5 p-1 bg-slate-900 rounded border border-slate-800"></div>
+              <span class="text-[10px] font-mono text-slate-500 mt-2">6x6 Mapa</span>
+            </div>
+
+            <!-- Filter 3: Laplacian / Ridge -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
+              <span class="text-[11px] font-bold text-emerald-400 uppercase">Contorno Total</span>
+              <span class="text-[10px] text-slate-400 mb-2">Laplaciano 3x3</span>
+              <div id="draw-feat-edge" class="grid grid-cols-6 gap-0.5 p-1 bg-slate-900 rounded border border-slate-800"></div>
+              <span class="text-[10px] font-mono text-slate-500 mt-2">6x6 Mapa</span>
+            </div>
+
+            <!-- Filter 4: Max Pooled Representation -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
+              <span class="text-[11px] font-bold text-pink-400 uppercase">Max Pool (2x2)</span>
+              <span class="text-[10px] text-slate-400 mb-2">Downsample V</span>
+              <div id="draw-feat-pool" class="grid grid-cols-3 gap-1 p-1 bg-slate-900 rounded border border-slate-800"></div>
+              <span class="text-[10px] font-mono text-slate-500 mt-2">3x3 Mapa</span>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Educational Help Modal -->
+  <div id="help-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 max-w-2xl w-full rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>🧠</span> ¿Cómo "ve" una Red Neuronal Convolucional?
+        </h3>
+        <button onclick="toggleHelpModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
+        <p>
+          A diferencia de los humanos, que percibimos formas continuas y colores, una computadora percibe una imagen digital como una <strong>matriz de números</strong> (donde 0 es negro, 1 es blanco y los valores intermedios son tonos de gris).
+        </p>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+          <h4 class="font-bold text-indigo-400">Las 4 fases representadas en esta herramienta:</h4>
+          <ol class="list-decimal list-inside space-y-1 text-slate-300">
+            <li><strong>Capa de Convolución:</strong> Un filtro o <em>kernel</em> se desliza por toda la imagen multiplicando píxeles superpuestos. Si el patrón del filtro coincide con el dibujo, el valor resultante es alto.</li>
+            <li><strong>Activación ReLU (Rectified Linear Unit):</strong> Modela el disparo neuronal biológico: apaga cualquier activación negativa devolviendo 0 y deja pasar los números positivos intactos.</li>
+            <li><strong>Max Pooling:</strong> Divide la imagen en bloques de 2x2 y solo conserva el número más grande de cada bloque. Reduce el tamaño de los datos a la cuarta parte e introduce tolerancia a pequeñas traslaciones.</li>
+            <li><strong>Flattening:</strong> Desenrolla la matriz 2D final en una fila de números que se conecta con neuronas tradicionales para clasificar el objeto (ej. "¿es un 7 o un 0?").</li>
+          </ol>
+        </div>
+
+        <p class="text-slate-400">
+          Usa los botones de patrones, anima el movimiento del kernel y cambia a la pestaña "Dibuja & Filtra en Vivo" para experimentar por tu cuenta.
+        </p>
+      </div>
+
+      <div class="pt-2 text-right">
+        <button onclick="toggleHelpModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">
+          ¡Entendido, volver a la simulación!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Global Application State */
+    const STATE = {
+      view: 'pipeline',
+      inputSize: 6,
+      kernelSize: 3,
+      currentR: 0,
+      currentC: 0,
+      isPlaying: false,
+      animationInterval: null,
+      bias: 0,
+      
+      // 6x6 Input Image Matrix
+      inputMatrix: [
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0]
+      ],
+
+      // Active 3x3 Kernel
+      kernel: [
+        [-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1]
+      ],
+
+      // Computed Intermediate & Final matrices
+      convMatrix: [],
+      reluMatrix: [],
+      poolMatrix: [],
+
+      // 8x8 Drawing Grid Data
+      drawingBoard: [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0, 0],
+        [0, 0, 1, 1, 1, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0]
+      ],
+      isDrawing: false
+    };
+
+    /* Standard Convolution Kernels */
+    const KERNEL_PRESETS = {
+      'sobel-v': {
+        name: 'Sobel Vertical',
+        matrix: [
+          [-1, 0, 1],
+          [-2, 0, 2],
+          [-1, 0, 1]
+        ]
+      },
+      'sobel-h': {
+        name: 'Sobel Horizontal',
+        matrix: [
+          [-1, -2, -1],
+          [ 0,  0,  0],
+          [ 1,  2,  1]
+        ]
+      },
+      'laplacian': {
+        name: 'Laplaciano (Bordes)',
+        matrix: [
+          [ 0,  1,  0],
+          [ 1, -4,  1],
+          [ 0,  1,  0]
+        ]
+      },
+      'sharpen': {
+        name: 'Realce (Sharpen)',
+        matrix: [
+          [ 0, -1,  0],
+          [-1,  5, -1],
+          [ 0, -1,  0]
+        ]
+      },
+      'boxblur': {
+        name: 'Desenfoque Uniforme',
+        matrix: [
+          [0.11, 0.11, 0.11],
+          [0.11, 0.11, 0.11],
+          [0.11, 0.11, 0.11]
+        ]
+      },
+      'identity': {
+        name: 'Identidad',
+        matrix: [
+          [0, 0, 0],
+          [0, 1, 0],
+          [0, 0, 0]
+        ]
+      }
+    };
+
+    /* Image Presets (6x6) */
+    const IMAGE_PRESETS = {
+      vertical: [
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0]
+      ],
+      horizontal: [
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0]
+      ],
+      cross: [
+        [0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0]
+      ],
+      diagonal: [
+        [1, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 1]
+      ],
+      circle: [
+        [0, 1, 1, 1, 1, 0],
+        [1, 1, 0, 0, 1, 1],
+        [1, 0, 0, 0, 0, 1],
+        [1, 0, 0, 0, 0, 1],
+        [1, 1, 0, 0, 1, 1],
+        [0, 1, 1, 1, 1, 0]
+      ]
+    };
+
+    /* Core CNN Algorithms: Convolution, ReLU, Max-Pooling */
+    function computePipeline() {
+      const inSize = STATE.inputSize;
+      const kSize = STATE.kernelSize;
+      const outSize = inSize - kSize + 1; // 4x4 for 6x6 with 3x3 filter
+
+      // 1. Convolución 2D: (Input * Kernel) + Bias
+      STATE.convMatrix = [];
+      for (let r = 0; r < outSize; r++) {
+        const row = [];
+        for (let c = 0; c < outSize; c++) {
+          let sum = 0;
+          for (let kr = 0; kr < kSize; kr++) {
+            for (let kc = 0; kc < kSize; kc++) {
+              sum += STATE.inputMatrix[r + kr][c + kc] * STATE.kernel[kr][kc];
+            }
+          }
+          row.push(parseFloat((sum + STATE.bias).toFixed(2)));
+        }
+        STATE.convMatrix.push(row);
+      }
+
+      // 2. Activación ReLU: max(0, x)
+      STATE.reluMatrix = [];
+      for (let r = 0; r < outSize; r++) {
+        const row = [];
+        for (let c = 0; c < outSize; c++) {
+          row.push(Math.max(0, STATE.convMatrix[r][c]));
+        }
+        STATE.reluMatrix.push(row);
+      }
+
+      // 3. Max Pooling 2x2 con Stride 2
+      STATE.poolMatrix = [];
+      const poolSize = 2;
+      const poolOutDim = Math.floor(outSize / poolSize); // 2x2
+      for (let pr = 0; pr < poolOutDim; pr++) {
+        const row = [];
+        for (let pc = 0; pc < poolOutDim; pc++) {
+          let maxVal = -Infinity;
+          for (let ir = 0; ir < poolSize; ir++) {
+            for (let ic = 0; ic < poolSize; ic++) {
+              const val = STATE.reluMatrix[pr * poolSize + ir][pc * poolSize + ic];
+              if (val > maxVal) maxVal = val;
+            }
+          }
+          row.push(maxVal);
+        }
+        STATE.poolMatrix.push(row);
+      }
+    }
+
+    // Helper: 2D Convolution on generic grids (used in drawing board)
+    function convolveGeneric(input, kernel) {
+      const inH = input.length;
+      const inW = input[0].length;
+      const kSize = kernel.length;
+      const outH = inH - kSize + 1;
+      const outW = inW - kSize + 1;
+      const result = [];
+
+      for (let r = 0; r < outH; r++) {
+        const row = [];
+        for (let c = 0; c < outW; c++) {
+          let sum = 0;
+          for (let kr = 0; kr < kSize; kr++) {
+            for (let kc = 0; kc < kSize; kc++) {
+              sum += input[r + kr][c + kc] * kernel[kr][kc];
+            }
+          }
+          row.push(Math.max(0, sum)); // apply ReLU directly for live visualizer
+        }
+        result.push(row);
+      }
+      return result;
+    }
+
+    function maxPoolGeneric(matrix, poolSize = 2) {
+      const h = matrix.length;
+      const w = matrix[0].length;
+      const outH = Math.floor(h / poolSize);
+      const outW = Math.floor(w / poolSize);
+      const result = [];
+
+      for (let r = 0; r < outH; r++) {
+        const row = [];
+        for (let c = 0; c < outW; c++) {
+          let maxVal = -Infinity;
+          for (let kr = 0; kr < poolSize; kr++) {
+            for (let kc = 0; kc < poolSize; kc++) {
+              const val = matrix[r * poolSize + kr][c * poolSize + kc];
+              if (val > maxVal) maxVal = val;
+            }
+          }
+          row.push(maxVal);
+        }
+        result.push(row);
+      }
+      return result;
+    }
+
+    /* Render View 1: Pipeline Overview */
+    function renderPipelineView() {
+      computePipeline();
+
+      const inputGridEl = document.getElementById('pipeline-input-grid');
+      const convGridEl = document.getElementById('pipeline-conv-grid');
+      const reluGridEl = document.getElementById('pipeline-relu-grid');
+      const poolGridEl = document.getElementById('pipeline-pool-grid');
+
+      inputGridEl.style.gridTemplateColumns = `repeat(${STATE.inputSize}, minmax(0, 1fr))`;
+      convGridEl.style.gridTemplateColumns = `repeat(${STATE.inputSize - STATE.kernelSize + 1}, minmax(0, 1fr))`;
+      reluGridEl.style.gridTemplateColumns = `repeat(${STATE.inputSize - STATE.kernelSize + 1}, minmax(0, 1fr))`;
+      poolGridEl.style.gridTemplateColumns = `repeat(2, minmax(0, 1fr))`;
+
+      // 1. Render Input Grid
+      inputGridEl.innerHTML = '';
+      for (let r = 0; r < STATE.inputSize; r++) {
+        for (let c = 0; c < STATE.inputSize; c++) {
+          const val = STATE.inputMatrix[r][c];
+          const cell = document.createElement('div');
+          const isInsideKernel = (
+            r >= STATE.currentR && r < STATE.currentR + STATE.kernelSize &&
+            c >= STATE.currentC && c < STATE.currentC + STATE.kernelSize
+          );
+
+          cell.className = `w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center font-mono text-xs font-bold rounded cursor-pointer cell-transition ${
+            isInsideKernel 
+              ? 'ring-2 ring-indigo-500 bg-indigo-900/60 text-white shadow-md' 
+              : val === 1 
+                ? 'bg-slate-200 text-slate-900' 
+                : 'bg-slate-900 text-slate-500 hover:bg-slate-800'
+          }`;
+          cell.innerText = val;
+          cell.title = `Píxel entrada (${r}, ${c}) = ${val}`;
+
+          cell.onclick = () => {
+            const maxValid = STATE.inputSize - STATE.kernelSize;
+            STATE.currentR = Math.min(r, maxValid);
+            STATE.currentC = Math.min(c, maxValid);
+            renderPipelineView();
+          };
+          inputGridEl.appendChild(cell);
+        }
+      }
+
+      // 2. Render Conv Feature Map (4x4)
+      convGridEl.innerHTML = '';
+      const outDim = STATE.inputSize - STATE.kernelSize + 1;
+      for (let r = 0; r < outDim; r++) {
+        for (let c = 0; c < outDim; c++) {
+          const val = STATE.convMatrix[r][c];
+          const isCurrent = (r === STATE.currentR && c === STATE.currentC);
+          const cell = document.createElement('div');
+
+          // Color coding based on sign and intensity
+          let bgClass = 'bg-slate-800 text-slate-300';
+          if (val > 0) bgClass = 'bg-indigo-600 text-white shadow-indigo-600/30 shadow';
+          else if (val < 0) bgClass = 'bg-rose-950/80 text-rose-300 border border-rose-800/50';
+
+          cell.className = `w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center font-mono text-xs font-bold rounded-lg cursor-pointer cell-transition ${bgClass} ${
+            isCurrent ? 'active-output-cell ring-4 ring-emerald-400' : 'hover:scale-105'
+          }`;
+          cell.innerText = val > 0 ? `+${val}` : val;
+          cell.onclick = () => {
+            STATE.currentR = r;
+            STATE.currentC = c;
+            renderPipelineView();
+          };
+          convGridEl.appendChild(cell);
+        }
+      }
+
+      // 3. Render ReLU Feature Map (4x4)
+      reluGridEl.innerHTML = '';
+      for (let r = 0; r < outDim; r++) {
+        for (let c = 0; c < outDim; c++) {
+          const val = STATE.reluMatrix[r][c];
+          const isCurrent = (r === STATE.currentR && c === STATE.currentC);
+          const cell = document.createElement('div');
+
+          let bgClass = val > 0 ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-600 border border-slate-800';
+          cell.className = `w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center font-mono text-xs font-bold rounded-lg cell-transition ${bgClass} ${
+            isCurrent ? 'ring-2 ring-amber-300 scale-105' : ''
+          }`;
+          cell.innerText = val.toFixed(1);
+          reluGridEl.appendChild(cell);
+        }
+      }
+
+      // 4. Render Max Pool Grid (2x2)
+      poolGridEl.innerHTML = '';
+      const poolActiveR = Math.floor(STATE.currentR / 2);
+      const poolActiveC = Math.floor(STATE.currentC / 2);
+      for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 2; c++) {
+          const val = STATE.poolMatrix[r][c];
+          const isSelectedPool = (r === poolActiveR && c === poolActiveC);
+          const cell = document.createElement('div');
+
+          cell.className = `w-14 h-14 sm:w-16 sm:h-16 flex flex-col items-center justify-center font-mono rounded-xl cell-transition border border-slate-700 ${
+            isSelectedPool 
+              ? 'bg-emerald-600 text-white ring-4 ring-emerald-400/70 shadow-lg shadow-emerald-600/40' 
+              : 'bg-slate-800 text-slate-300'
+          }`;
+          cell.innerHTML = `
+            <span class="text-sm font-extrabold">${val.toFixed(1)}</span>
+            <span class="text-[9px] opacity-75 font-sans">max block</span>
+          `;
+          poolGridEl.appendChild(cell);
+        }
+      }
+
+      // 5. Update Kernel Preview & Math Formula
+      updateKernelPreview();
+      updateMathInspector();
+      updateFlattenVector();
+    }
+
+    /* Update the 3x3 small Kernel indicator in Stage 2 */
+    function updateKernelPreview() {
+      const grid = document.getElementById('kernel-preview-grid');
+      grid.innerHTML = '';
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const val = STATE.kernel[r][c];
+          const cell = document.createElement('div');
+          cell.className = 'w-7 h-7 flex items-center justify-center text-[11px] font-mono font-bold rounded bg-slate-900 text-slate-200 border border-slate-800';
+          cell.innerText = val;
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    /* Update Math formula string and breakdown */
+    function updateMathInspector() {
+      const r = STATE.currentR;
+      const c = STATE.currentC;
+      document.getElementById('calc-coord').innerText = `fila: ${r}, col: ${c}`;
+
+      let terms = [];
+      let total = 0;
+
+      for (let kr = 0; kr < 3; kr++) {
+        for (let kc = 0; kc < 3; kc++) {
+          const inVal = STATE.inputMatrix[r + kr][c + kc];
+          const kVal = STATE.kernel[kr][kc];
+          const prod = inVal * kVal;
+          total += prod;
+          terms.push(`(${inVal} · ${kVal})`);
+        }
+      }
+
+      total += STATE.bias;
+      const finalVal = parseFloat(total.toFixed(2));
+      const reluVal = Math.max(0, finalVal).toFixed(2);
+
+      const formulaEl = document.getElementById('calc-formula-str');
+      formulaEl.innerHTML = `${terms.join(' + ')} ${STATE.bias !== 0 ? `+ (${STATE.bias} bias)` : ''} = <strong class="text-emerald-400 font-bold">${finalVal}</strong>`;
+      
+      const badge = document.getElementById('calc-final-badge');
+      badge.innerText = `Salida: ${finalVal > 0 ? `+${finalVal}` : finalVal}`;
+      badge.className = `px-2 py-0.5 rounded font-bold ${
+        finalVal > 0 
+          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+      }`;
+
+      document.getElementById('calc-relu-res').innerHTML = `max(0, ${finalVal}) = <strong>${reluVal}</strong>`;
+
+      // Update Hadamard boxes in Math deep dive tab as well
+      updateHadamardVisualizer(r, c);
+    }
+
+    /* Update 1D Flatten vector elements */
+    function updateFlattenVector() {
+      const container = document.getElementById('flatten-vector-container');
+      container.innerHTML = '';
+      
+      if (!STATE.poolMatrix || STATE.poolMatrix.length === 0) return;
+
+      const flat = [
+        STATE.poolMatrix[0][0],
+        STATE.poolMatrix[0][1],
+        STATE.poolMatrix[1][0],
+        STATE.poolMatrix[1][1]
+      ];
+
+      flat.forEach((val, idx) => {
+        const item = document.createElement('div');
+        item.className = 'w-9 h-9 rounded-lg bg-pink-950/60 border border-pink-500/40 text-pink-200 font-mono text-xs font-bold flex items-center justify-center shadow';
+        item.innerText = val.toFixed(1);
+        item.title = `Neurona vector [${idx}] = ${val.toFixed(1)}`;
+        container.appendChild(item);
+      });
+    }
+
+    /* Render View 2: Hadamard Microscope Deep-Dive */
+    function updateHadamardVisualizer(r, c) {
+      const container = document.getElementById('hadamard-visualizer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let grandTotal = 0;
+      for (let kr = 0; kr < 3; kr++) {
+        for (let kc = 0; kc < 3; kc++) {
+          const inVal = STATE.inputMatrix[r + kr][c + kc];
+          const kVal = STATE.kernel[kr][kc];
+          const prod = inVal * kVal;
+          grandTotal += prod;
+
+          const card = document.createElement('div');
+          card.className = 'bg-slate-900 border border-slate-800 p-2 rounded-lg text-center font-mono';
+          card.innerHTML = `
+            <div class="text-[10px] text-slate-500">P[${kr},${kc}]</div>
+            <div class="text-xs text-slate-300 my-0.5">${inVal} × ${kVal}</div>
+            <div class="text-xs font-bold ${prod > 0 ? 'text-indigo-400' : prod < 0 ? 'text-rose-400' : 'text-slate-500'}">
+              = ${prod.toFixed(1)}
+            </div>
+          `;
+          container.appendChild(card);
+        }
+      }
+
+      grandTotal += STATE.bias;
+      const sumText = document.getElementById('hadamard-sum-text');
+      if (sumText) {
+        sumText.innerText = `${grandTotal > 0 ? '+' : ''}${grandTotal.toFixed(2)}`;
+        sumText.className = `text-sm font-mono font-bold ${grandTotal > 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      }
+    }
+
+    /* Initialize Custom Kernel Inputs in Math Tab */
+    function initCustomKernelInputs() {
+      const container = document.getElementById('custom-kernel-inputs');
+      container.innerHTML = '';
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.step = '0.5';
+          input.value = STATE.kernel[r][c];
+          input.className = 'w-full bg-slate-900 text-center font-mono text-xs font-bold text-white py-1.5 rounded border border-slate-700 focus:outline-none focus:border-indigo-500';
+          input.onchange = (e) => {
+            STATE.kernel[r][c] = parseFloat(e.target.value) || 0;
+            document.getElementById('active-kernel-name').innerText = 'Kernel Personalizado';
+            renderPipelineView();
+          };
+          container.appendChild(input);
+        }
+      }
+    }
+
+    function resetCustomKernel() {
+      STATE.kernel = [
+        [-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1]
+      ];
+      STATE.bias = 0;
+      document.getElementById('custom-bias-input').value = 0;
+      document.getElementById('kernel-select').value = 'sobel-v';
+      document.getElementById('active-kernel-name').innerText = 'Sobel Vertical';
+      initCustomKernelInputs();
+      renderPipelineView();
+    }
+
+    function onBiasChange(val) {
+      STATE.bias = parseFloat(val) || 0;
+      renderPipelineView();
+    }
+
+    /* View 3: Live Drawing Canvas Functions */
+    function initDrawingBoard() {
+      const grid = document.getElementById('drawing-grid');
+      grid.innerHTML = '';
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'w-6 h-6 sm:w-8 sm:h-8 rounded cursor-pointer transition-colors duration-100 border border-slate-800';
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+          updateDrawingCellColor(cell, STATE.drawingBoard[r][c]);
+
+          // Mouse & Touch events
+          cell.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            STATE.isDrawing = true;
+            toggleDrawPixel(r, c, cell);
+          });
+
+          cell.addEventListener('mouseenter', () => {
+            if (STATE.isDrawing) {
+              STATE.drawingBoard[r][c] = 1;
+              updateDrawingCellColor(cell, 1);
+              updateDrawingInference();
+            }
+          });
+
+          grid.appendChild(cell);
+        }
+      }
+
+      window.addEventListener('mouseup', () => { STATE.isDrawing = false; });
+      updateDrawingInference();
+    }
+
+    function toggleDrawPixel(r, c, cell) {
+      STATE.drawingBoard[r][c] = STATE.drawingBoard[r][c] === 1 ? 0 : 1;
+      updateDrawingCellColor(cell, STATE.drawingBoard[r][c]);
+      updateDrawingInference();
+    }
+
+    function updateDrawingCellColor(cell, val) {
+      if (val === 1) {
+        cell.style.backgroundColor = '#f8fafc'; // White
+      } else {
+        cell.style.backgroundColor = '#0f172a'; // Dark Slate
+      }
+    }
+
+    function clearDrawingCanvas() {
+      STATE.drawingBoard = Array.from({ length: 8 }, () => Array(8).fill(0));
+      initDrawingBoard();
+    }
+
+    function invertDrawingCanvas() {
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          STATE.drawingBoard[r][c] = STATE.drawingBoard[r][c] === 1 ? 0 : 1;
+        }
+      }
+      initDrawingBoard();
+    }
+
+    /* Compute all 4 filters in real time from drawing canvas */
+    function updateDrawingInference() {
+      const featV = convolveGeneric(STATE.drawingBoard, KERNEL_PRESETS['sobel-v'].matrix);
+      const featH = convolveGeneric(STATE.drawingBoard, KERNEL_PRESETS['sobel-h'].matrix);
+      const featEdge = convolveGeneric(STATE.drawingBoard, KERNEL_PRESETS['laplacian'].matrix);
+      const featPool = maxPoolGeneric(featV, 2);
+
+      renderHeatmap('draw-feat-v', featV);
+      renderHeatmap('draw-feat-h', featH);
+      renderHeatmap('draw-feat-edge', featEdge);
+      renderHeatmap('draw-feat-pool', featPool);
+    }
+
+    function renderHeatmap(elementId, matrix) {
+      const container = document.getElementById(elementId);
+      if (!container) return;
+      container.innerHTML = '';
+      
+      const rows = matrix.length;
+      const cols = matrix[0].length;
+      container.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+
+      // Find max for color scaling
+      let maxVal = 0.001;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (matrix[r][c] > maxVal) maxVal = matrix[r][c];
+        }
+      }
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const val = matrix[r][c];
+          const intensity = Math.min(1, val / maxVal);
+          const cell = document.createElement('div');
+          
+          cell.className = 'w-4 h-4 sm:w-5 sm:h-5 rounded-sm flex items-center justify-center text-[8px] font-mono select-none';
+          
+          // Indigo to Cyan heat coloring
+          if (intensity === 0) {
+            cell.style.backgroundColor = '#020617';
+            cell.style.color = '#334155';
+          } else {
+            const rCol = Math.round(99 * (1 - intensity));
+            const gCol = Math.round(102 + (153 * intensity));
+            const bCol = Math.round(241);
+            cell.style.backgroundColor = `rgb(${rCol}, ${gCol}, ${bCol})`;
+            cell.style.color = intensity > 0.6 ? '#ffffff' : '#000000';
+          }
+          cell.title = `Activación: ${val.toFixed(1)}`;
+          container.appendChild(cell);
+        }
+      }
+    }
+
+    /* Animation Step Controls */
+    function togglePlay() {
+      STATE.isPlaying = !STATE.isPlaying;
+      const btn = document.getElementById('btn-play');
+      const text = document.getElementById('play-text');
+      const icon = document.getElementById('play-icon');
+
+      if (STATE.isPlaying) {
+        text.innerText = 'Pausar';
+        btn.classList.replace('bg-indigo-600', 'bg-amber-600');
+        btn.classList.replace('hover:bg-indigo-500', 'hover:bg-amber-500');
+        icon.innerHTML = '<rect x="4" y="3" width="4" height="14"/><rect x="12" y="3" width="4" height="14"/>';
+        
+        STATE.animationInterval = setInterval(() => {
+          stepForward();
+        }, 650);
+      } else {
+        stopPlay();
+      }
+    }
+
+    function stopPlay() {
+      STATE.isPlaying = false;
+      const btn = document.getElementById('btn-play');
+      const text = document.getElementById('play-text');
+      const icon = document.getElementById('play-icon');
+
+      text.innerText = 'Animar Kernel';
+      btn.classList.replace('bg-amber-600', 'bg-indigo-600');
+      btn.classList.replace('hover:bg-amber-500', 'hover:bg-indigo-500');
+      icon.innerHTML = '<polygon points="5,3 15,10 5,17"/>';
+
+      if (STATE.animationInterval) {
+        clearInterval(STATE.animationInterval);
+        STATE.animationInterval = null;
+      }
+    }
+
+    function stepForward() {
+      const maxCol = STATE.inputSize - STATE.kernelSize;
+      const maxRow = STATE.inputSize - STATE.kernelSize;
+
+      STATE.currentC++;
+      if (STATE.currentC > maxCol) {
+        STATE.currentC = 0;
+        STATE.currentR++;
+        if (STATE.currentR > maxRow) {
+          STATE.currentR = 0;
+        }
+      }
+      renderPipelineView();
+    }
+
+    function resetPosition() {
+      stopPlay();
+      STATE.currentR = 0;
+      STATE.currentC = 0;
+      renderPipelineView();
+    }
+
+    /* Preset handling */
+    function loadPreset(name) {
+      if (IMAGE_PRESETS[name]) {
+        STATE.inputMatrix = JSON.parse(JSON.stringify(IMAGE_PRESETS[name]));
+        resetPosition();
+      }
+    }
+
+    function onKernelPresetChange(key) {
+      const p = KERNEL_PRESETS[key];
+      if (p) {
+        STATE.kernel = JSON.parse(JSON.stringify(p.matrix));
+        document.getElementById('active-kernel-name').innerText = p.name;
+        initCustomKernelInputs();
+        renderPipelineView();
+      }
+    }
+
+    /* View Switcher */
+    function switchView(viewName) {
+      STATE.view = viewName;
+      ['pipeline', 'math', 'draw'].forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const btn = document.getElementById(`tab-btn-${v}`);
+        if (v === viewName) {
+          el.classList.remove('hidden');
+          btn.className = 'tab-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm transition font-medium';
+        } else {
+          el.classList.add('hidden');
+          btn.className = 'tab-btn px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition font-medium';
+        }
+      });
+
+      if (viewName === 'draw') {
+        initDrawingBoard();
+      } else if (viewName === 'math') {
+        initCustomKernelInputs();
+      }
+    }
+
+    function toggleHelpModal() {
+      const modal = document.getElementById('help-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    /* Initialize on load */
+    window.addEventListener('DOMContentLoaded', () => {
+      initCustomKernelInputs();
+      renderPipelineView();
+      initDrawingBoard();
+    });
+  </script>
+</body>
+</html>
