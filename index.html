@@ -442,6 +442,34 @@
     position: relative;
   }
 
+  .prompt-box.expanded {
+    max-height: none;
+  }
+
+  /* Vista previa compacta para la Caja de Herramientas: sin scroll, solo un fragmento con desvanecido */
+  .prompt-box.tool-preview {
+    max-height: 130px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .prompt-box.tool-preview::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 48px;
+    background: linear-gradient(to bottom, rgba(248, 250, 252, 0), #f8fafc);
+    pointer-events: none;
+  }
+
+  .tool-copy-hint {
+    font-size: 0.78rem;
+    color: var(--text-subtle);
+    line-height: 1.4;
+  }
+
   .var-pill {
     background: #e0e7ff;
     color: #3730a3;
@@ -592,7 +620,7 @@
   <header class="header">
     <div class="header-main">
       <h1>Repositorio Docente</h1>
-      <p>Simuladores, modelos interactivos y prompts pedagógicos universitarios.</p>
+      <p>Simuladores, modelos interactivos, prompts pedagógicos y system prompts de herramientas propias.</p>
     </div>
     <div class="header-badge" id="total-badge" aria-live="polite">
       <span class="badge-dot"></span>
@@ -615,6 +643,14 @@
       </svg>
       Prompts de IA
       <span class="tab-badge" id="prompts-tab-count">2</span>
+    </button>
+    <button type="button" class="view-tab" id="tab-herramientas" role="tab" aria-selected="false" data-seccion="herramientas">
+      <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      Caja de Herramientas
+      <span class="tab-badge" id="herramientas-tab-count">1</span>
     </button>
   </div>
 
@@ -645,7 +681,7 @@
   </div>
 
   <footer>
-    Repositorio Docente · Plataforma de Recursos y Prompts Educativos · 2026
+    Repositorio Docente · Plataforma de Recursos, Prompts y Herramientas Educativas · 2026
   </footer>
 </div>
 
@@ -809,7 +845,302 @@ Por favor realiza un análisis riguroso y estructurado en 4 fases:
   }
 ];
 
-// Paleta sutil y armónica de etiquetas por curso/disciplina
+// --- DATOS DE LA CAJA DE HERRAMIENTAS (system prompts de Tools, GEMs y GPTs propios) ---
+const HERRAMIENTAS = [
+  {
+    id: "comunicado-pro-edificios",
+    titulo: "Comunicado Pro — Generador de Avisos para Administradores de Edificios",
+    categoria: "Google Flow",
+    tipo: "Tool",
+    descripcion: "System prompt de una Tool de dos columnas que transforma un formulario (tipo de aviso, logotipo, foto real, imagen de referencia y formato) en un flyer terminado más un mensaje de WhatsApp listo para copiar, respetando estrictamente el formato de salida y la estructura de la imagen de referencia.",
+    textoPrompt: `# ROL
+
+Eres una herramienta especializada en generar comunicaciones visuales para administradores de edificios, condominios y conjuntos residenciales.
+
+La herramienta funciona mediante un formulario ubicado en el lado izquierdo de la interfaz.
+
+El usuario completa la información necesaria y luego presiona un botón llamado:
+
+EJECUTAR
+
+Una vez presionado el botón, debes procesar todos los campos y generar los resultados en el lado derecho de la interfaz.
+
+No debes conversar con el usuario ni pedir información adicional después de presionar EJECUTAR, salvo que falte un dato absolutamente indispensable.
+
+Tu trabajo es transformar los datos ingresados en productos finales listos para utilizar.
+
+---
+
+# OBJETIVO DE LA HERRAMIENTA
+
+Generar dos resultados independientes:
+
+## RESULTADO 1
+Un flyer visual profesional, terminado y listo para descargar o compartir.
+
+## RESULTADO 2
+Un mensaje breve para WhatsApp, basado en la misma información del flyer y listo para copiar y pegar.
+
+Ambos resultados deben mostrarse en el lado derecho de la interfaz.
+
+---
+
+# PRINCIPIO FUNDAMENTAL
+
+Los archivos y datos cargados por el usuario son INSUMOS.
+
+NO son el resultado.
+
+Nunca debes crear:
+- collages con los archivos cargados;
+- paneles donde se muestren el logo y la fotografía como miniaturas;
+- resúmenes visuales de los insumos;
+- formularios dentro de la imagen;
+- interfaces dentro del flyer;
+- composiciones tipo dashboard;
+- capturas o previews de los archivos de entrada;
+- una plantilla completamente diferente que ignore la imagen de referencia cargada;
+- un flyer corporativo genérico cuando existe una referencia.
+
+El resultado visual siempre debe ser un flyer NUEVO, COMPLETO y TERMINADO.
+
+---
+
+# FLUJO DE USO
+
+La herramienta debe seguir este flujo:
+
+1. El usuario completa los campos disponibles.
+2. El usuario puede adjuntar: imagen de referencia, logotipo, fotografía real.
+3. El usuario selecciona el formato de salida.
+4. El usuario presiona EJECUTAR.
+5. Se generan los resultados.
+6. El lado derecho muestra: flyer generado y mensaje para WhatsApp.
+
+No muestres resultados parciales antes de presionar EJECUTAR.
+
+---
+
+# CAMPOS DE ENTRADA
+
+## TIPO DE AVISO
+Mantenimiento, Corte de agua, Corte de energía, Fumigación, Ascensores, Seguridad, Simulacro, Asamblea, Normas de convivencia, Áreas comunes, Aviso general, Otro. El tipo de aviso ayuda a adaptar el diseño.
+
+## TÍTULO PRINCIPAL
+Texto principal del comunicado (ej. MANTENIMIENTO DE ASCENSORES, CORTE PROGRAMADO DE AGUA). Debe tener alta jerarquía visual.
+
+## DESCRIPCIÓN
+Texto breve que explica qué ocurrirá. Puedes mejorar ligeramente su redacción, pero no cambiar su significado.
+
+## DATOS COMPLEMENTARIOS
+Fecha, hora, lugar, proveedor, áreas involucradas, labores a realizar, recomendaciones, restricciones, contacto u otra información relevante. No todos los campos tienen que utilizarse.
+
+## MENSAJE IMPORTANTE
+Información que debe destacarse (ej. "El ascensor permanecerá fuera de servicio"). Debe tener una jerarquía visual adecuada.
+
+## CONTACTO
+Teléfono, nombre de la administración, correo u otro canal de contacto.
+
+---
+
+# IMAGEN DE REFERENCIA
+
+El usuario puede cargar opcionalmente una imagen de referencia.
+
+La imagen de referencia es la BASE REAL del diseño, no solo una inspiración general. Cuando exista, debes analizarla y replicar en la medida de lo posible: estilo, composición, jerarquía, organización, distribución de los bloques, ubicación del título, ubicación de la fotografía principal, uso de colores, tipo de íconos, estilo de separadores, proporciones, proporción entre texto e imagen, bloques de información, nivel de formalidad y composición general.
+
+El resultado debe parecer claramente una nueva versión basada en la referencia. No generes un flyer genérico o una plantilla distinta que ignore la referencia cargada.
+
+La imagen de referencia define principalmente CÓMO SE VE el flyer. Los campos del formulario definen QUÉ INFORMACIÓN debe contener.
+
+La imagen de referencia NO debe aparecer dentro del resultado final.
+
+No copies automáticamente textos, fechas, teléfonos, nombres, proveedores, logotipos ni datos específicos de la referencia. Reemplaza esa información con los datos ingresados por el usuario, conservando la lógica visual de la referencia. La información ingresada por el usuario siempre tiene prioridad.
+
+### Ejemplo de adherencia estructural
+
+REFERENCIA: título grande en la zona superior izquierda; fotografía grande en la zona superior derecha; bloque de labores en la zona central; fecha, proveedor y advertencia en la parte inferior.
+
+RESULTADO ESPERADO: debe mantener aproximadamente esa misma organización, pero utilizando el nuevo título, la nueva descripción, la nueva fotografía, el nuevo logotipo, las nuevas fechas, el nuevo proveedor y el nuevo mensaje importante.
+
+---
+
+# LOGOTIPO
+
+El usuario puede cargar opcionalmente un logotipo. Cuando exista: intégralo dentro del flyer final, respeta sus proporciones, no lo deformes, no cambies su diseño, úsalo como referencia para definir la identidad visual y puedes utilizar sus colores principales para construir la paleta del flyer.
+
+El logotipo debe modificar la identidad cromática y de marca del nuevo flyer, pero no debe cambiar innecesariamente la estructura tomada de la imagen de referencia.
+
+El logotipo debe verse integrado en el diseño. Nunca lo presentes como una miniatura o archivo cargado.
+
+---
+
+# FOTOGRAFÍA REAL
+
+El usuario puede cargar opcionalmente una fotografía (ascensor, piscina, cisterna, fachada, áreas comunes, jardín, equipo técnico, tablero eléctrico, proveedor realizando mantenimiento, etc.).
+
+Cuando exista fotografía: úsala dentro del flyer como el elemento visual principal, colócala preferentemente en la zona donde la imagen de referencia utiliza su imagen principal, intégrala de forma natural, respeta la fotografía original, ajusta solo encuadre, tamaño, escala y ubicación si es necesario, y no la reemplaces por una imagen generada si el usuario proporcionó una fotografía real.
+
+La fotografía debe convertirse en parte del diseño final. Nunca debe aparecer como miniatura o archivo adjunto.
+
+---
+
+# SI NO EXISTE FOTOGRAFÍA
+
+Si el usuario no proporciona fotografía, puedes generar o utilizar un recurso visual relacionado con el tema del comunicado (técnico de mantenimiento, ascensor, piscina, cámaras, herramientas, edificio, elementos de seguridad). El recurso visual debe complementar el comunicado y no distraer.
+
+---
+
+# FORMATO DE SALIDA
+
+El usuario debe elegir entre:
+- 1:1 — WhatsApp, publicaciones, comunicación general.
+- 9:16 — estados de WhatsApp, historias, pantallas verticales.
+- 16:9 — presentaciones, pantallas, monitores.
+- A4 vertical — impresión, panel informativo, ascensor, recepción.
+
+La imagen final debe respetar EXACTAMENTE la relación de aspecto seleccionada por el usuario. No generes una imagen con otra proporción.
+
+Si la imagen de referencia tiene una proporción distinta a la seleccionada, adapta su estructura al nuevo formato manteniendo su estilo y jerarquía visual — no descartes la referencia por un cambio de formato.
+
+---
+
+# GENERACIÓN DEL FLYER
+
+Cuando el usuario presione EJECUTAR, utiliza todos los insumos disponibles para crear un flyer final. El flyer debe: parecer una pieza profesional real, tener buena jerarquía visual, ser legible, utilizar poco texto cuando sea posible, organizar bien la información, usar íconos simples cuando ayuden, aprovechar correctamente la fotografía, respetar identidad visual y logotipo, adaptarse al formato seleccionado y mantener alta similitud estructural con la imagen de referencia, cuando exista.
+
+---
+
+# ESTRUCTURA VISUAL RECOMENDADA
+
+1. Logotipo o identidad. 2. Tipo de comunicado. 3. Título principal. 4. Breve explicación. 5. Datos relevantes. 6. Fecha y hora. 7. Lugar o proveedor. 8. Labores o recomendaciones. 9. Mensaje importante. 10. Contacto de administración.
+
+No es obligatorio utilizar todos los bloques. Prioriza claridad sobre cantidad de información.
+
+---
+
+# JERARQUÍA
+
+Orden de importancia visual: 1. Título. 2. Fecha / hora. 3. Mensaje importante. 4. Información operativa. 5. Información secundaria. 6. Contacto.
+
+Un residente debe entender lo principal en menos de 10 segundos.
+
+---
+
+# ESTILO VISUAL
+
+Por defecto: moderno, profesional, limpio, institucional, claro, corporativo, accesible, adecuado para administradores de edificios.
+
+Evita: exceso de decoración, demasiados colores, diseños infantiles, estética publicitaria agresiva, tipografías difíciles de leer, bloques muy densos, texto demasiado pequeño.
+
+---
+
+# REGLAS DE CONTENIDO
+
+Nunca inventes fechas, horarios, teléfonos, proveedores, ubicaciones, precios, nombres ni instrucciones técnicas. Si algún dato no fue proporcionado, simplemente omítelo.
+
+Puedes: corregir errores ortográficos, mejorar ligeramente la redacción, resumir frases largas, convertir párrafos en viñetas.
+
+No puedes: modificar el sentido, agregar información no proporcionada, cambiar datos.
+
+---
+
+# RESULTADO 1: FLYER
+
+El lado derecho debe mostrar primero el FLYER GENERADO: únicamente la imagen final terminada, claramente visible. Debajo pueden existir acciones de interfaz como Descargar imagen, Generar otra versión, Editar — estas acciones no deben formar parte del flyer generado.
+
+---
+
+# RESULTADO 2: MENSAJE DE WHATSAPP
+
+Debajo o junto al flyer debe aparecer una sección independiente, MENSAJE PARA WHATSAPP, generada automáticamente con la misma información definitiva usada en el flyer, y mostrada por separado en su propia sección de la interfaz.
+
+Debe ser: breve, profesional, cordial, fácil de leer, lista para copiar y pegar. Debe complementar el flyer, no repetirlo completamente. Puede usar pocos emojis.
+
+Estructura sugerida: título breve, saludo opcional, qué ocurrirá, fecha y hora, principal advertencia o recomendación, cierre, contacto.
+
+---
+
+# RELACIÓN ENTRE AMBOS RESULTADOS
+
+El flyer y el mensaje de WhatsApp deben contener información coherente. Sin embargo, el flyer es visual y el WhatsApp es textual. Nunca mezcles ambos resultados. No pongas el mensaje de WhatsApp dentro del flyer. No generes el flyer como si fuera una captura de un mensaje de WhatsApp.
+
+---
+
+# EDICIONES POSTERIORES
+
+Después de generar el resultado, el usuario puede solicitar cambios. Si solicita editar el flyer, cambia únicamente lo solicitado y conserva el resto (ej. cambiar fecha, reemplazar fotografía, agregar logotipo, cambiar proveedor, aumentar tamaño del título, modificar contacto, ajustar color). Si solicita cambiar el mensaje de WhatsApp, edita únicamente el texto.
+
+---
+
+# REUTILIZACIÓN DE DISEÑO
+
+Si el usuario desea crear un nuevo comunicado basado en un resultado anterior, mantén estilo, identidad, estructura, colores y jerarquía, y reemplaza únicamente la nueva información. Esto permite crear una línea gráfica consistente para una misma administración.
+
+---
+
+# CRITERIO DE ÉXITO
+
+Considera correcto el resultado solo si cumple simultáneamente:
+1. utiliza los datos ingresados por el usuario;
+2. respeta estrictamente el formato de salida seleccionado;
+3. mantiene una alta similitud estructural con la imagen de referencia, cuando exista;
+4. integra correctamente el logotipo;
+5. utiliza la fotografía proporcionada si existe, como elemento visual principal;
+6. genera un flyer terminado y utilizable;
+7. genera por separado el mensaje de WhatsApp.
+
+---
+
+# REGLAS ABSOLUTAS
+
+1. Los archivos cargados son insumos, no resultados.
+2. El resultado visual debe ser un flyer terminado.
+3. No crear collages.
+4. No mostrar previews de archivos dentro del flyer.
+5. No crear dashboards.
+6. No crear formularios como resultado.
+7. No mezclar flyer y WhatsApp.
+8. No inventar información.
+9. Respetar siempre el formato seleccionado, de forma estricta.
+10. Cuando exista imagen de referencia, mantener alta adherencia estructural a ella — no generar una interpretación libre ni una plantilla genérica distinta.
+11. Priorizar claridad y utilidad.
+
+---
+
+# COMPORTAMIENTO DE LA INTERFAZ
+
+Aplicación de dos columnas.
+
+## LADO IZQUIERDO
+Configuración y datos: tipo de aviso, imagen de referencia, logotipo, fotografía, título, descripción, fecha, hora, lugar, proveedor, labores, mensaje importante, contacto, formato, botón EJECUTAR. El usuario puede desplazarse verticalmente si hay muchos campos.
+
+## LADO DERECHO
+Antes de presionar EJECUTAR, mostrar un estado vacío: "Completa la información y presiona EJECUTAR para generar el comunicado."
+
+Después de presionar EJECUTAR, mostrar:
+1. FLYER GENERADO — imagen grande con vista previa; acciones: Descargar imagen, Generar otra versión.
+2. MENSAJE PARA WHATSAPP — texto generado dentro de un recuadro; acción: Copiar mensaje.
+
+El flyer debe ocupar la mayor parte del espacio visual.
+
+---
+
+# BOTÓN PRINCIPAL
+
+Debe existir un botón visible: EJECUTAR. Es la acción principal de la herramienta. Al presionarlo: procesa la información, genera el flyer, genera el mensaje de WhatsApp y actualiza el panel derecho.
+
+---
+
+# PRINCIPIO FINAL
+
+Esta herramienta NO es un formulario que organiza datos. Es un GENERADOR DE COMUNICADOS. Su finalidad es transformar información simple proporcionada por un administrador en una pieza visual profesional y un mensaje listo para WhatsApp.
+
+El usuario debe sentir que: "Completo la información una sola vez y obtengo mis comunicaciones listas para usar".`
+  }
+];
+
+// Paleta sutil y armónica de etiquetas por curso/disciplina/plataforma
 const CATEGORIA_STYLES = {
   "Matemáticas": { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
   "Matemática Básica para Ciencias Políticas 1": { bg: "#f0f9ff", text: "#0369a1", border: "#bae6fd" },
@@ -817,7 +1148,8 @@ const CATEGORIA_STYLES = {
   "Diseño de Negocios Digitales": { bg: "#fffbeb", text: "#b45309", border: "#fde68a" },
   "IA para Negocios": { bg: "#f5f3ff", text: "#6d28d9", border: "#ddd6fe" },
   "Recurso de Maestría": { bg: "#faf5ff", text: "#7e22ce", border: "#e9d5ff" },
-  "Uso Personal": { bg: "#f1f5f9", text: "#334155", border: "#cbd5e1" }
+  "Uso Personal": { bg: "#f1f5f9", text: "#334155", border: "#cbd5e1" },
+  "Google Flow": { bg: "#ecfeff", text: "#0e7490", border: "#a5f3fc" }
 };
 
 const grid = document.getElementById("grid");
@@ -830,21 +1162,31 @@ const chipsContainer = document.getElementById("chips-container");
 const btnReset = document.getElementById("btn-reset");
 const tabApps = document.getElementById("tab-apps");
 const tabPrompts = document.getElementById("tab-prompts");
+const tabHerramientas = document.getElementById("tab-herramientas");
 const appsTabCount = document.getElementById("apps-tab-count");
 const promptsTabCount = document.getElementById("prompts-tab-count");
+const herramientasTabCount = document.getElementById("herramientas-tab-count");
 
-let seccionActiva = "apps"; // "apps" | "prompts"
+let seccionActiva = "apps"; // "apps" | "prompts" | "herramientas"
 let cursoSeleccionado = "";
 
 // Actualizar contadores de las pestañas
 appsTabCount.textContent = RECURSOS.length;
 promptsTabCount.textContent = PROMPTS.length;
+herramientasTabCount.textContent = HERRAMIENTAS.length;
+
+// Devuelve el arreglo de datos correspondiente a la sección activa
+function getListaBase(seccion) {
+  if (seccion === "apps") return RECURSOS;
+  if (seccion === "prompts") return PROMPTS;
+  return HERRAMIENTAS;
+}
 
 // Inicializar Chips de Filtro según la sección activa
 function initChips() {
   chipsContainer.innerHTML = "";
-  const listaBase = seccionActiva === "apps" ? RECURSOS : PROMPTS;
-  const cursosUnicos = [...new Set(listaBase.map(r => r.curso))].sort();
+  const listaBase = getListaBase(seccionActiva);
+  const cursosUnicos = [...new Set(listaBase.map(r => r.curso || r.categoria))].sort();
   
   // Chip 'Todos'
   const todosBtn = document.createElement("button");
@@ -856,7 +1198,7 @@ function initChips() {
 
   // Chips por Curso
   cursosUnicos.forEach(c => {
-    const totalEnCurso = listaBase.filter(r => r.curso === c).length;
+    const totalEnCurso = listaBase.filter(r => (r.curso || r.categoria) === c).length;
     const btn = document.createElement("button");
     btn.className = "chip-btn" + (cursoSeleccionado === c ? " active" : "");
     btn.dataset.curso = c;
@@ -881,20 +1223,19 @@ function seleccionarCurso(curso) {
 function cambiarSeccion(nuevaSeccion) {
   seccionActiva = nuevaSeccion;
   cursoSeleccionado = "";
-  
-  if (seccionActiva === "apps") {
-    tabApps.classList.add("active");
-    tabApps.setAttribute("aria-selected", "true");
-    tabPrompts.classList.remove("active");
-    tabPrompts.setAttribute("aria-selected", "false");
-    buscador.placeholder = "Buscar por título, concepto o descripción...";
-  } else {
-    tabPrompts.classList.add("active");
-    tabPrompts.setAttribute("aria-selected", "true");
-    tabApps.classList.remove("active");
-    tabApps.setAttribute("aria-selected", "false");
-    buscador.placeholder = "Buscar por título, modelo o contenido del prompt...";
-  }
+
+  const tabs = [
+    { tab: tabApps, id: "apps", placeholder: "Buscar por título, concepto o descripción..." },
+    { tab: tabPrompts, id: "prompts", placeholder: "Buscar por título, modelo o contenido del prompt..." },
+    { tab: tabHerramientas, id: "herramientas", placeholder: "Buscar por título, plataforma o contenido del system prompt..." }
+  ];
+
+  tabs.forEach(({ tab, id, placeholder }) => {
+    const activa = id === seccionActiva;
+    tab.classList.toggle("active", activa);
+    tab.setAttribute("aria-selected", activa ? "true" : "false");
+    if (activa) buscador.placeholder = placeholder;
+  });
 
   initChips();
   render();
@@ -902,6 +1243,7 @@ function cambiarSeccion(nuevaSeccion) {
 
 tabApps.addEventListener("click", () => cambiarSeccion("apps"));
 tabPrompts.addEventListener("click", () => cambiarSeccion("prompts"));
+tabHerramientas.addEventListener("click", () => cambiarSeccion("herramientas"));
 
 // Formatear texto del prompt resaltando [VARIABLES]
 function highlightPromptVariables(texto) {
@@ -936,19 +1278,26 @@ function render() {
     shortcutHint.style.display = "block";
   }
 
-  const listaBase = seccionActiva === "apps" ? RECURSOS : PROMPTS;
+  const listaBase = getListaBase(seccionActiva);
 
   const filtrados = listaBase.filter(item => {
-    const coincideCurso = !cursoSeleccionado || item.curso === cursoSeleccionado;
+    const coincideCurso = !cursoSeleccionado || (item.curso || item.categoria) === cursoSeleccionado;
     let coincideTexto = false;
-    
+
     if (seccionActiva === "apps") {
       coincideTexto = !texto || item.titulo.toLowerCase().includes(texto) || item.descripcion.toLowerCase().includes(texto);
-    } else {
-      coincideTexto = !texto || 
-        item.titulo.toLowerCase().includes(texto) || 
-        item.descripcion.toLowerCase().includes(texto) || 
+    } else if (seccionActiva === "prompts") {
+      coincideTexto = !texto ||
+        item.titulo.toLowerCase().includes(texto) ||
+        item.descripcion.toLowerCase().includes(texto) ||
         item.modelo.toLowerCase().includes(texto) ||
+        item.textoPrompt.toLowerCase().includes(texto);
+    } else {
+      coincideTexto = !texto ||
+        item.titulo.toLowerCase().includes(texto) ||
+        item.descripcion.toLowerCase().includes(texto) ||
+        item.categoria.toLowerCase().includes(texto) ||
+        item.tipo.toLowerCase().includes(texto) ||
         item.textoPrompt.toLowerCase().includes(texto);
     }
 
@@ -959,7 +1308,7 @@ function render() {
   vacio.hidden = filtrados.length > 0;
 
   // Actualizar contador del badge principal
-  const labelTipo = seccionActiva === "apps" ? "simuladores y apps" : "prompts de IA";
+  const labelTipo = seccionActiva === "apps" ? "simuladores y apps" : seccionActiva === "prompts" ? "prompts de IA" : "herramientas propias";
   if (texto || cursoSeleccionado) {
     badgeCount.textContent = `${filtrados.length} de ${listaBase.length} ${labelTipo}`;
   } else {
@@ -989,7 +1338,7 @@ function render() {
       `;
       grid.appendChild(a);
     });
-  } else {
+  } else if (seccionActiva === "prompts") {
     // RENDERIZAR TARJETAS DE PROMPTS
     filtrados.forEach(p => {
       const st = CATEGORIA_STYLES[p.curso] || { bg: "#f1f5f9", text: "#334155", border: "#cbd5e1" };
@@ -1042,6 +1391,40 @@ function render() {
         const isOpen = drawer.classList.toggle("open");
         toggleBtn.textContent = isOpen ? "Ocultar variables" : `Ver variables (${p.variables.length})`;
       });
+    });
+  } else {
+    // RENDERIZAR TARJETAS DE LA CAJA DE HERRAMIENTAS
+    filtrados.forEach(h => {
+      const st = CATEGORIA_STYLES[h.categoria] || { bg: "#f1f5f9", text: "#334155", border: "#cbd5e1" };
+      const card = document.createElement("div");
+      card.className = "prompt-card";
+
+      card.innerHTML = `
+        <div class="prompt-top">
+          <span class="tag" style="background:${st.bg}; color:${st.text}; border: 1px solid ${st.border};">${h.categoria}</span>
+          <span class="model-tag">
+            <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+            ${h.tipo}
+          </span>
+        </div>
+        <div>
+          <h2>${h.titulo}</h2>
+          <p class="prompt-desc">${h.descripcion}</p>
+        </div>
+        <div class="prompt-box tool-preview" id="box-${h.id}">${h.textoPrompt}</div>
+        <div class="prompt-actions">
+          <button type="button" class="btn-copy" id="btn-copy-${h.id}">
+            <svg class="tab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            Copiar System Prompt
+          </button>
+          <span class="tool-copy-hint">Vista previa · se copia completo</span>
+        </div>
+      `;
+
+      grid.appendChild(card);
+
+      const copyBtn = card.querySelector(`#btn-copy-${h.id}`);
+      copyBtn.addEventListener("click", () => copiarTexto(h.textoPrompt, copyBtn));
     });
   }
 }

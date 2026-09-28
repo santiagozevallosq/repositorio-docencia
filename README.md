@@ -5,11 +5,13 @@ Portal único (GitHub Pages) para consolidar los dashboards, simuladores y HTML 
 ## Estructura
 
 ```
-index.html              <- portal principal (Simuladores, Apps y Prompts)
-recursos/               <- aplicaciones web interactivas
+index.html              <- portal principal (Simuladores, Apps, Prompts y Caja de Herramientas)
+recursos/                <- aplicaciones web interactivas
   <curso>/<nombre-recurso>/index.html
-prompts/                <- biblioteca de prompts pedagógicos
+prompts/                 <- biblioteca de prompts pedagógicos
   <curso>/<nombre-prompt>.md
+herramientas/             <- system prompts de Tools, GEMs o GPTs propios
+  <plataforma>/<nombre-herramienta>.md
 ```
 
 ## Cómo agregar un recurso nuevo
@@ -27,6 +29,24 @@ prompts/                <- biblioteca de prompts pedagógicos
 ```
 
 3. Confirma que el recurso abre bien probando localmente o después de publicar.
+
+## Cómo agregar una herramienta nueva a la Caja de Herramientas
+
+1. Guarda el system prompt limpio (sin la conversación de la IA que lo generó) en `herramientas/<plataforma>/<nombre-herramienta>.md`.
+2. Abre `index.html` (raíz del repo) y agrega un objeto al array `HERRAMIENTAS`:
+
+```js
+{
+  id: "identificador-unico",
+  titulo: "Nombre de la Tool/GEM/GPT",
+  categoria: "Plataforma (ej. Google Flow, GPTs, Gemini Gems)",
+  tipo: "Tool" | "GEM" | "GPT",
+  descripcion: "Qué hace y cómo funciona.",
+  textoPrompt: `...system prompt completo...`
+}
+```
+
+3. Si la plataforma es nueva, agrega su color en `CATEGORIA_STYLES`.
 
 ## Publicar en GitHub Pages
 
@@ -57,3 +77,4 @@ prompts/                <- biblioteca de prompts pedagógicos
 - **Recurso de Maestría / Simulador de 4 Reinas con Look-Back (Backjumping CSP)** — laboratorio interactivo de satisfacción de restricciones con tracking de Conflict Sets, depuración paso a paso y poda eficiente frente al backtracking tradicional.
 - **[Prompt] IA para Negocios / Fotografía de Producto & Escenas Hiperrealistas** — directivas fotográficas avanzadas para Midjourney v6, Imagen 3 y DALL-E 3 con control de iluminación, óptica y textura.
 - **[Prompt] Diseño de Negocios Digitales / Tutor Analista de Propuesta de Valor** — asistente socrático para análisis del *Value Proposition Canvas* en Claude 3.5 y GPT-4o.
+- **[Herramienta] Google Flow / Comunicado Pro — Generador de Avisos para Administradores de Edificios** — system prompt de una Tool de dos columnas que convierte un formulario en un flyer terminado y un mensaje de WhatsApp, con adherencia estricta al formato y a la imagen de referencia.
