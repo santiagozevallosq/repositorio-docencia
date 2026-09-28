@@ -53,3 +53,6 @@ recursos/
 - **Uso Personal / Calculadora de Notas Universitarias** — simulador de promedios ponderados y nota requerida para aprobación académica.
 - **Introducción a las Finanzas / Calculadora Financiera Estudiantil** — gestión de presupuestos personales, categorización de gastos y metas de ahorro para universitarios.
 - **Introducción a las Finanzas / Simulador de Anualidades Vencidas y Anticipadas** — calculadora interactiva de valor futuro y presente con tablas de evolución y comparación de regímenes.
+- **Matemática Básica para Ciencias Políticas 1 / La Función de Producción: Fenómenos Económicos y Sociales** — Cobb-Douglas, giro conceptual hacia bienestar e inversión pública, estimación econométrica MCO en modelos log-log y simulador de elasticidades de pobreza.
+- **Uso Personal / VelociRead — Lector de Lectura Veloz (RSVP)** — entrenamiento visual serial con fijación en el punto óptimo de reconocimiento (ORP), control de ritmo PPM y evaluación de comprensión con opción de IA / motor heurístico.
+- **Recurso de Maestría / Simulador de 4 Reinas con Look-Back (Backjumping CSP)** — laboratorio interactivo de satisfacción de restricciones con tracking de Conflict Sets, depuración paso a paso y poda eficiente frente al backtracking tradicional.

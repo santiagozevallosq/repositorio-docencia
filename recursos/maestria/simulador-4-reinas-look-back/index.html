@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de 4 Reinas con Look-Back (Backjumping CSP)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- ICONOS LUCIDE INLINE ---
+    const ChevronRight = ({ size = 20, className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="m9 18 6-6-6-6"/>
+      </svg>
+    );
+
+    const RotateCcw = ({ size = 20, className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+    );
+
+    const AlertCircle = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    );
+
+    const Play = ({ size = 20, fill = "none", className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    );
+
+    const Pause = ({ size = 20, fill = "none", className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <rect width="4" height="16" x="6" y="4"/>
+        <rect width="4" height="16" x="14" y="4"/>
+      </svg>
+    );
+
+    const BookOpen = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </svg>
+    );
+
+    const Terminal = ({ size = 16, className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <polyline points="4 17 10 11 4 5"/>
+        <line x1="12" y1="19" x2="20" y2="19"/>
+      </svg>
+    );
+
+    const Sparkles = ({ size = 18, className = "" }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+      </svg>
+    );
+
+    const App = () => {
+      const [step, setStep] = useState(0);
+      const [queens, setQueens] = useState([null, null, null, null]);
+      const [conflictSets, setConflictSets] = useState([[], [], [], []]);
+      const [logs, setLogs] = useState(["Simulador listo. Presiona 'Iniciar Animación' o 'Paso a Paso'."]);
+      const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+      const [activeTab, setActiveTab] = useState('sim');
+
+      const steps = [
+        {
+          q: [null, null, null, null],
+          msg: "Inicio: Tablero vacío. El objetivo es colocar 4 reinas sin que se ataquen.",
+          conflicts: [[], [], [], []],
+          highlight: [-1, -1]
+        },
+        {
+          q: [0, null, null, null],
+          msg: "Q1 asignada a Columna 1. La búsqueda comienza de forma estándar.",
+          conflicts: [[], [], [], []],
+          highlight: [0, 0]
+        },
+        {
+          q: [0, 2, null, null],
+          msg: "Q2 asignada a Columna 3. No hay ataques directos.",
+          conflicts: [[], [], [], []],
+          highlight: [1, 2]
+        },
+        {
+          q: [0, 2, "X", null],
+          msg: "¡BLOQUEO en Q3! Ninguna columna es segura. Conflict Set: {Q1, Q2}.",
+          conflicts: [[], [], [0, 1], []],
+          highlight: [2, -1]
+        },
+        {
+          q: [0, 3, null, null],
+          msg: "Backtrack: Movemos Q2 a la Columna 4 para intentar abrir espacio.",
+          conflicts: [[], [], [], []],
+          highlight: [1, 3]
+        },
+        {
+          q: [0, 3, 1, null],
+          msg: "Con Q2 en Columna 4, la Reina 3 ahora puede ocupar la Columna 2.",
+          conflicts: [[], [], [], []],
+          highlight: [2, 1]
+        },
+        {
+          q: [0, 3, 1, "X"],
+          msg: "¡DEAD-END en Q4! Conflicto total detectado. Conflict Set de Q4: {Q1, Q2, Q3}.",
+          conflicts: [[], [], [], [0, 1, 2]],
+          highlight: [3, -1]
+        },
+        {
+          q: ["X", null, null, null],
+          msg: "¡BACKJUMP! Saltamos niveles ignorando Q3 y Q2. El problema raíz es Q1.",
+          conflicts: [[0], [], [], []],
+          highlight: [0, -1]
+        },
+        {
+          q: [1, null, null, null],
+          msg: "Q1 se mueve a Columna 2. Se reinicia la búsqueda en una rama nueva.",
+          conflicts: [[], [], [], []],
+          highlight: [0, 1]
+        },
+        {
+          q: [1, 3, null, null],
+          msg: "Q2 se coloca en la Columna 4 sin problemas.",
+          conflicts: [[], [], [], []],
+          highlight: [1, 3]
+        },
+        {
+          q: [1, 0, null, null],
+          msg: "Q3 se coloca en la Columna 1 sin amenazas.",
+          conflicts: [[], [], [], []],
+          highlight: [2, 0]
+        },
+        {
+          q: [1, 3, 0, 2],
+          msg: "¡SOLUCIÓN FINAL! Posiciones: [2, 4, 1, 3]. Todas las 4 reinas a salvo.",
+          conflicts: [[], [], [], []],
+          highlight: [3, 2]
+        }
+      ];
+
+      // Verificación de ataques entre casillas (Fila r, Columna c)
+      const isConflict = (r, c) => {
+        for (let prevR = 0; prevR < r; prevR++) {
+          const qCol = queens[prevR];
+          if (qCol !== null && qCol !== "X") {
+            if (qCol === c || Math.abs(prevR - r) === Math.abs(qCol - c)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+
+      const handleNext = () => {
+        if (step < steps.length - 1) {
+          const nextStep = step + 1;
+          setStep(nextStep);
+          setQueens(steps[nextStep].q);
+          setConflictSets(steps[nextStep].conflicts);
+          setLogs(prev => [steps[nextStep].msg, ...prev]);
+        } else {
+          setIsAutoPlaying(false);
+        }
+      };
+
+      const handleReset = () => {
+        setStep(0);
+        setQueens([null, null, null, null]);
+        setConflictSets([[], [], [], []]);
+        setLogs(["Simulador reiniciado."]);
+        setIsAutoPlaying(false);
+      };
+
+      useEffect(() => {
+        let interval;
+        if (isAutoPlaying && step < steps.length - 1) {
+          interval = setInterval(handleNext, 1600);
+        } else if (step === steps.length - 1) {
+          setIsAutoPlaying(false);
+        }
+        return () => clearInterval(interval);
+      }, [isAutoPlaying, step]);
+
+      return (
+        <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans">
+          {/* Header */}
+          <header className="bg-gradient-to-r from-indigo-800 via-indigo-700 to-violet-900 text-white px-4 sm:px-6 py-4 shadow-xl flex flex-wrap justify-between items-center gap-3 sticky top-0 z-30 border-b border-indigo-500/20">
+            <div className="flex items-center gap-3">
+              <a 
+                href="../../index.html" 
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/15 hover:bg-white/25 text-white transition border border-white/20"
+              >
+                ← Repositorio Docente
+              </a>
+
+              <div className="flex items-center gap-2 pl-2 border-l border-white/20">
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <h1 className="text-base sm:text-lg font-bold leading-tight">Look-back Solver (4 Reinas)</h1>
+                  <p className="text-[10px] text-indigo-200">Algoritmos CSP & Backjumping · Recurso de Maestría</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex bg-black/30 rounded-full p-1 border border-white/10">
+              <button 
+                onClick={() => setActiveTab('sim')}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  activeTab === 'sim' ? 'bg-white text-indigo-900 shadow-md' : 'text-indigo-200 hover:text-white'
+                }`}
+              >
+                Simulador
+              </button>
+              <button 
+                onClick={() => setActiveTab('edu')}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  activeTab === 'edu' ? 'bg-white text-indigo-900 shadow-md' : 'text-indigo-200 hover:text-white'
+                }`}
+              >
+                Teoría & Salto
+              </button>
+            </div>
+          </header>
+
+          <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 flex flex-col md:flex-row gap-6">
+            {activeTab === 'sim' ? (
+              <>
+                {/* Tablero Principal */}
+                <div className="flex-[1.5] flex flex-col items-center justify-center bg-slate-900/80 rounded-3xl shadow-2xl border border-slate-800 p-6 sm:p-8">
+                  <div className="mb-4 text-center">
+                    <span className="bg-indigo-900/60 text-indigo-300 border border-indigo-700/50 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                      Paso {step} de {steps.length - 1}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2.5 sm:gap-3 bg-slate-950 p-4 rounded-3xl shadow-2xl relative border-4 border-slate-800">
+                    {[0, 1, 2, 3].map(r => (
+                      [0, 1, 2, 3].map(c => {
+                        const hasQueen = queens[r] === c;
+                        const isBlocked = isConflict(r, c);
+                        const isHighlight = steps[step].highlight[0] === r && steps[step].highlight[1] === c;
+                        const isX = queens[r] === "X";
+
+                        return (
+                          <div
+                            key={`${r}-${c}`}
+                            className={`
+                              w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl transition-all duration-300 relative
+                              ${(r + c) % 2 === 0 ? 'bg-slate-800' : 'bg-slate-700'}
+                              ${isHighlight ? 'ring-4 ring-amber-400 scale-105 z-20 shadow-[0_0_25px_rgba(251,191,36,0.6)]' : ''}
+                              ${isX && r === steps[step].highlight[0] ? 'bg-red-950/80 border-2 border-red-500' : ''}
+                            `}
+                          >
+                            {hasQueen && <span className="drop-shadow-lg animate-bounce select-none">👑</span>}
+                            {isX && <AlertCircle className="text-red-400 animate-pulse" size={38} />}
+                            {!hasQueen && !isX && isBlocked && (
+                              <div className="w-3.5 h-3.5 bg-red-500/50 rounded-full border border-red-400/40" title="Casilla amenazada"></div>
+                            )}
+                            <span className="absolute bottom-1 right-1.5 text-[9px] font-mono text-slate-500 opacity-60">
+                              {r+1},{c+1}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ))}
+                  </div>
+
+                  {/* Controles de Navegación */}
+                  <div className="mt-8 flex flex-wrap justify-center gap-3">
+                    <button 
+                      onClick={handleReset} 
+                      className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold transition border border-slate-700 text-xs sm:text-sm"
+                    >
+                      <RotateCcw size={16} /> Reiniciar
+                    </button>
+                    
+                    <button 
+                      onClick={() => setIsAutoPlaying(!isAutoPlaying)} 
+                      className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-white transition transform active:scale-95 text-xs sm:text-sm shadow-lg ${
+                        isAutoPlaying 
+                          ? 'bg-amber-500 hover:bg-amber-400 ring-2 ring-amber-300 text-slate-950' 
+                          : 'bg-indigo-600 hover:bg-indigo-500 ring-2 ring-indigo-400'
+                      }`}
+                    >
+                      {isAutoPlaying ? <><Pause size={18} fill="currentColor" /> Pausar</> : <><Play size={18} fill="currentColor" /> Animación Automática</>}
+                    </button>
+
+                    <button 
+                      onClick={handleNext} 
+                      disabled={step === steps.length - 1} 
+                      className="flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:grayscale text-white rounded-xl font-bold transition text-xs sm:text-sm shadow-md"
+                    >
+                      Paso a Paso <ChevronRight size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sidebar: Conflict Sets & Logs */}
+                <div className="w-full md:w-96 flex flex-col gap-5">
+                  <div className="bg-slate-900/80 p-5 rounded-3xl shadow-xl border border-slate-800">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="text-amber-400" size={16} />
+                      <h3 className="text-xs font-black text-slate-300 uppercase tracking-widest">Conflict Sets (Memoria CSP)</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {queens.map((q, i) => (
+                        <div 
+                          key={i} 
+                          className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
+                            queens[i] === "X" 
+                              ? 'bg-red-950/40 border-red-800/80 text-red-200' 
+                              : (queens[i] !== null ? 'bg-indigo-950/40 border-indigo-800/60' : 'bg-slate-950/40 border-slate-800')
+                          }`}
+                        >
+                          <span className="font-bold text-xs text-slate-300">Reina {i+1} (Fila {i+1})</span>
+                          <div className="flex gap-1">
+                            {conflictSets[i].length > 0 ? (
+                              conflictSets[i].map(c => (
+                                <span key={c} className="bg-red-500/80 text-white px-2 py-0.5 rounded text-[10px] font-black">
+                                  Q{c+1}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[10px] text-slate-500 font-bold uppercase">Sin conflicto</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 bg-slate-950 rounded-3xl p-5 font-mono text-xs overflow-hidden flex flex-col shadow-2xl border border-slate-800 min-h-[220px]">
+                    <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+                      <div className="flex items-center gap-2 text-emerald-400">
+                        <Terminal size={14} /> <span className="font-bold tracking-tight">TRAZA_LOOK_BACK</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-slate-700"></div>
+                        <div className="w-2 h-2 rounded-full bg-slate-700"></div>
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto space-y-3 pr-1 custom-scrollbar max-h-[260px]">
+                      {logs.map((msg, i) => (
+                        <div key={i} className={`${i === 0 ? "text-slate-100 font-bold" : "text-slate-500"} flex gap-2`}>
+                          <span className="text-indigo-400 shrink-0">[{steps.length - 1 - i}]</span>
+                          <span className="leading-snug">{msg}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Pestaña de Teoría */
+              <div className="flex-1 bg-slate-900/80 rounded-3xl shadow-xl border border-slate-800 p-6 sm:p-10 overflow-y-auto">
+                <h2 className="text-2xl sm:text-3xl font-black text-indigo-300 mb-6 border-b-2 border-indigo-700/40 pb-3 inline-block">
+                  Algoritmos Look-Back y Backjumping en CSP
+                </h2>
+                
+                <div className="grid md:grid-cols-2 gap-8 text-slate-300 text-sm leading-relaxed">
+                  <section className="space-y-3">
+                    <div className="bg-indigo-950/60 p-5 rounded-2xl border-l-4 border-indigo-500">
+                      <h3 className="text-base font-black text-indigo-300 mb-1">1. Búsqueda con Registro de Causalidad</h3>
+                      <p>En el backtracking cronológico estándar, al producirse un bloqueo en la Reina 4, se regresa ciegamente al nivel inmediato anterior (Reina 3).</p>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      En cambio, los algoritmos <strong>Look-back</strong> mantienen un <strong>Conflict Set</strong> que rastrea qué variables previas provocaron el bloqueo actual.
+                    </p>
+                  </section>
+
+                  <section className="space-y-3">
+                    <div className="bg-emerald-950/60 p-5 rounded-2xl border-l-4 border-emerald-500">
+                      <h3 className="text-base font-black text-emerald-300 mb-1">2. Salto Inteligente (Backjumping)</h3>
+                      <p>Si la Reina 4 entra en conflicto con las Reinas 1 y 2, pero ninguna decisión de la Reina 3 influyó en la falla, el algoritmo poda ese nivel y salta directamente a la Reina 1.</p>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Esto evita explorar ramas infértiles repetitivas y reduce exponencialmente el espacio de búsqueda en problemas NP-completos o de optimización combinatoria.
+                    </p>
+                  </section>
+
+                  <section className="col-span-full bg-slate-950 p-6 rounded-2xl border border-slate-800 mt-2">
+                    <h3 className="text-lg font-bold mb-3 text-emerald-400 flex items-center gap-2">
+                      Secuencia del Algoritmo
+                    </h3>
+                    <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-slate-300">
+                      <li><strong>Asignación:</strong> Selecciona la columna factible más prometedora para la variable actual.</li>
+                      <li><strong>Inspección:</strong> Al evaluar casillas amenazadas, identifica qué reina genera el conflicto y agrégala al conjunto de conflictos.</li>
+                      <li><strong>Detección de Dead-End:</strong> Si el dominio de valores se agota completamente, calcula el salto hacia la variable culpable más profunda del Conflict Set.</li>
+                      <li><strong>Poda y Salto:</strong> Restaura el estado descartando los niveles intermedios inútiles y prueba la siguiente alternativa factible.</li>
+                    </ol>
+                    <div className="mt-4 pt-4 border-t border-slate-800 text-center text-indigo-300 font-medium italic text-xs">
+                      "Backjumping no solo retrocede ante un error: comprende y ataca la causa raíz que lo originó."
+                    </div>
+                  </section>
+                </div>
+              </div>
+            )}
+          </main>
+
+          <footer className="border-t border-slate-800 py-3 text-center text-[10px] text-slate-500 font-mono tracking-wider uppercase">
+            Repositorio Docente · Recurso de Maestría · Algoritmos de Inteligencia Artificial (CSP)
+          </footer>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
