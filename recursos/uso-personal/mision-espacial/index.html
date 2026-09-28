@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión Espacial - Juego de Supervivencia Arcade</title>
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts para tipografía Sci-Fi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #020617; /* Slate 950 */
+            overflow: hidden;
+        }
+        .scifi-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Efectos de brillo de neón de cabina sci-fi */
+        .neon-glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+            text-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+        }
+        .border-neon {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: inset 0 0 15px rgba(99, 102, 241, 0.1), 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+        /* Eliminar selección azul de botones en móvil */
+        button, div {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-between p-2 md:p-4 text-slate-100 select-none">
+
+    <!-- Encabezado / Panel Superior de la Cabina -->
+    <header class="w-full max-w-4xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-xl p-3 flex justify-between items-center z-10 shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center border border-indigo-400/50 shadow-[0_0_10px_rgba(99,102,241,0.5)]">
+                <i class="fa-solid fa-shuttle-space text-xl text-cyan-300 animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-bold uppercase tracking-wider scifi-font text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">
+                    Misión Espacial
+                </h1>
+                <p class="text-xs text-slate-400 uppercase tracking-widest hidden sm:block">Sector Táctico Combatiente</p>
+            </div>
+        </div>
+        
+        <!-- Marcadores rápidos -->
+        <div class="flex items-center gap-3 md:gap-4">
+            <a href="../../../index.html" class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500 text-slate-300 hover:text-cyan-400 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="hidden sm:inline">Repositorio</span>
+            </a>
+            <div class="text-right">
+                <span class="text-[10px] text-slate-400 uppercase block tracking-wider">Máxima Puntuación</span>
+                <span id="best-score" class="scifi-font text-sm md:text-base text-yellow-400 font-bold">0000</span>
+            </div>
+            <div class="text-right border-l border-slate-700/50 pl-4 md:pl-6">
+                <span class="text-[10px] text-slate-400 uppercase block tracking-wider">Nivel militar</span>
+                <span id="ui-level" class="scifi-font text-sm md:text-base text-cyan-400 font-bold">1</span>
+            </div>
+            <button id="btn-audio" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-cyan-400 transition" title="Activar/Desactivar Sonido">
+                <i id="audio-icon" class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Área Principal de Juego -->
+    <main class="relative w-full max-w-4xl flex-1 my-3 flex items-center justify-center overflow-hidden rounded-2xl border-neon bg-slate-950">
+        <!-- Canvas del Juego -->
+        <canvas id="gameCanvas" class="absolute inset-0 w-full h-full object-contain block"></canvas>
+
+        <!-- Pantalla de Inicio / Game Over / Pausa Integrada -->
+        <div id="overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20 transition-all duration-300">
+            <!-- Icono decorativo animado -->
+            <div id="overlay-icon-container" class="mb-6 relative">
+                <div class="w-24 h-24 rounded-full border-2 border-dashed border-cyan-500/40 animate-[spin_12s_linear_infinite] absolute -inset-2"></div>
+                <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-950 to-slate-900 border border-indigo-500/50 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i id="overlay-icon" class="fa-solid fa-user-astronaut text-4xl text-cyan-400 animate-bounce"></i>
+                </div>
+            </div>
+
+            <!-- Títulos dinámicos -->
+            <h2 id="overlay-title" class="scifi-font text-3xl md:text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-indigo-200 to-fuchsia-400 mb-2">
+                INICIAR SISTEMAS
+            </h2>
+            <p id="overlay-subtitle" class="text-slate-300 max-w-md text-sm md:text-base mb-6 uppercase tracking-wider">
+                Defiende el sector: ¡Dispara a los meteoritos, recoge cristales de Helio-3 y adquiere Power-Ups de armamento pesado!
+            </p>
+
+            <!-- Estadísticas en Game Over -->
+            <div id="game-stats" class="hidden grid grid-cols-2 gap-4 bg-slate-900/80 border border-slate-700/60 p-4 rounded-xl mb-6 w-full max-w-xs scifi-font">
+                <div class="text-center">
+                    <p class="text-xs text-slate-400 uppercase">Puntos</p>
+                    <p id="stat-score" class="text-2xl font-bold text-cyan-400">0</p>
+                </div>
+                <div class="text-center border-l border-slate-800">
+                    <p class="text-xs text-slate-400 uppercase font-medium">Nivel Max</p>
+                    <p id="stat-level" class="text-2xl font-bold text-fuchsia-400">1</p>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-col gap-3 w-full max-w-xs">
+                <button id="btn-start" class="scifi-font w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold rounded-xl tracking-widest transition duration-150 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.4)] text-lg border-t border-cyan-300/40 uppercase">
+                    Lanzar Interceptor
+                </button>
+                <p class="text-xs text-slate-500 uppercase tracking-widest mt-2 hidden md:block">
+                    Pilota con <span class="text-cyan-400 font-bold">flechas ← →</span> o <span class="text-cyan-400 font-bold">A / D</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- HUD Flotante dentro del juego -->
+        <div id="hud" class="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none opacity-0 transition-opacity duration-300 z-10">
+            <!-- Marcador de Score -->
+            <div class="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-xl flex flex-col shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+                <span class="text-[10px] text-cyan-400 uppercase tracking-widest font-bold">PUNTUACIÓN</span>
+                <span id="ui-score" class="scifi-font text-2xl font-black text-slate-100 tracking-wider">0000</span>
+            </div>
+
+            <!-- Centro de Alertas y Estado de Power-Ups -->
+            <div class="flex flex-col items-end gap-2">
+                <!-- Indicador de Alerta de Velocidad / Nivel -->
+                <div id="hud-alert" class="hidden bg-red-950/80 backdrop-blur-md border border-red-500/50 px-4 py-2 rounded-xl flex items-center gap-2 animate-bounce">
+                    <i class="fa-solid fa-triangle-exclamation text-red-500 animate-pulse"></i>
+                    <span class="text-xs text-red-200 font-bold tracking-wider uppercase">¡Velocidad e Intensidad Incrementada!</span>
+                </div>
+                
+                <!-- Barra de duración del arma activa -->
+                <div id="hud-weapon" class="hidden bg-slate-900/90 backdrop-blur-md border border-indigo-500/30 px-3 py-1.5 rounded-xl flex flex-col w-40">
+                    <div class="flex justify-between items-center text-[10px] font-bold text-indigo-300 uppercase tracking-widest">
+                        <span id="hud-weapon-name">Arma Especial</span>
+                        <span id="hud-weapon-time">10s</span>
+                    </div>
+                    <div class="w-full bg-slate-950 h-1.5 rounded-full mt-1 overflow-hidden">
+                        <div id="hud-weapon-bar" class="bg-indigo-500 h-full w-full transition-all duration-100"></div>
+                    </div>
+                </div>
+
+                <!-- Estado del Escudo -->
+                <div id="hud-shield" class="hidden bg-cyan-950/80 backdrop-blur-md border border-cyan-400/50 px-3 py-1 rounded-xl flex items-center gap-1.5 text-cyan-200 text-xs font-bold uppercase tracking-wider">
+                    <i class="fa-solid fa-shield-halved text-cyan-400 animate-pulse"></i>
+                    <span>Escudo Activo</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Panel de Mandos Inferior / Controles Táctiles para Móvil -->
+    <footer class="w-full max-w-4xl bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-xl p-3 flex flex-col sm:flex-row gap-4 items-center justify-between z-10 shadow-lg">
+        <!-- Información de estado de sistemas -->
+        <div class="flex items-center gap-4 text-xs text-slate-400 uppercase tracking-wider">
+            <div class="flex items-center gap-1.5">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Armas de Auto-fuego: Cargadas</span>
+            </div>
+            <div class="hidden sm:flex items-center gap-1.5 border-l border-slate-800 pl-4">
+                <i class="fa-solid fa-shield-virus text-indigo-400"></i>
+                <span>Sistemas de defensa: Estables</span>
+            </div>
+        </div>
+
+        <!-- Botonera Táctil (Móvil) -->
+        <div class="flex items-center gap-4 w-full sm:w-auto justify-center">
+            <span class="text-xs text-slate-400 uppercase tracking-widest font-semibold block sm:hidden">Mandos:</span>
+            <div class="flex gap-3">
+                <button id="btn-left" class="w-16 h-12 md:w-20 md:h-14 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-center text-xl text-slate-300 hover:bg-slate-700 active:bg-cyan-950 active:border-cyan-500/60 transition shadow-inner" title="Mover Izquierda">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <button id="btn-right" class="w-16 h-12 md:w-20 md:h-14 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-center text-xl text-slate-300 hover:bg-slate-700 active:bg-cyan-950 active:border-cyan-500/60 transition shadow-inner" title="Mover Derecha">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Firma/Créditos de misión -->
+        <div class="text-xs text-slate-500 uppercase tracking-widest text-center sm:text-right">
+            <span>Comando Estelar © 2026</span>
+        </div>
+    </footer>
+
+    <!-- JavaScript del Juego -->
+    <script>
+        // --- CONFIGURACIÓN E INICIALIZACIÓN ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Dimensiones virtuales estables (Resolución lógica interna de aspect ratio de Arcade)
+        const VIRTUAL_WIDTH = 600;
+        const VIRTUAL_HEIGHT = 800;
+
+        function resizeCanvas() {
+            canvas.width = VIRTUAL_WIDTH;
+            canvas.height = VIRTUAL_HEIGHT;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- SISTEMA DE AUDIO INTEGRADO SINTETIZADO (WEB AUDIO API) ---
+        let audioMuted = false;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (audioMuted) return;
+            initAudio();
+            if (!audioCtx || audioCtx.state === 'suspended') {
+                audioCtx?.resume();
+            }
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'laser') {
+                // Sonido de disparo agudo descendente rápido
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+                gain.gain.setValueAtTime(0.04, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } 
+            else if (type === 'plasma') {
+                // Sonido de disparo pesado doble
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(350, now);
+                osc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+            else if (type === 'explosion') {
+                // Explosión estándar (ruido filtrado)
+                const bufferSize = audioCtx.sampleRate * 0.35;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(500, now);
+                filter.frequency.exponentialRampToValueAtTime(10, now + 0.3);
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                noise.start(now);
+                noise.stop(now + 0.3);
+            } 
+            else if (type === 'heavy_explosion') {
+                // Explosión pesada / Bomba
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(20, now + 0.6);
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            }
+            else if (type === 'powerup') {
+                // Escala de notas ascendente y brillante para obtención de mejoras
+                const notes = [330, 440, 554, 660, 880]; // La, Do#, Mi, La
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    gain.gain.setValueAtTime(0.05, now + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.05);
+                    osc.stop(now + idx * 0.05 + 0.15);
+                });
+            }
+            else if (type === 'gem') {
+                // Sonido metálico agudo "bling"
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(988, now); // B5
+                osc.frequency.setValueAtTime(1318, now + 0.06); // E6
+                gain.gain.setValueAtTime(0.07, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+            else if (type === 'levelup') {
+                // Tonos de subir de nivel / fase
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(440, now);
+                osc1.frequency.setValueAtTime(587, now + 0.15);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880, now);
+                osc2.frequency.setValueAtTime(1174, now + 0.15);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 0.4);
+                osc2.stop(now + 0.4);
+            }
+            else if (type === 'shield_break') {
+                // Sonido de vidrio o campo de fuerza colapsando
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.25);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        }
+
+        const btnAudio = document.getElementById('btn-audio');
+        const audioIcon = document.getElementById('audio-icon');
+        btnAudio.addEventListener('click', () => {
+            audioMuted = !audioMuted;
+            if (audioMuted) {
+                audioIcon.className = 'fa-solid fa-volume-xmark text-red-400';
+                btnAudio.classList.add('border-red-500/30');
+            } else {
+                audioIcon.className = 'fa-solid fa-volume-high text-cyan-400';
+                btnAudio.classList.remove('border-red-500/30');
+                initAudio();
+                playSound('laser');
+            }
+        });
+
+
+        // --- ESTADO Y PARÁMETROS CENTRALES DEL JUEGO ---
+        let gameState = 'START'; // START, PLAYING, GAMEOVER
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('mision_espacial_highscore_v2')) || 0;
+        document.getElementById('best-score').textContent = String(highScore).padStart(4, '0');
+        
+        let currentLevel = 1;
+        let baseMeteorSpeed = 3.5;
+        let meteorSpawnInterval = 1200; // ms de cadencia inicial de meteoros
+        let lastMeteorSpawnTime = 0;
+
+        // Tiempos para spawns especiales
+        let lastPowerUpSpawnTime = 0;
+        const POWERUP_SPAWN_INTERVAL = 14000; // Un powerup cada 14 segundos aprox
+        let lastCollectibleSpawnTime = 0;
+        const COLLECTIBLE_SPAWN_INTERVAL = 8000; // Una gema de Helio-3 cada 8 segundos aprox
+
+        // Efecto Screen Shake (Sacudida de pantalla)
+        let shakeDuration = 0;
+        let shakeIntensity = 0;
+
+        function triggerScreenShake(duration, intensity) {
+            shakeDuration = duration;
+            shakeIntensity = intensity;
+        }
+
+        // --- SISTEMA DE CONTROLES (TECLADO + BOTONES TÁCTILES) ---
+        const keys = { left: false, right: false };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+        });
+
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+
+        btnLeft.addEventListener('mousedown', () => keys.left = true);
+        btnLeft.addEventListener('mouseup', () => keys.left = false);
+        btnLeft.addEventListener('mouseleave', () => keys.left = false);
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; });
+        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); keys.left = false; });
+
+        btnRight.addEventListener('mousedown', () => keys.right = true);
+        btnRight.addEventListener('mouseup', () => keys.right = false);
+        btnRight.addEventListener('mouseleave', () => keys.right = false);
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; });
+        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); keys.right = false; });
+
+
+        // --- CLASES ESENCIALES DEL JUEGO ---
+
+        // 1. Nave Espacial (Interceptor del Jugador)
+        class Spaceship {
+            constructor() {
+                this.width = 50;
+                this.height = 65;
+                this.x = VIRTUAL_WIDTH / 2 - this.width / 2;
+                this.y = VIRTUAL_HEIGHT - 120;
+                this.vx = 0;
+                this.speed = 9;
+                this.friction = 0.84; // Suavidad de deslizamiento
+                this.thrusterFlameTimer = 0;
+
+                // Armas y Escudo de la nave
+                this.shieldActive = false;
+                this.weaponType = 'NORMAL'; // 'NORMAL', 'DOUBLE', 'TRIPLE'
+                this.weaponDuration = 0;    // Duración restante del power-up en ms
+                this.shootCooldown = 280;   // Intervalo de disparo automático (ms)
+                this.lastShootTime = 0;
+            }
+
+            update(timestamp) {
+                // Aceleración
+                if (keys.left) this.vx -= 1.4;
+                if (keys.right) this.vx += 1.4;
+
+                this.vx *= this.friction;
+
+                if (this.vx > this.speed) this.vx = this.speed;
+                if (this.vx < -this.speed) this.vx = -this.speed;
+
+                this.x += this.vx;
+
+                // Contener en bordes
+                if (this.x < 15) {
+                    this.x = 15;
+                    this.vx = 0;
+                }
+                if (this.x > VIRTUAL_WIDTH - this.width - 15) {
+                    this.x = VIRTUAL_WIDTH - this.width - 15;
+                    this.vx = 0;
+                }
+
+                this.thrusterFlameTimer += 0.35;
+
+                // Gestionar temporizador de arma activa
+                if (this.weaponType !== 'NORMAL') {
+                    this.weaponDuration -= 16.67; // Aprox 1 frame en 60fps (ms)
+                    if (this.weaponDuration <= 0) {
+                        this.weaponType = 'NORMAL';
+                        document.getElementById('hud-weapon').classList.add('hidden');
+                    } else {
+                        // Sincronizar UI de la barra de arma activa
+                        document.getElementById('hud-weapon-time').textContent = Math.ceil(this.weaponDuration / 1000) + 's';
+                        const percent = (this.weaponDuration / 10000) * 100; // Base de 10s duración
+                        document.getElementById('hud-weapon-bar').style.width = `${percent}%`;
+                    }
+                }
+
+                // Mecanismo de Disparo Automático Inteligente
+                if (timestamp - this.lastShootTime > this.shootCooldown) {
+                    this.shoot(timestamp);
+                }
+            }
+
+            shoot(timestamp) {
+                this.lastShootTime = timestamp;
+                
+                if (this.weaponType === 'NORMAL') {
+                    // Un láser sencillo al centro
+                    lasers.push(new Laser(this.x + this.width / 2, this.y, 0, -12, '#22d3ee'));
+                    playSound('laser');
+                } 
+                else if (this.weaponType === 'DOUBLE') {
+                    // Dos láseres paralelos
+                    lasers.push(new Laser(this.x + 10, this.y + 10, 0, -13, '#10b981'));
+                    lasers.push(new Laser(this.x + this.width - 10, this.y + 10, 0, -13, '#10b981'));
+                    playSound('laser');
+                } 
+                else if (this.weaponType === 'TRIPLE') {
+                    // Tres láseres distribuidos en abanico
+                    lasers.push(new Laser(this.x + this.width / 2, this.y, 0, -14, '#d946ef')); // Centro
+                    lasers.push(new Laser(this.x + 8, this.y + 15, -2.5, -13.5, '#d946ef')); // Izquierda
+                    lasers.push(new Laser(this.x + this.width - 8, this.y + 15, 2.5, -13.5, '#d946ef')); // Derecha
+                    playSound('plasma');
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+                // Ángulo de inclinación según velocidad lateral (roll)
+                const rollAngle = (this.vx / this.speed) * 0.22;
+                ctx.rotate(rollAngle);
+
+                // --- DIBUJO DE PROPULSORES Y FUEGO ---
+                const flameHeight = 16 + Math.sin(this.thrusterFlameTimer) * 10;
+                // Fuego exterior
+                ctx.beginPath();
+                ctx.fillStyle = '#f97316';
+                ctx.moveTo(-10, this.height / 2 - 5);
+                ctx.lineTo(0, this.height / 2 - 5 + flameHeight);
+                ctx.lineTo(10, this.height / 2 - 5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Fuego interior
+                ctx.beginPath();
+                ctx.fillStyle = '#facc15';
+                ctx.moveTo(-5, this.height / 2 - 5);
+                ctx.lineTo(0, this.height / 2 - 5 + flameHeight * 0.6);
+                ctx.lineTo(5, this.height / 2 - 5);
+                ctx.closePath();
+                ctx.fill();
+
+                // --- ALAS DE LA NAVE ---
+                ctx.beginPath();
+                ctx.fillStyle = '#4f46e5'; // Indigo
+                ctx.moveTo(-this.width / 2, this.height / 2);
+                ctx.lineTo(-this.width / 2 + 12, -8);
+                ctx.lineTo(this.width / 2 - 12, -8);
+                ctx.lineTo(this.width / 2, this.height / 2);
+                ctx.closePath();
+                ctx.fill();
+
+                // Líneas neón de energía en las alas
+                ctx.strokeStyle = '#22d3ee';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-this.width / 2, this.height / 2);
+                ctx.lineTo(-this.width / 2 + 12, 0);
+                ctx.moveTo(this.width / 2, this.height / 2);
+                ctx.lineTo(this.width / 2 - 12, 0);
+                ctx.stroke();
+
+                // --- CUERPO METÁLICO PRINCIPAL ---
+                ctx.beginPath();
+                ctx.fillStyle = '#1e1b4b'; // Ultra azul oscuro
+                ctx.moveTo(-15, this.height / 2 - 5);
+                ctx.lineTo(-12, -this.height / 2 + 25);
+                ctx.lineTo(0, -this.height / 2); // Punta afilada
+                ctx.lineTo(12, -this.height / 2 + 25);
+                ctx.lineTo(15, this.height / 2 - 5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Placas protectoras blindadas
+                ctx.beginPath();
+                ctx.fillStyle = '#6366f1'; 
+                ctx.moveTo(-12, this.height / 2 - 10);
+                ctx.lineTo(-10, -10);
+                ctx.lineTo(10, -10);
+                ctx.lineTo(12, this.height / 2 - 10);
+                ctx.closePath();
+                ctx.fill();
+
+                // --- CABINA (COCKPIT DE CRISTAL) ---
+                const gradCockpit = ctx.createLinearGradient(0, -this.height / 2 + 20, 0, 5);
+                gradCockpit.addColorStop(0, '#22d3ee');
+                gradCockpit.addColorStop(1, '#0e7490');
+                ctx.beginPath();
+                ctx.fillStyle = gradCockpit;
+                ctx.moveTo(-7, -this.height / 2 + 25);
+                ctx.lineTo(0, -this.height / 2 + 12);
+                ctx.lineTo(7, -this.height / 2 + 25);
+                ctx.lineTo(5, 5);
+                ctx.lineTo(-5, 5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Brillo del cristal
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(-3, -this.height / 2 + 22);
+                ctx.lineTo(0, -this.height / 2 + 16);
+                ctx.lineTo(3, -this.height / 2 + 22);
+                ctx.stroke();
+
+                ctx.restore();
+
+                // --- DIBUJO DE ESCUDO DE ENERGÍA ---
+                if (this.shieldActive) {
+                    ctx.save();
+                    ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                    
+                    // Efecto de ondulación del escudo neón
+                    const shieldPulse = 1 + Math.sin(this.thrusterFlameTimer * 0.8) * 0.05;
+                    const gradShield = ctx.createRadialGradient(0, 0, this.height * 0.45, 0, 0, this.height * 0.65 * shieldPulse);
+                    gradShield.addColorStop(0, 'rgba(6, 182, 212, 0)');
+                    gradShield.addColorStop(0.85, 'rgba(34, 211, 238, 0.25)');
+                    gradShield.addColorStop(1, 'rgba(34, 211, 238, 0.85)');
+
+                    ctx.strokeStyle = 'rgba(34, 211, 238, 0.9)';
+                    ctx.lineWidth = 2.5;
+                    ctx.fillStyle = gradShield;
+                    
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.height * 0.62 * shieldPulse, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }
+
+        // 2. Clase Láser / Disparo
+        class Laser {
+            constructor(x, y, vx, vy, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.color = color;
+                this.width = 4;
+                this.height = 16;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Rotación basada en vector velocidad
+                const angle = Math.atan2(this.vy, this.vx) + Math.PI / 2;
+                ctx.rotate(angle);
+
+                // Resplandor neón del disparo
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 8;
+
+                ctx.fillStyle = '#ffffff'; // Núcleo blanco
+                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+                ctx.restore();
+            }
+        }
+
+        // 3. Clase Meteorito (Obstáculos con 4 variedades dinámicas)
+        class Meteorite {
+            constructor(x = null, y = null, type = null) {
+                // Tipos: 'NORMAL', 'FAST', 'HEAVY', 'GOLD'
+                this.type = type || this.selectRandomType();
+                this.setupAttributes();
+
+                // Permite fijar coordenadas de inicio (útil en división del meteorito gigante)
+                this.x = x !== null ? x : Math.random() * (VIRTUAL_WIDTH - this.radius * 2) + this.radius;
+                this.y = y !== null ? y : -this.radius * 2;
+
+                this.angle = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+
+                // Geometría única e irregular
+                this.numSides = 8 + Math.floor(Math.random() * 5);
+                this.irregularity = [];
+                for (let i = 0; i < this.numSides; i++) {
+                    this.irregularity.push(0.85 + Math.random() * 0.3);
+                }
+
+                // Cráteres decorativos
+                this.craters = [];
+                const numCraters = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < numCraters; i++) {
+                    this.craters.push({
+                        cx: (Math.random() - 0.5) * this.radius * 0.5,
+                        cy: (Math.random() - 0.5) * this.radius * 0.5,
+                        r: 3 + Math.random() * (this.radius * 0.15)
+                    });
+                }
+            }
+
+            selectRandomType() {
+                const rand = Math.random();
+                // 10% Gold, 20% Heavy, 25% Fast, 45% Normal
+                if (rand < 0.10) return 'GOLD';
+                if (rand < 0.30) return 'HEAVY';
+                if (rand < 0.55) return 'FAST';
+                return 'NORMAL';
+            }
+
+            setupAttributes() {
+                switch(this.type) {
+                    case 'FAST': // Rápido y pequeño (cometa azul)
+                        this.radius = 12 + Math.random() * 5;
+                        this.hp = 1;
+                        this.maxHp = 1;
+                        this.speed = baseMeteorSpeed * (1.6 + Math.random() * 0.4);
+                        this.vx = (Math.random() - 0.5) * 2;
+                        this.color = '#1e3a8a'; // Azul oscuro con destello
+                        this.strokeColor = '#60a5fa'; // Azul neón
+                        this.points = 25;
+                        break;
+                    case 'HEAVY': // Gigante de alta resistencia (se divide al explotar)
+                        this.radius = 36 + Math.random() * 10;
+                        this.hp = 3;
+                        this.maxHp = 3;
+                        this.speed = baseMeteorSpeed * (0.55 + Math.random() * 0.15);
+                        this.vx = (Math.random() - 0.5) * 0.6;
+                        this.color = '#292524'; // Carbón
+                        this.strokeColor = '#f97316'; // Fuego orbital
+                        this.points = 50;
+                        break;
+                    case 'GOLD': // Valioso y brillante
+                        this.radius = 18 + Math.random() * 8;
+                        this.hp = 1;
+                        this.maxHp = 1;
+                        this.speed = baseMeteorSpeed * (1.1 + Math.random() * 0.3);
+                        this.vx = (Math.random() - 0.5) * 1.5;
+                        this.color = '#78350f'; // Ámbar oscuro
+                        this.strokeColor = '#fbbf24'; // Oro
+                        this.points = 100;
+                        break;
+                    case 'NORMAL':
+                    default:
+                        this.radius = 18 + Math.random() * 12;
+                        this.hp = 1;
+                        this.maxHp = 1;
+                        this.speed = baseMeteorSpeed * (0.85 + Math.random() * 0.35);
+                        this.vx = (Math.random() - 0.5) * 1;
+                        this.color = '#451a03'; // Marrón mineral
+                        this.strokeColor = '#7c2d12'; 
+                        this.points = 10;
+                        break;
+                }
+            }
+
+            update() {
+                this.y += this.speed;
+                this.x += this.vx;
+                this.angle += this.rotationSpeed;
+
+                // Rebotar en bordes
+                if (this.x < this.radius || this.x > VIRTUAL_WIDTH - this.radius) {
+                    this.vx = -this.vx;
+                }
+
+                // Si es un cometa de alta velocidad, soltar partículas del rastro
+                if (this.type === 'FAST' && Math.random() < 0.25) {
+                    particles.push(new Particle(this.x, this.y, '#3b82f6', 1, 0.4));
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Sombras
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetY = 4;
+
+                // Dibujar el cuerpo irregular
+                ctx.beginPath();
+                ctx.fillStyle = this.color;
+                ctx.strokeStyle = this.strokeColor;
+                ctx.lineWidth = this.type === 'GOLD' || this.type === 'HEAVY' ? 2.5 : 1.5;
+
+                for (let i = 0; i < this.numSides; i++) {
+                    const angleStep = (Math.PI * 2 / this.numSides) * i;
+                    const r = this.radius * this.irregularity[i];
+                    const currX = Math.cos(angleStep) * r;
+                    const currY = Math.sin(angleStep) * r;
+
+                    if (i === 0) {
+                        ctx.moveTo(currX, currY);
+                    } else {
+                        ctx.lineTo(currX, currY);
+                    }
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Quitar sombras para detalles de superficie
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+
+                // Dibujar cráteres
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                this.craters.forEach(c => {
+                    ctx.beginPath();
+                    ctx.arc(c.cx, c.cy, c.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Indicador visual de HP si es meteorito Pesado y ha sido herido
+                if (this.type === 'HEAVY' && this.hp < this.maxHp) {
+                    // Barra de salud muy sutil encima del meteorito en coordenadas absolutas del lienzo
+                    ctx.restore();
+                    ctx.save();
+                    ctx.translate(this.x, this.y - this.radius - 10);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(-15, 0, 30, 4);
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(-15, 0, 30 * (this.hp / this.maxHp), 4);
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // 4. Clase PowerUp (Suministros orbitales que caen)
+        class PowerUp {
+            constructor() {
+                this.radius = 16;
+                this.x = Math.random() * (VIRTUAL_WIDTH - this.radius * 2) + this.radius;
+                this.y = -this.radius * 2;
+                this.speed = 2.2 + Math.random() * 0.8;
+                this.angle = 0;
+
+                // Seleccionar Tipo: 'SHIELD', 'DOUBLE', 'TRIPLE', 'BOMB'
+                const types = ['SHIELD', 'DOUBLE', 'TRIPLE', 'BOMB'];
+                this.type = types[Math.floor(Math.random() * types.length)];
+                this.setupDesign();
+            }
+
+            setupDesign() {
+                switch(this.type) {
+                    case 'SHIELD':
+                        this.color = '#22d3ee'; // Celeste
+                        this.symbol = '🛡️';
+                        break;
+                    case 'DOUBLE':
+                        this.color = '#10b981'; // Verde
+                        this.symbol = '♊';
+                        break;
+                    case 'TRIPLE':
+                        this.color = '#d946ef'; // Fucsia
+                        this.symbol = '🔱';
+                        break;
+                    case 'BOMB':
+                        this.color = '#ef4444'; // Rojo fiero
+                        this.symbol = '💣';
+                        break;
+                }
+            }
+
+            update() {
+                this.y += this.speed;
+                this.angle += 0.025;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // Brillo de neón pulsante externo
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 12 + Math.sin(this.angle * 4) * 6;
+
+                // Contenedor hexagonal
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2.5;
+
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const a = (Math.PI / 3) * i + this.angle;
+                    const hX = Math.cos(a) * this.radius;
+                    const hY = Math.sin(a) * this.radius;
+                    if (i === 0) ctx.moveTo(hX, hY);
+                    else ctx.lineTo(hX, hY);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Dibujar Símbolo / Emoji al centro
+                ctx.shadowBlur = 0;
+                ctx.font = '14px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.symbol, 0, 1.5);
+
+                ctx.restore();
+            }
+        }
+
+        // 5. Clase Coleccionable (Gemas de Helio-3 con puntos pesados)
+        class Collectible {
+            constructor() {
+                this.radius = 12;
+                this.x = Math.random() * (VIRTUAL_WIDTH - this.radius * 2) + this.radius;
+                this.y = -this.radius * 2;
+                this.speed = 2.8;
+                this.pulseTimer = 0;
+            }
+
+            update() {
+                this.y += this.speed;
+                this.pulseTimer += 0.08;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                const sizeMod = 1 + Math.sin(this.pulseTimer) * 0.15;
+                ctx.shadowColor = '#eab308'; // Brillo dorado/amarillo
+                ctx.shadowBlur = 15;
+
+                // Forma de rombo/diamante
+                ctx.beginPath();
+                ctx.fillStyle = '#facc15';
+                ctx.moveTo(0, -this.radius * sizeMod);
+                ctx.lineTo(this.radius * 0.8 * sizeMod, 0);
+                ctx.lineTo(0, this.radius * sizeMod);
+                ctx.lineTo(-this.radius * 0.8 * sizeMod, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                // Destello central
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius * 0.3, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // 6. Sistema de Estrellas de Fondo (Parallax)
+        class Star {
+            constructor(isStatic = false) {
+                this.x = Math.random() * VIRTUAL_WIDTH;
+                this.size = 0.5 + Math.random() * 2;
+                this.speed = this.size * 0.7; // Efecto profundidad 3D
+                this.twinkleFactor = Math.random() * Math.PI;
+
+                if (isStatic) {
+                    this.y = Math.random() * VIRTUAL_HEIGHT;
+                } else {
+                    this.y = -5;
+                }
+            }
+
+            update() {
+                this.y += this.speed;
+                this.twinkleFactor += 0.02;
+                if (this.y > VIRTUAL_HEIGHT) {
+                    this.y = -5;
+                    this.x = Math.random() * VIRTUAL_WIDTH;
+                }
+            }
+
+            draw() {
+                const alpha = 0.35 + Math.sin(this.twinkleFactor) * 0.55;
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 7. Partículas Dinámicas para Explosiones e Impactos
+        class Particle {
+            constructor(x, y, color, speedScale = 1, decayScale = 1) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = 1 + Math.random() * 3.5;
+                this.vx = (Math.random() - 0.5) * 8 * speedScale;
+                this.vy = (Math.random() - 0.5) * 8 * speedScale;
+                this.life = 1;
+                this.decay = (0.015 + Math.random() * 0.02) * decayScale;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+
+        // --- INSTANCIAS Y ARRAYS DE OBJETOS ---
+        let player = new Spaceship();
+        let meteorites = [];
+        let lasers = [];
+        let powerups = [];
+        let collectibles = [];
+        let stars = [];
+        let particles = [];
+
+        // Inicializar estrellas parallax fijas
+        for (let i = 0; i < 75; i++) {
+            stars.push(new Star(true));
+        }
+
+        // --- COLISIONES ---
+
+        // Comprobar colisión circular general (Para Power-Ups y Coleccionables)
+        function checkCircularCollision(obj1, obj2) {
+            const distSq = (obj1.x - obj2.x)**2 + (obj1.y - obj2.y)**2;
+            const radiusSum = obj1.radius + obj2.radius;
+            return distSq < radiusSum * radiusSum;
+        }
+
+        // Comprobar colisión entre Nave y un objeto circular
+        function checkShipCollision(ship, circle) {
+            const hitboxWidth = ship.width * 0.65;
+            const hitboxHeight = ship.height * 0.72;
+            const shipLeft = ship.x + (ship.width - hitboxWidth) / 2;
+            const shipRight = shipLeft + hitboxWidth;
+            const shipTop = ship.y + (ship.height - hitboxHeight) / 2;
+            const shipBottom = shipTop + hitboxHeight;
+
+            const closestX = Math.max(shipLeft, Math.min(circle.x, shipRight));
+            const closestY = Math.max(shipTop, Math.min(circle.y, shipBottom));
+
+            const distanceX = circle.x - closestX;
+            const distanceY = circle.y - closestY;
+            const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+            return distanceSquared < (circle.radius * 0.86) * (circle.radius * 0.86);
+        }
+
+        // --- SISTEMAS DE DESTRUPCION Y SPLIT ---
+
+        // Trata la división de los meteoritos de clase HEAVY
+        function splitHeavyMeteorite(m) {
+            playSound('explosion');
+            triggerScreenShake(12, 5);
+
+            // Generar ráfagas de polvo de asteroide
+            createExplosionParticles(m.x, m.y, m.color, 25);
+
+            // Dividir en 2 meteoritos pequeños normales saliendo disparados a los lados
+            const m1 = new Meteorite(m.x - 15, m.y, 'NORMAL');
+            m1.vx = -1.8;
+            m1.speed = m.speed * 1.3;
+
+            const m2 = new Meteorite(m.x + 15, m.y, 'NORMAL');
+            m2.vx = 1.8;
+            m2.speed = m.speed * 1.3;
+
+            meteorites.push(m1, m2);
+        }
+
+        function createExplosionParticles(x, y, color, qty = 20) {
+            for (let i = 0; i < qty; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        // Limpiar la pantalla por detonación de Bomba
+        function triggerScreenBomb() {
+            playSound('heavy_explosion');
+            triggerScreenShake(24, 12);
+            
+            // Destello masivo de luz en pantalla (partículas blancas radiales)
+            for (let i = 0; i < 80; i++) {
+                const p = new Particle(VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2, '#ef4444', 2.5, 0.4);
+                p.radius = 2 + Math.random() * 5;
+                particles.push(p);
+            }
+
+            // Destruir todos los meteoritos de pantalla y dar puntos correspondientes
+            meteorites.forEach(m => {
+                score += m.points;
+                createExplosionParticles(m.x, m.y, m.color, 12);
+            });
+            meteorites = [];
+            document.getElementById('ui-score').textContent = String(score).padStart(4, '0');
+        }
+
+
+        // --- CONTROLADORES DE TIEMPO Y BUCLE PRINCIPAL ---
+        let frameCount = 0;
+        let lastLevelUpScore = 0;
+
+        function updateScore() {
+            frameCount++;
+            // Sumar un punto pasivo por supervivencia
+            if (frameCount % 10 === 0) {
+                score += 1;
+                document.getElementById('ui-score').textContent = String(score).padStart(4, '0');
+
+                // Escalar nivel militar cada 100 puntos totales
+                if (score > 0 && score % 100 === 0 && score !== lastLevelUpScore) {
+                    lastLevelUpScore = score;
+                    currentLevel++;
+                    
+                    // Incremento de dificultad progresiva
+                    baseMeteorSpeed += 0.7;
+                    meteorSpawnInterval = Math.max(400, meteorSpawnInterval - 120);
+
+                    document.getElementById('ui-level').textContent = currentLevel;
+                    playSound('levelup');
+                    showLevelUpAlert();
+                }
+            }
+        }
+
+        let alertTimeout;
+        function showLevelUpAlert() {
+            const alertHud = document.getElementById('hud-alert');
+            alertHud.classList.remove('hidden');
+            clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => {
+                alertHud.classList.add('hidden');
+            }, 2500);
+        }
+
+        function gameLoop(timestamp) {
+            ctx.save();
+
+            // --- APLICACIÓN DE SACUDIDA DE PANTALLA (JUICE) ---
+            if (shakeDuration > 0) {
+                const currentShakeX = (Math.random() - 0.5) * shakeIntensity;
+                const currentShakeY = (Math.random() - 0.5) * shakeIntensity;
+                ctx.translate(currentShakeX, currentShakeY);
+                shakeDuration--;
+            }
+
+            // Limpieza del lienzo
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+
+            // 1. Renderizar Estrellas de fondo
+            stars.forEach(star => {
+                if (gameState === 'PLAYING') star.update();
+                star.draw();
+            });
+
+            if (gameState === 'PLAYING') {
+                updateScore();
+
+                // 2. Actualizar y renderizar Nave del Jugador
+                player.update(timestamp);
+                player.draw();
+
+                // 3. Generar Objetos Automáticamente según intervalos de tiempo
+                // Spawn Meteoros
+                if (timestamp - lastMeteorSpawnTime > meteorSpawnInterval) {
+                    meteorites.push(new Meteorite());
+                    lastMeteorSpawnTime = timestamp;
+                }
+                // Spawn Power-Ups
+                if (timestamp - lastPowerUpSpawnTime > POWERUP_SPAWN_INTERVAL) {
+                    powerups.push(new PowerUp());
+                    lastPowerUpSpawnTime = timestamp;
+                }
+                // Spawn Helio-3
+                if (timestamp - lastCollectibleSpawnTime > COLLECTIBLE_SPAWN_INTERVAL) {
+                    collectibles.push(new Collectible());
+                    lastCollectibleSpawnTime = timestamp;
+                }
+
+                // 4. Gestión de Disparos Láser
+                for (let i = lasers.length - 1; i >= 0; i--) {
+                    const l = lasers[i];
+                    l.update();
+                    l.draw();
+
+                    // Limpieza fuera de pantalla
+                    if (l.y < -20 || l.x < -20 || l.x > VIRTUAL_WIDTH + 20) {
+                        lasers.splice(i, 1);
+                        continue;
+                    }
+
+                    // Chequear impactos con meteoros
+                    for (let j = meteorites.length - 1; j >= 0; j--) {
+                        const m = meteorites[j];
+                        
+                        // Caja de colisión rápida de láser vs círculo de meteoro
+                        if (l.x > m.x - m.radius && l.x < m.x + m.radius &&
+                            l.y > m.y - m.radius && l.y < m.y + m.radius) {
+                            
+                            // Remover láser
+                            lasers.splice(i, 1);
+
+                            // Registrar daño al meteorito
+                            m.hp--;
+                            
+                            // Efecto chispa de impacto láser
+                            createExplosionParticles(l.x, l.y, l.color, 4);
+
+                            if (m.hp <= 0) {
+                                // Meteorito destruido completamente
+                                if (m.type === 'HEAVY') {
+                                    splitHeavyMeteorite(m);
+                                } else {
+                                    playSound('explosion');
+                                    createExplosionParticles(m.x, m.y, m.color, 12);
+                                }
+
+                                score += m.points;
+                                document.getElementById('ui-score').textContent = String(score).padStart(4, '0');
+                                meteorites.splice(j, 1);
+                            }
+                            break; // Romper el loop interno de meteoritos al impactar el láser
+                        }
+                    }
+                }
+
+                // 5. Gestión de Meteoritos e impacto con la Nave
+                for (let i = meteorites.length - 1; i >= 0; i--) {
+                    const m = meteorites[i];
+                    m.update();
+                    m.draw();
+
+                    if (m.y > VIRTUAL_HEIGHT + m.radius * 2) {
+                        meteorites.splice(i, 1);
+                        continue;
+                    }
+
+                    // Colisión con la Nave
+                    if (checkShipCollision(player, m)) {
+                        if (player.shieldActive) {
+                            // Escudo absorbe impacto
+                            player.shieldActive = false;
+                            document.getElementById('hud-shield').classList.add('hidden');
+                            playSound('shield_break');
+                            triggerScreenShake(14, 6);
+                            createExplosionParticles(m.x, m.y, '#22d3ee', 20); // Chispas de escudo colapsado
+                            meteorites.splice(i, 1); // Destruir asteroide
+                        } else {
+                            // Derrota de la nave
+                            triggerSpaceshipExplosion(player);
+                            gameOver();
+                            break;
+                        }
+                    }
+                }
+
+                // 6. Gestión de Power-Ups
+                for (let i = powerups.length - 1; i >= 0; i--) {
+                    const pu = powerups[i];
+                    pu.update();
+                    pu.draw();
+
+                    if (pu.y > VIRTUAL_HEIGHT + pu.radius * 2) {
+                        powerups.splice(i, 1);
+                        continue;
+                    }
+
+                    // Nave recoge el Power-Up
+                    if (checkShipCollision(player, pu)) {
+                        activatePowerUp(pu);
+                        powerups.splice(i, 1);
+                    }
+                }
+
+                // 7. Gestión de Cristales Coleccionables
+                for (let i = collectibles.length - 1; i >= 0; i--) {
+                    const c = collectibles[i];
+                    c.update();
+                    c.draw();
+
+                    if (c.y > VIRTUAL_HEIGHT + c.radius * 2) {
+                        collectibles.splice(i, 1);
+                        continue;
+                    }
+
+                    // Nave recoge Cristal
+                    if (checkShipCollision(player, c)) {
+                        playSound('gem');
+                        score += 80; // Recompensa de puntuación directa pesada
+                        document.getElementById('ui-score').textContent = String(score).padStart(4, '0');
+                        createExplosionParticles(c.x, c.y, '#facc15', 10);
+                        collectibles.splice(i, 1);
+                    }
+                }
+
+            } else if (gameState === 'GAMEOVER') {
+                // Caída de fondo decorativa
+                meteorites.forEach(m => {
+                    m.update();
+                    m.draw();
+                });
+            }
+
+            // 8. Actualizar partículas de explosiones
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            ctx.restore();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- MANEJO DE ACTIVACIÓN DE MEJORAS (POWER-UPS) ---
+        function activatePowerUp(pu) {
+            playSound('powerup');
+            
+            // Pequeño resplandor de recolección
+            createExplosionParticles(pu.x, pu.y, pu.color, 15);
+
+            if (pu.type === 'SHIELD') {
+                player.shieldActive = true;
+                document.getElementById('hud-shield').classList.remove('hidden');
+            } 
+            else if (pu.type === 'BOMB') {
+                triggerScreenBomb();
+            } 
+            else {
+                // Doble o Triple disparo
+                player.weaponType = pu.type;
+                player.weaponDuration = 10000; // 10 segundos de duración activa del arma
+
+                const hudWeapon = document.getElementById('hud-weapon');
+                const hudWeaponName = document.getElementById('hud-weapon-name');
+                const hudWeaponBar = document.getElementById('hud-weapon-bar');
+
+                hudWeaponName.textContent = pu.type === 'DOUBLE' ? 'Láser Doble' : 'Disparo Triple';
+                hudWeaponBar.style.backgroundColor = pu.color;
+                hudWeapon.classList.remove('hidden');
+            }
+        }
+
+        function triggerSpaceshipExplosion(ship) {
+            playSound('heavy_explosion');
+            triggerScreenShake(30, 16);
+            const colors = ['#06b6d4', '#4f46e5', '#f43f5e', '#ffffff', '#fb923c'];
+            for (let i = 0; i < 75; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particles.push(new Particle(ship.x + ship.width/2, ship.y + ship.height/2, color, 1.8, 0.7));
+            }
+        }
+
+
+        // --- MANEJADORES DE ESTADO (UI Y SISTEMA DE MENÚS) ---
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlaySubtitle = document.getElementById('overlay-subtitle');
+        const overlayIcon = document.getElementById('overlay-icon');
+        const btnStart = document.getElementById('btn-start');
+        const hud = document.getElementById('hud');
+        const gameStats = document.getElementById('game-stats');
+        const statScore = document.getElementById('stat-score');
+        const statLevel = document.getElementById('stat-level');
+
+        function startGame() {
+            initAudio();
+            playSound('levelup');
+
+            // Resetear estados iniciales
+            score = 0;
+            currentLevel = 1;
+            baseMeteorSpeed = 3.5;
+            meteorSpawnInterval = 1200;
+            lastLevelUpScore = 0;
+            frameCount = 0;
+
+            meteorites = [];
+            lasers = [];
+            powerups = [];
+            collectibles = [];
+            particles = [];
+            player = new Spaceship();
+
+            // Sincronizar UI del HUD
+            document.getElementById('ui-score').textContent = '0000';
+            document.getElementById('ui-level').textContent = '1';
+            document.getElementById('hud-shield').classList.add('hidden');
+            document.getElementById('hud-weapon').classList.add('hidden');
+
+            // Ocultar Overlay e iniciar juego activo
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            hud.classList.remove('opacity-0');
+
+            gameState = 'PLAYING';
+            const now = performance.now();
+            lastMeteorSpawnTime = now;
+            lastPowerUpSpawnTime = now + 4000; // Dar unos segundos antes del primer power-up
+            lastCollectibleSpawnTime = now + 2000;
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+
+            // Guardar récord absoluto local
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('mision_espacial_highscore_v2', highScore);
+                document.getElementById('best-score').textContent = String(highScore).padStart(4, '0');
+            }
+
+            // Cargar datos en el sumario
+            statScore.textContent = score;
+            statLevel.textContent = currentLevel;
+
+            // Retrasar panel de fin para ver la explosión
+            setTimeout(() => {
+                overlayTitle.textContent = "MISIÓN ABORTADA";
+                overlayTitle.className = "scifi-font text-3xl md:text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-fuchsia-500 mb-2";
+                overlaySubtitle.textContent = "¡Impacto crítico catastrófico! El interceptor estelar ha quedado destruido en combate.";
+                overlayIcon.className = "fa-solid fa-radiation text-4xl text-red-500 animate-spin";
+                btnStart.textContent = "Volver a Despegar";
+                
+                gameStats.classList.remove('hidden');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                hud.classList.add('opacity-0');
+            }, 1200);
+        }
+
+        btnStart.addEventListener('click', startGame);
+
+        window.onload = function() {
+            requestAnimationFrame(gameLoop);
+        };
+    </script>
+</body>
+</html>

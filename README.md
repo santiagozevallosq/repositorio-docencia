@@ -47,3 +47,6 @@ recursos/
 - **Recurso de Maestría / Laboratorio Visual de Redes Convolucionales (CNN)** — explorador visual de capas de convolución, cálculo matricial paso a paso, ReLU y max pooling interactivo.
 - **Matemática Básica para Ciencias Políticas 1 / Simulador de Sistemas de Ecuaciones Lineales** — resolución algebraica determinista con KaTeX, graficación en canvas interactivo y métodos matriciales.
 - **Uso Personal / Lanzador de Dados 3D y Estadísticas** — simulación interactiva con físicas y animaciones 3D para tiradas de dados y registro acumulado de resultados.
+- **Uso Personal / ¡Hebi-Chan! - Anime Snake Adventure** — juego de la serpiente (Snake) con estética anime en Canvas, efectos y multiplicadores de velocidad.
+- **Uso Personal / Misión Espacial - Arcade de Supervivencia** — juego arcade de combate espacial 2D, esquiva de meteoritos, recolección de energía y mejoras.
+- **Uso Personal / Super Mario Bros Canvas** — recreación retro completa en HTML5 Canvas con salto calibrado, bloques interactivos, sonido 8-bit, Goombas y meta final.
