@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algoritmos paso a paso: del problema a la solución</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Flowchart custom connectors and styling */
+    .flow-node {
+      transition: all 0.25s ease-in-out;
+    }
+    .flow-node.active-highlight {
+      ring-width: 4px;
+      transform: scale(1.04);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <button id="toggleMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none" aria-label="Abrir menú">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">Algoritmos paso a paso</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Del problema a la solución • Nivel Introductorio</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <!-- Progress Indicator -->
+        <div class="flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+          <span class="text-xs font-semibold text-slate-600 hidden sm:inline">Progreso:</span>
+          <div class="w-20 sm:w-28 bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div id="topProgressBar" class="bg-indigo-600 h-full rounded-full transition-all duration-300 w-0"></div>
+          </div>
+          <span id="topProgressText" class="text-xs font-bold text-indigo-700">0%</span>
+        </div>
+        
+        <button onclick="resetEntirePlatform()" class="text-xs font-medium text-slate-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors flex items-center space-x-1" title="Reiniciar todo el avance">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span class="hidden md:inline">Reiniciar</span>
+        </button>
+
+        <a href="../../../index.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 rounded-lg border border-slate-200 transition-colors shadow-2xs">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          <span class="hidden sm:inline">Repositorio Docente</span>
+          <span class="sm:hidden">Repositorio</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col lg:flex-row gap-6">
+
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileDrawerBackdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden lg:hidden transition-opacity"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebarNav" class="fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white lg:bg-transparent p-5 lg:p-0 border-r lg:border-none border-slate-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shrink-0 overflow-y-auto max-h-screen">
+      <div class="flex items-center justify-between lg:hidden mb-4 pb-3 border-b border-slate-100">
+        <span class="font-bold text-slate-800 text-sm">Menú de Módulos</span>
+        <button id="closeMenuBtn" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3 sticky top-24">
+        <div class="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Módulos de Aprendizaje
+        </div>
+        <nav class="space-y-1 mt-1" id="moduleNavList">
+          <!-- Dynamically populated or static active buttons -->
+          <button onclick="goToModule(1)" id="nav-btn-1" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">1</span>
+              <span class="text-slate-700 font-medium truncate">¿Qué es un algoritmo?</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(2)" id="nav-btn-2" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">2</span>
+              <span class="text-slate-700 font-medium truncate">Fases del problema</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(3)" id="nav-btn-3" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">3</span>
+              <span class="text-slate-700 font-medium truncate">Entrada, proceso, salida</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(4)" id="nav-btn-4" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">4</span>
+              <span class="text-slate-700 font-medium truncate">Instrucciones básicas</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(5)" id="nav-btn-5" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">5</span>
+              <span class="text-slate-700 font-medium truncate">Simulador de variables</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(6)" id="nav-btn-6" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">6</span>
+              <span class="text-slate-700 font-medium truncate">Toma de decisiones</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(7)" id="nav-btn-7" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">7</span>
+              <span class="text-slate-700 font-medium truncate">Pseudocódigo y Diagrama</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(8)" id="nav-btn-8" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">8</span>
+              <span class="text-slate-700 font-medium truncate">Retos finales</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+
+          <button onclick="goToModule(9)" id="nav-btn-9" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm font-medium transition-all group">
+            <div class="flex items-center space-x-3">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs group-hover:bg-indigo-100">★</span>
+              <span class="text-slate-700 font-medium truncate">Resumen y Cierre</span>
+            </div>
+            <span class="badge-status hidden text-emerald-600"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></span>
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Dynamic Module Viewer -->
+    <main class="flex-1 min-w-0">
+      
+      <!-- Top module banner -->
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-7 shadow-sm mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <span id="currentModuleBadge" class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+              Módulo 1 de 8
+            </span>
+            <h2 id="currentModuleHeading" class="text-xl sm:text-2xl font-bold text-slate-900 mt-1.5">
+              ¿Qué es un algoritmo?
+            </h2>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button id="prevModuleBtn" onclick="navigateStep(-1)" class="px-3.5 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+              <span>Anterior</span>
+            </button>
+            <button id="nextModuleBtn" onclick="navigateStep(1)" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-sm shadow-indigo-200 flex items-center space-x-1">
+              <span>Siguiente</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Notification / Info message container (replaces window.alert) -->
+        <div id="inlineAlert" class="mt-4 hidden p-3 rounded-xl text-sm transition-all duration-300"></div>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 1: ¿QUÉ ES UN ALGORITMO? -->
+        <!-- ======================================================== -->
+        <section id="module-1" class="module-content pt-4 space-y-6">
+          <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 sm:p-5">
+            <p class="text-slate-700 leading-relaxed text-sm sm:text-base">
+              Un <strong>algoritmo</strong> es una <strong>secuencia finita de instrucciones</strong> ordenadas y lógicas que permite resolver un problema o realizar una tarea.
+            </p>
+          </div>
+
+          <!-- 3 Characteristics -->
+          <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">Tres características fundamentales</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-xs hover:border-indigo-300 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center mb-2">1</div>
+                <h4 class="font-bold text-slate-800 text-sm">Preciso</h4>
+                <p class="text-xs text-slate-600 mt-1">Indica claramente qué paso sigue en cada momento, sin ambigüedad.</p>
+              </div>
+              <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-xs hover:border-indigo-300 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center mb-2">2</div>
+                <h4 class="font-bold text-slate-800 text-sm">Definido</h4>
+                <p class="text-xs text-slate-600 mt-1">Con los mismos datos y pasos iniciales, siempre produce el mismo resultado.</p>
+              </div>
+              <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-xs hover:border-indigo-300 transition-colors">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center mb-2">3</div>
+                <h4 class="font-bold text-slate-800 text-sm">Finito</h4>
+                <p class="text-xs text-slate-600 mt-1">Tiene un inicio y termina después de una cantidad limitada de pasos.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Activity: Tea preparation -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base">Reto práctico: Preparar una taza de té</h3>
+                <p class="text-xs text-slate-500">Ordena los pasos del 1 al 5 usando las flechas para formar el algoritmo correcto.</p>
+              </div>
+              <button onclick="resetTeaExercise()" class="text-xs text-slate-500 hover:text-indigo-600 font-medium">Reordenar al azar</button>
+            </div>
+
+            <!-- Draggable or Button reorder list -->
+            <ul id="teaStepsList" class="space-y-2 mb-4">
+              <!-- Dynamically populated steps -->
+            </ul>
+
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+              <button onclick="checkTeaOrder()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">
+                Confirmar orden
+              </button>
+              <button onclick="toggleTeaExplanation()" id="teaExplBtn" class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl transition">
+                Ver explicación
+              </button>
+            </div>
+
+            <!-- Feedback Area -->
+            <div id="teaFeedback" class="mt-4 hidden p-3 rounded-xl text-xs sm:text-sm"></div>
+
+            <!-- Explanation Box -->
+            <div id="teaExplanation" class="mt-4 hidden p-4 bg-indigo-50 border border-indigo-100 rounded-xl text-xs sm:text-sm text-slate-700 space-y-2">
+              <h4 class="font-bold text-indigo-900">¿Por qué este ejemplo representa un algoritmo?</h4>
+              <p>• Es <strong>preciso</strong>: cada acción (verter agua, esperar, retirar) está claramente delimitada.</p>
+              <p>• Es <strong>definido</strong>: siguiendo estas instrucciones con los mismos ingredientes obtendrás siempre té preparado.</p>
+              <p>• Es <strong>finito</strong>: concluye en el paso 5 con la taza servida; no se queda en un ciclo infinito.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 2: FASES PARA RESOLVER UN PROBLEMA -->
+        <!-- ======================================================== -->
+        <section id="module-2" class="module-content pt-4 space-y-6 hidden">
+          <p class="text-slate-600 text-sm leading-relaxed">
+            La creación de un programa sigue una ruta ordenada para asegurar que la solución sea correcta y confiable. Haz clic en cada fase para explorar su propósito.
+          </p>
+
+          <!-- Visual Phase Route -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2" id="phasesButtonsContainer">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Phase details card -->
+          <div id="phaseDetailCard" class="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 transition-all">
+            <div class="flex items-center space-x-3 mb-2">
+              <span id="phaseDetailNumber" class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">1</span>
+              <h3 id="phaseDetailTitle" class="font-bold text-slate-800 text-base">Análisis del problema</h3>
+            </div>
+            <p id="phaseDetailDesc" class="text-slate-700 text-sm leading-relaxed">
+              Definir qué se necesita resolver, qué datos hay y qué resultado se espera.
+            </p>
+          </div>
+
+          <!-- Interactive Situations Quiz -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-slate-800 text-sm sm:text-base">Identifica la fase correspondiente</h3>
+              <span id="situationsProgress" class="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md">Pregunta 1 de 3</span>
+            </div>
+            
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 mb-4">
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Situación real:</p>
+              <p id="situationText" class="text-sm sm:text-base font-medium text-slate-800 italic">
+                “Aún no sabemos qué datos debe ingresar el usuario.”
+              </p>
+            </div>
+
+            <!-- Quiz options -->
+            <div id="situationOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <div id="situationFeedback" class="hidden p-3 rounded-xl text-xs sm:text-sm mb-3"></div>
+
+            <div class="flex items-center justify-between pt-1">
+              <button onclick="nextSituation()" id="situationNextBtn" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
+                Siguiente situación →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 3: ENTRADA, PROCESO Y SALIDA -->
+        <!-- ======================================================== -->
+        <section id="module-3" class="module-content pt-4 space-y-6 hidden">
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Todo algoritmo computacional transforma datos iniciales en información útil mediante tres partes fundamentales:
+          </p>
+
+          <!-- Diagram: Entrada -> Proceso -> Salida -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-center">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 mb-2">PASO 1</span>
+              <h4 class="font-bold text-slate-800 text-base">ENTRADA</h4>
+              <p class="text-xs text-slate-600 mt-1">Los datos necesarios para resolver el problema.</p>
+              <div class="mt-3 bg-white p-2 rounded-xl text-xs font-mono text-blue-800 border border-blue-100">
+                base, altura
+              </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 mb-2">PASO 2</span>
+              <h4 class="font-bold text-slate-800 text-base">PROCESO</h4>
+              <p class="text-xs text-slate-600 mt-1">Las operaciones y cálculos con los datos.</p>
+              <div class="mt-3 bg-white p-2 rounded-xl text-xs font-mono text-amber-800 border border-amber-100">
+                área = (base × altura) / 2
+              </div>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 mb-2">PASO 3</span>
+              <h4 class="font-bold text-slate-800 text-base">SALIDA</h4>
+              <p class="text-xs text-slate-600 mt-1">El resultado final entregado al usuario.</p>
+              <div class="mt-3 bg-white p-2 rounded-xl text-xs font-mono text-emerald-800 border border-emerald-100">
+                área calculada
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Calculator -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+            <h3 class="font-bold text-slate-800 text-base mb-1">Laboratorio interactivo: Área del triángulo</h3>
+            <p class="text-xs text-slate-500 mb-4">Ingresa valores numéricos para comprobar cómo fluyen la entrada, el proceso y la salida.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label for="triangleBase" class="block text-xs font-semibold text-slate-700 mb-1">Base (b):</label>
+                <input type="number" id="triangleBase" value="6" step="any" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="Ej. 6">
+              </div>
+              <div>
+                <label for="triangleHeight" class="block text-xs font-semibold text-slate-700 mb-1">Altura (h):</label>
+                <input type="number" id="triangleHeight" value="4" step="any" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="Ej. 4">
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-3 mb-4">
+              <button onclick="calculateTriangleArea()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                Calcular área
+              </button>
+              <button onclick="resetTriangleCalculator()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs rounded-xl transition">
+                Reiniciar valores
+              </button>
+            </div>
+
+            <!-- Error message container -->
+            <div id="triangleError" class="hidden p-3 rounded-xl text-xs sm:text-sm bg-red-50 text-red-700 border border-red-200 mb-4"></div>
+
+            <!-- Step by step visual computation -->
+            <div id="triangleStepsResult" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Paso a paso de la ejecución:</p>
+              <div class="font-mono text-xs sm:text-sm text-slate-700 space-y-1 bg-white p-3 rounded-lg border border-slate-200/70">
+                <p id="tStep1">1. Entrada: base = 6, altura = 4</p>
+                <p id="tStep2">2. Proceso: área = (6 × 4) / 2 = 24 / 2</p>
+                <p id="tStep3" class="font-bold text-indigo-700">3. Salida: área = 12</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 4: INSTRUCCIONES BÁSICAS -->
+        <!-- ======================================================== -->
+        <section id="module-4" class="module-content pt-4 space-y-6 hidden">
+          <!-- Concepts Explanation -->
+          <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 sm:p-5">
+            <h3 class="font-bold text-indigo-900 text-sm sm:text-base mb-1">Concepto clave: ¿Qué es una variable?</h3>
+            <p class="text-slate-700 text-xs sm:text-sm leading-relaxed">
+              Una <strong>variable</strong> es un espacio con nombre en la memoria donde se guarda un valor que puede cambiar a lo largo del tiempo.
+              El símbolo de la flecha (<span class="font-mono font-bold text-indigo-700">←</span>) representa la operación de <strong>asignación</strong> y significa: <em>“guardar en”</em> o <em>“tomar el valor de”</em>.
+            </p>
+          </div>
+
+          <!-- 5 Basic Instructions Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="bg-white border border-slate-200 p-4 rounded-xl">
+              <div class="flex items-center space-x-2 text-blue-700 font-bold text-sm mb-1">
+                <span>1. Lectura</span>
+              </div>
+              <p class="text-xs text-slate-600 mb-2">Recibe datos ingresados por el usuario o desde una fuente externa.</p>
+              <div class="bg-slate-50 p-2 rounded-lg font-mono text-xs text-slate-800 border border-slate-200">
+                LEER(base, altura)
+              </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-4 rounded-xl">
+              <div class="flex items-center space-x-2 text-amber-700 font-bold text-sm mb-1">
+                <span>2. Asignación</span>
+              </div>
+              <p class="text-xs text-slate-600 mb-2">Guarda un valor directo o el resultado de un cálculo en una variable.</p>
+              <div class="bg-slate-50 p-2 rounded-lg font-mono text-xs text-slate-800 border border-slate-200">
+                area ← (base * altura) / 2
+              </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-4 rounded-xl">
+              <div class="flex items-center space-x-2 text-emerald-700 font-bold text-sm mb-1">
+                <span>3. Escritura</span>
+              </div>
+              <p class="text-xs text-slate-600 mb-2">Muestra o comunica un resultado o mensaje al usuario.</p>
+              <div class="bg-slate-50 p-2 rounded-lg font-mono text-xs text-slate-800 border border-slate-200">
+                ESCRIBIR(area)
+              </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-4 rounded-xl">
+              <div class="flex items-center space-x-2 text-purple-700 font-bold text-sm mb-1">
+                <span>4. Bifurcación</span>
+              </div>
+              <p class="text-xs text-slate-600 mb-2">Permite elegir entre diferentes caminos según se cumpla o no una condición.</p>
+              <div class="bg-slate-50 p-2 rounded-lg font-mono text-xs text-slate-800 border border-slate-200">
+                SI edad1 > edad2...
+              </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 p-4 rounded-xl md:col-span-2 lg:col-span-2">
+              <div class="flex items-center space-x-2 text-slate-700 font-bold text-sm mb-1">
+                <span>5. Inicio y Fin</span>
+              </div>
+              <p class="text-xs text-slate-600 mb-2">Delimitan de manera inequívoca dónde empieza y dónde concluye el algoritmo.</p>
+              <div class="bg-slate-50 p-2 rounded-lg font-mono text-xs text-slate-800 border border-slate-200">
+                INICIO ... FIN
+              </div>
+            </div>
+          </div>
+
+          <!-- Classification Quiz -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-slate-800 text-sm sm:text-base">Práctica interactiva: Clasifica la instrucción</h3>
+              <span id="instructionQuizCount" class="text-xs font-semibold px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-md">1 de 4</span>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 mb-4 text-center">
+              <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold block mb-1">Instrucción a clasificar:</span>
+              <code id="instructionSnippet" class="text-base sm:text-lg font-bold font-mono text-indigo-700">
+                total ← precio * cantidad
+              </code>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+              <button onclick="classifyInstruction('Lectura')" class="classif-btn py-2.5 px-3 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition">
+                Lectura
+              </button>
+              <button onclick="classifyInstruction('Asignación')" class="classif-btn py-2.5 px-3 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition">
+                Asignación
+              </button>
+              <button onclick="classifyInstruction('Escritura')" class="classif-btn py-2.5 px-3 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition">
+                Escritura
+              </button>
+              <button onclick="classifyInstruction('Bifurcación')" class="classif-btn py-2.5 px-3 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition">
+                Bifurcación
+              </button>
+            </div>
+
+            <div id="instructionFeedback" class="hidden p-3 rounded-xl text-xs sm:text-sm mb-3"></div>
+
+            <button onclick="nextInstructionQuiz()" id="instructionNextBtn" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
+              Siguiente instrucción →
+            </button>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 5: SIMULADOR DE VARIABLES -->
+        <!-- ======================================================== -->
+        <section id="module-5" class="module-content pt-4 space-y-6 hidden">
+          <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 sm:p-5">
+            <h3 class="font-bold text-indigo-950 text-sm sm:text-base mb-1">Intercambio de valores (Algoritmo de la variable auxiliar)</h3>
+            <p class="text-slate-700 text-xs sm:text-sm leading-relaxed">
+              Si intentáramos copiar directamente <span class="font-mono font-bold">A ← B</span>, perderíamos el valor original de <span class="font-mono font-bold">A</span>.
+              Por eso usamos una variable temporal llamada <strong>AUX</strong> que conserva el valor de <strong>A</strong> mientras realizamos el intercambio.
+            </p>
+          </div>
+
+          <!-- Configurable Inputs -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center gap-4 text-xs">
+            <span class="font-semibold text-slate-700">Valores iniciales:</span>
+            <div class="flex items-center space-x-1.5">
+              <label for="initialA" class="font-mono font-bold text-slate-600">A =</label>
+              <input type="number" id="initialA" value="10" class="w-16 px-2 py-1 border border-slate-200 rounded-lg font-mono text-center text-xs">
+            </div>
+            <div class="flex items-center space-x-1.5">
+              <label for="initialB" class="font-mono font-bold text-slate-600">B =</label>
+              <input type="number" id="initialB" value="20" class="w-16 px-2 py-1 border border-slate-200 rounded-lg font-mono text-center text-xs">
+            </div>
+            <button onclick="applyNewSimulatorValues()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition">
+              Aplicar y reiniciar
+            </button>
+          </div>
+
+          <!-- Simulator Workbench -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Code Column -->
+            <div class="lg:col-span-5 bg-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col justify-between">
+              <div>
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-3">Secuencia de instrucciones:</span>
+                <div class="space-y-1.5 font-mono text-xs sm:text-sm" id="simulatorCodeLines">
+                  <div id="sim-line-1" class="p-2 rounded-lg border border-transparent transition-all flex items-center justify-between">
+                    <span>1. A ← <span class="val-a-init">10</span></span>
+                    <span class="text-xs text-slate-400">inicializa A</span>
+                  </div>
+                  <div id="sim-line-2" class="p-2 rounded-lg border border-transparent transition-all flex items-center justify-between">
+                    <span>2. B ← <span class="val-b-init">20</span></span>
+                    <span class="text-xs text-slate-400">inicializa B</span>
+                  </div>
+                  <div id="sim-line-3" class="p-2 rounded-lg border border-transparent transition-all flex items-center justify-between">
+                    <span>3. AUX ← A</span>
+                    <span class="text-xs text-slate-400">respaldo en AUX</span>
+                  </div>
+                  <div id="sim-line-4" class="p-2 rounded-lg border border-transparent transition-all flex items-center justify-between">
+                    <span>4. A ← B</span>
+                    <span class="text-xs text-slate-400">B se pasa a A</span>
+                  </div>
+                  <div id="sim-line-5" class="p-2 rounded-lg border border-transparent transition-all flex items-center justify-between">
+                    <span>5. B ← AUX</span>
+                    <span class="text-xs text-slate-400">AUX se pasa a B</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="pt-5 mt-4 border-t border-slate-800 flex flex-wrap items-center gap-2">
+                <button onclick="simStepPrev()" id="simPrevBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition disabled:opacity-40" disabled>
+                  ◀ Anterior
+                </button>
+                <button onclick="simStepNext()" id="simNextBtn" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition shadow-sm">
+                  Siguiente ▶
+                </button>
+                <button onclick="simRunAll()" id="simRunAllBtn" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition">
+                  Ejecutar todo ⚡
+                </button>
+                <button onclick="simReset()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-semibold rounded-lg transition">
+                  Reiniciar
+                </button>
+              </div>
+            </div>
+
+            <!-- Memory Boxes Column -->
+            <div class="lg:col-span-7 space-y-4">
+              <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block">Memoria actual de las variables:</span>
+              
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Variable A -->
+                <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 text-center transition-all duration-300" id="boxVarA">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Variable A</span>
+                  <div id="displayVarA" class="font-mono text-2xl sm:text-3xl font-extrabold text-indigo-600 my-2">-</div>
+                  <span id="labelVarA" class="text-2xs text-slate-500 block truncate">Sin inicializar</span>
+                </div>
+
+                <!-- Variable B -->
+                <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 text-center transition-all duration-300" id="boxVarB">
+                  <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Variable B</span>
+                  <div id="displayVarB" class="font-mono text-2xl sm:text-3xl font-extrabold text-emerald-600 my-2">-</div>
+                  <span id="labelVarB" class="text-2xs text-slate-500 block truncate">Sin inicializar</span>
+                </div>
+
+                <!-- Variable AUX -->
+                <div class="bg-white border-2 border-dashed border-amber-300 rounded-2xl p-4 text-center transition-all duration-300" id="boxVarAux">
+                  <span class="text-xs font-bold text-amber-500 uppercase tracking-widest">AUX (Temporal)</span>
+                  <div id="displayVarAux" class="font-mono text-2xl sm:text-3xl font-extrabold text-amber-600 my-2">-</div>
+                  <span id="labelVarAux" class="text-2xs text-slate-500 block truncate">Vacía</span>
+                </div>
+              </div>
+
+              <!-- Explanation panel for current step -->
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 min-h-[90px] flex items-center">
+                <p id="simulatorExplanation" class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                  Presiona <strong>"Siguiente"</strong> para iniciar la simulación paso a paso de la asignación.
+                </p>
+              </div>
+
+              <!-- Final State Announcement -->
+              <div id="simFinalState" class="hidden p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs sm:text-sm text-emerald-900 font-medium">
+                ✅ Intercambio completado con éxito: <span class="font-mono font-bold" id="simFinalFormula">A = 20, B = 10, AUX = 10</span>. Los datos se intercambiaron sin perder ninguno de los dos valores.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 6: TOMA DE DECISIONES -->
+        <!-- ======================================================== -->
+        <section id="module-6" class="module-content pt-4 space-y-6 hidden">
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Una <strong>bifurcación</strong> o estructura de decisión evalúa una condición lógica (verdadero o falso) para elegir qué camino de instrucciones seguir.
+          </p>
+
+          <!-- Tabs for Case A and Case B -->
+          <div class="flex border-b border-slate-200">
+            <button onclick="switchDecisionTab('age')" id="tabDecAge" class="py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 border-indigo-600 text-indigo-700 transition">
+              Caso A: Comparar edades
+            </button>
+            <button onclick="switchDecisionTab('salary')" id="tabDecSalary" class="py-2.5 px-4 font-semibold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition">
+              Caso B: Calcular salario semanal
+            </button>
+          </div>
+
+          <!-- Sub-module A: Age comparison -->
+          <div id="decisionCaseAge" class="space-y-4">
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base mb-1">Comparador de dos edades</h4>
+              <p class="text-xs text-slate-500 mb-4">Ingresa la edad de dos personas para observar el camino lógico que toma el algoritmo.</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label for="inputAge1" class="block text-xs font-semibold text-slate-700 mb-1">Edad de la primera persona (Edad1):</label>
+                  <input type="number" id="inputAge1" value="25" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                  <label for="inputAge2" class="block text-xs font-semibold text-slate-700 mb-1">Edad de la segunda persona (Edad2):</label>
+                  <input type="number" id="inputAge2" value="19" min="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500">
+                </div>
+              </div>
+
+              <button onclick="evaluateAges()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                Comparar edades
+              </button>
+
+              <div id="ageError" class="hidden mt-3 p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs"></div>
+
+              <!-- Visual Paths Diagram -->
+              <div class="mt-5 pt-4 border-t border-slate-100">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-3">Ruta de decisión evaluada:</span>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-center">
+                  <!-- Branch 1 -->
+                  <div id="branchAge1" class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 transition-all">
+                    <span class="text-xs font-mono font-bold text-slate-600 block mb-1">¿Edad1 > Edad2?</span>
+                    <p class="text-xs text-slate-700 font-medium">"La primera persona tiene mayor edad"</p>
+                    <span id="badgeBranch1" class="mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-slate-200 text-slate-600">No evaluado</span>
+                  </div>
+
+                  <!-- Branch 2 -->
+                  <div id="branchAge2" class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 transition-all">
+                    <span class="text-xs font-mono font-bold text-slate-600 block mb-1">¿Edad2 > Edad1?</span>
+                    <p class="text-xs text-slate-700 font-medium">"La segunda persona tiene mayor edad"</p>
+                    <span id="badgeBranch2" class="mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-slate-200 text-slate-600">No evaluado</span>
+                  </div>
+
+                  <!-- Branch 3 -->
+                  <div id="branchAgeEqual" class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 transition-all">
+                    <span class="text-xs font-mono font-bold text-slate-600 block mb-1">¿Edad1 == Edad2?</span>
+                    <p class="text-xs text-slate-700 font-medium">"Ambas personas tienen la misma edad"</p>
+                    <span id="badgeBranch3" class="mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-slate-200 text-slate-600">No evaluado</span>
+                  </div>
+                </div>
+
+                <!-- Explanation -->
+                <div id="ageResultBox" class="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl text-xs sm:text-sm text-slate-800">
+                  Haz clic en <strong>"Comparar edades"</strong> para evaluar las variables.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sub-module B: Salary with overtime -->
+          <div id="decisionCaseSalary" class="space-y-4 hidden">
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base mb-1">Cálculo de salario semanal con horas extras</h4>
+              <p class="text-xs text-slate-500 mb-4">Las primeras 40 horas son ordinarias. Si supera las 40, las horas adicionales se pagan al 1.5 (150%).</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label for="inputHours" class="block text-xs font-semibold text-slate-700 mb-1">Horas trabajadas:</label>
+                  <input type="number" id="inputHours" value="45" min="0" step="any" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                  <label for="inputRate" class="block text-xs font-semibold text-slate-700 mb-1">Precio por hora ($):</label>
+                  <input type="number" id="inputRate" value="10" min="0" step="any" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500">
+                </div>
+              </div>
+
+              <button onclick="calculateWeeklySalary()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition">
+                Calcular salario
+              </button>
+
+              <div id="salaryError" class="hidden mt-3 p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs"></div>
+
+              <!-- Branch breakdown -->
+              <div class="mt-5 pt-4 border-t border-slate-100">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-3">Evaluación de la condición de horas:</span>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div id="branchSalaryNormal" class="p-4 rounded-xl border border-slate-200 bg-slate-50 transition-all">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-mono font-bold text-slate-700">horas ≤ 40 (Sin horas extras)</span>
+                      <span id="badgeSalaryNormal" class="px-2 py-0.5 rounded text-2xs font-bold uppercase bg-slate-200 text-slate-600">Inactiva</span>
+                    </div>
+                    <p class="text-xs text-slate-600 font-mono">salario = horas × precio</p>
+                  </div>
+
+                  <div id="branchSalaryExtra" class="p-4 rounded-xl border border-slate-200 bg-slate-50 transition-all">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-mono font-bold text-slate-700">horas > 40 (Con horas extras a 1.5)</span>
+                      <span id="badgeSalaryExtra" class="px-2 py-0.5 rounded text-2xs font-bold uppercase bg-slate-200 text-slate-600">Inactiva</span>
+                    </div>
+                    <p class="text-xs text-slate-600 font-mono">salario = (40 × precio) + ((horas - 40) × 1.5 × precio)</p>
+                  </div>
+                </div>
+
+                <!-- Salary Result box -->
+                <div id="salaryResultBox" class="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl text-xs sm:text-sm text-slate-800">
+                  Haz clic en <strong>"Calcular salario"</strong> para ver el desglose y el resultado.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 7: PSEUDOCÓDIGO Y DIAGRAMA DE FLUJO -->
+        <!-- ======================================================== -->
+        <section id="module-7" class="module-content pt-4 space-y-6 hidden">
+          <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4">
+            <p class="text-slate-700 text-xs sm:text-sm leading-relaxed">
+              El <strong>pseudocódigo</strong> es una descripción textual estructurada y legible para humanos. 
+              El <strong>diagrama de flujo</strong> es una representación gráfica con símbolos geométricos estandarizados. 
+              <span class="font-bold text-indigo-900">¡Ambos representan exactamente el mismo algoritmo!</span>
+            </p>
+          </div>
+
+          <!-- Interactive Sync Viewer -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Pseudocode Column -->
+            <div class="lg:col-span-5 bg-slate-900 rounded-2xl p-4 sm:p-5 text-slate-200 shadow-md">
+              <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pseudocódigo (Área del triángulo)</span>
+                <span class="text-2xs text-indigo-400">Toca una línea para resaltar</span>
+              </div>
+
+              <div class="space-y-1 font-mono text-xs sm:text-sm" id="pseudocodeContainer">
+                <div onclick="highlightSyncedPair('node-inicio')" id="pseudo-inicio" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition">
+                  <span class="text-slate-500 mr-2">1</span><span class="text-pink-400 font-bold">INICIO</span>
+                </div>
+                <div onclick="highlightSyncedPair('node-leer-base')" id="pseudo-leer-base" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-4">
+                  <span class="text-slate-500 mr-2">2</span><span class="text-blue-400">LEER</span> base
+                </div>
+                <div onclick="highlightSyncedPair('node-leer-alt')" id="pseudo-leer-alt" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-4">
+                  <span class="text-slate-500 mr-2">3</span><span class="text-blue-400">LEER</span> altura
+                </div>
+                <div onclick="highlightSyncedPair('node-decision')" id="pseudo-decision" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-4">
+                  <span class="text-slate-500 mr-2">4</span><span class="text-amber-400 font-bold">SI</span> base &lt; 0 <span class="text-amber-400">O</span> altura &lt; 0 <span class="text-amber-400 font-bold">ENTONCES</span>
+                </div>
+                <div onclick="highlightSyncedPair('node-errados')" id="pseudo-errados" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-8">
+                  <span class="text-slate-500 mr-2">5</span><span class="text-emerald-400">ESCRIBIR</span> "Datos errados"
+                </div>
+                <div onclick="highlightSyncedPair('node-decision')" id="pseudo-sino" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-4">
+                  <span class="text-slate-500 mr-2">6</span><span class="text-amber-400 font-bold">SI NO</span>
+                </div>
+                <div onclick="highlightSyncedPair('node-calculo')" id="pseudo-calculo" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-8">
+                  <span class="text-slate-500 mr-2">7</span>area ← (base * altura) / 2
+                </div>
+                <div onclick="highlightSyncedPair('node-mostrar-area')" id="pseudo-mostrar-area" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-8">
+                  <span class="text-slate-500 mr-2">8</span><span class="text-emerald-400">ESCRIBIR</span> area
+                </div>
+                <div onclick="highlightSyncedPair('node-decision')" id="pseudo-finsi" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition pl-4">
+                  <span class="text-slate-500 mr-2">9</span><span class="text-amber-400 font-bold">FIN SI</span>
+                </div>
+                <div onclick="highlightSyncedPair('node-fin')" id="pseudo-fin" class="p-1.5 rounded cursor-pointer hover:bg-slate-800 transition">
+                  <span class="text-slate-500 mr-2">10</span><span class="text-pink-400 font-bold">FIN</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Flowchart Column -->
+            <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col items-center">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-3 text-center">Diagrama de Flujo (Representación gráfica)</span>
+
+              <!-- Flowchart Nodes hierarchy -->
+              <div class="flex flex-col items-center space-y-2 w-full max-w-sm font-mono text-xs text-center select-none" id="flowchartWrapper">
+                
+                <!-- INICIO (Oval) -->
+                <div onclick="highlightSyncedPair('pseudo-inicio')" id="node-inicio" class="flow-node cursor-pointer px-6 py-2 rounded-full bg-pink-100 text-pink-900 border-2 border-pink-400 font-bold shadow-xs">
+                  INICIO
+                </div>
+
+                <div class="text-slate-400">↓</div>
+
+                <!-- LEER base (Parallelogram) -->
+                <div onclick="highlightSyncedPair('pseudo-leer-base')" id="node-leer-base" class="flow-node cursor-pointer px-5 py-2 skew-x-[-12deg] bg-blue-100 text-blue-900 border-2 border-blue-400 font-semibold shadow-xs">
+                  <span class="skew-x-[12deg] inline-block">LEER base</span>
+                </div>
+
+                <div class="text-slate-400">↓</div>
+
+                <!-- LEER altura (Parallelogram) -->
+                <div onclick="highlightSyncedPair('pseudo-leer-alt')" id="node-leer-alt" class="flow-node cursor-pointer px-5 py-2 skew-x-[-12deg] bg-blue-100 text-blue-900 border-2 border-blue-400 font-semibold shadow-xs">
+                  <span class="skew-x-[12deg] inline-block">LEER altura</span>
+                </div>
+
+                <div class="text-slate-400">↓</div>
+
+                <!-- DECISION (Rhombus / Diamond) -->
+                <div onclick="highlightSyncedPair('pseudo-decision')" id="node-decision" class="flow-node cursor-pointer px-4 py-3 bg-amber-100 text-amber-950 border-2 border-amber-400 font-bold shadow-xs rounded-xl">
+                  base &lt; 0  Ó  altura &lt; 0 ?
+                </div>
+
+                <!-- Decision Branching Left (Sí) / Right (No) -->
+                <div class="grid grid-cols-2 gap-4 w-full pt-1">
+                  <!-- True Branch -->
+                  <div class="flex flex-col items-center space-y-2">
+                    <span class="text-2xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">SÍ (Verdadero)</span>
+                    <div class="text-slate-400">↓</div>
+                    <div onclick="highlightSyncedPair('pseudo-errados')" id="node-errados" class="flow-node cursor-pointer px-3 py-2 skew-x-[-12deg] bg-red-100 text-red-950 border-2 border-red-400 font-semibold shadow-xs w-full text-center">
+                      <span class="skew-x-[12deg] inline-block text-2xs sm:text-xs">ESCRIBIR "Datos errados"</span>
+                    </div>
+                  </div>
+
+                  <!-- False Branch -->
+                  <div class="flex flex-col items-center space-y-2">
+                    <span class="text-2xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">NO (Falso)</span>
+                    <div class="text-slate-400">↓</div>
+                    <!-- Rectangle: Process -->
+                    <div onclick="highlightSyncedPair('pseudo-calculo')" id="node-calculo" class="flow-node cursor-pointer px-3 py-2 bg-slate-100 text-slate-800 border-2 border-slate-400 font-semibold shadow-xs rounded-md w-full text-center">
+                      <span class="text-2xs sm:text-xs">area ← (base * alt) / 2</span>
+                    </div>
+                    <div class="text-slate-400">↓</div>
+                    <!-- Parallelogram: Output -->
+                    <div onclick="highlightSyncedPair('pseudo-mostrar-area')" id="node-mostrar-area" class="flow-node cursor-pointer px-3 py-2 skew-x-[-12deg] bg-emerald-100 text-emerald-950 border-2 border-emerald-400 font-semibold shadow-xs w-full text-center">
+                      <span class="skew-x-[12deg] inline-block text-2xs sm:text-xs">ESCRIBIR area</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-slate-400 pt-2">↓</div>
+
+                <!-- FIN (Oval) -->
+                <div onclick="highlightSyncedPair('pseudo-fin')" id="node-fin" class="flow-node cursor-pointer px-6 py-2 rounded-full bg-pink-100 text-pink-900 border-2 border-pink-400 font-bold shadow-xs">
+                  FIN
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Symbols Legend -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5">
+            <h4 class="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider mb-3">Leyenda de símbolos estándar</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-4 rounded-full border-2 border-pink-400 bg-pink-100 block shrink-0"></span>
+                <span class="text-slate-700"><strong>Óvalo:</strong> Inicio y Fin</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-4 skew-x-[-12deg] border-2 border-blue-400 bg-blue-100 block shrink-0"></span>
+                <span class="text-slate-700"><strong>Paralelogramo:</strong> Entrada / Salida</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-6 h-4 rounded-none border-2 border-slate-400 bg-slate-100 block shrink-0"></span>
+                <span class="text-slate-700"><strong>Rectángulo:</strong> Proceso / Cálculo</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="w-5 h-5 rotate-45 border-2 border-amber-400 bg-amber-100 block shrink-0 my-0.5"></span>
+                <span class="text-slate-700"><strong>Rombo:</strong> Decisión / Bifurcación</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 8: RETOS FINALES -->
+        <!-- ======================================================== -->
+        <section id="module-8" class="module-content pt-4 space-y-6 hidden">
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Pon a prueba lo aprendido con estos cuatro retos de dificultad gradual. Intenta resolverlos antes de verificar la respuesta.
+          </p>
+
+          <div class="space-y-6">
+
+            <!-- Challenge 1 -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Reto 1 • Predice los valores</span>
+                <span id="challengeStatus1" class="text-xs text-slate-400 font-semibold">Pendiente</span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-700 mb-3">Observa el siguiente bloque de instrucciones de asignación:</p>
+              
+              <div class="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-xs sm:text-sm mb-4">
+                <p>A ← 3</p>
+                <p>B ← 4</p>
+                <p>C ← A + 2 * B</p>
+                <p>C ← C + B</p>
+              </div>
+
+              <p class="text-xs sm:text-sm font-semibold text-slate-800 mb-3">¿Cuánto valen A, B y C al finalizar?</p>
+
+              <div class="space-y-2 mb-4 text-xs sm:text-sm" id="challenge1Options">
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c1" value="w1" class="text-indigo-600">
+                  <span class="font-mono">A = 3, B = 4, C = 11</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c1" value="correct" class="text-indigo-600">
+                  <span class="font-mono">A = 3, B = 4, C = 15</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c1" value="w2" class="text-indigo-600">
+                  <span class="font-mono">A = 7, B = 4, C = 19</span>
+                </label>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button onclick="checkChallenge1()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
+                  Comprobar respuesta
+                </button>
+                <button onclick="toggleHint(1)" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl transition">
+                  💡 Pista
+                </button>
+              </div>
+
+              <div id="hint1" class="hidden mt-3 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs">
+                Pista: La multiplicación (2 * B) se calcula antes que la suma. Luego, el nuevo valor de C se suma con B.
+              </div>
+              <div id="feedback1" class="hidden mt-3 p-3 rounded-xl text-xs sm:text-sm"></div>
+            </div>
+
+            <!-- Challenge 2 -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Reto 2 • Detecta la salida</span>
+                <span id="challengeStatus2" class="text-xs text-slate-400 font-semibold">Pendiente</span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-700 mb-3">Dadas las variables:</p>
+              
+              <div class="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-xs sm:text-sm mb-4">
+                <p>A ← 100</p>
+                <p>B ← 200</p>
+                <p>C ← 300</p>
+              </div>
+
+              <p class="text-xs sm:text-sm font-semibold text-slate-800 mb-3">¿Qué instrucción permite mostrar los tres valores en pantalla al usuario?</p>
+
+              <div class="space-y-2 mb-4 text-xs sm:text-sm">
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c2" value="w1" class="text-indigo-600">
+                  <span class="font-mono">LEER(A, B, C)</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c2" value="correct" class="text-indigo-600">
+                  <span class="font-mono">ESCRIBIR(A, B, C)</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c2" value="w2" class="text-indigo-600">
+                  <span class="font-mono">ASIGNAR(A + B + C)</span>
+                </label>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button onclick="checkChallenge2()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
+                  Comprobar respuesta
+                </button>
+                <button onclick="toggleHint(2)" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl transition">
+                  💡 Pista
+                </button>
+              </div>
+
+              <div id="hint2" class="hidden mt-3 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs">
+                Pista: Recuerda la diferencia entre ingresar datos desde el teclado y presentar resultados finales.
+              </div>
+              <div id="feedback2" class="hidden mt-3 p-3 rounded-xl text-xs sm:text-sm"></div>
+            </div>
+
+            <!-- Challenge 3 -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Reto 3 • Selecciona el camino</span>
+                <span id="challengeStatus3" class="text-xs text-slate-400 font-semibold">Pendiente</span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-700 mb-3">
+                Una persona trabajó <strong>45 horas</strong> en la semana. El contrato estipula que las primeras 40 horas son de jornada ordinaria y todo excedente se considera tiempo extraordinario.
+              </p>
+              <p class="text-xs sm:text-sm font-semibold text-slate-800 mb-3">¿Cuántas horas se pagan como extraordinarias?</p>
+
+              <div class="space-y-2 mb-4 text-xs sm:text-sm">
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c3" value="w1" class="text-indigo-600">
+                  <span>45 horas</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c3" value="correct" class="text-indigo-600">
+                  <span>5 horas</span>
+                </label>
+                <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input type="radio" name="c3" value="w2" class="text-indigo-600">
+                  <span>40 horas</span>
+                </label>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button onclick="checkChallenge3()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
+                  Comprobar respuesta
+                </button>
+                <button onclick="toggleHint(3)" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl transition">
+                  💡 Pista
+                </button>
+              </div>
+
+              <div id="hint3" class="hidden mt-3 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs">
+                Pista: Se evalúa la condición horas &gt; 40. Las horas extras corresponden a la diferencia (horas − 40).
+              </div>
+              <div id="feedback3" class="hidden mt-3 p-3 rounded-xl text-xs sm:text-sm"></div>
+            </div>
+
+            <!-- Challenge 4 -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Reto 4 • Construye la secuencia</span>
+                <span id="challengeStatus4" class="text-xs text-slate-400 font-semibold">Pendiente</span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-700 mb-3">
+                Ordena las siguientes acciones de acuerdo con el esquema natural de Entrada → Proceso → Salida para calcular el área de un triángulo:
+              </p>
+
+              <!-- Reorder buttons list for Challenge 4 -->
+              <ul id="challenge4List" class="space-y-2 mb-4">
+                <!-- Populated dynamically -->
+              </ul>
+
+              <div class="flex items-center space-x-2">
+                <button onclick="checkChallenge4()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition">
+                  Comprobar orden
+                </button>
+                <button onclick="toggleHint(4)" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl transition">
+                  💡 Pista
+                </button>
+              </div>
+
+              <div id="hint4" class="hidden mt-3 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs">
+                Pista: No es posible calcular nada sin tener primero los datos, y no se puede mostrar un resultado antes de haberlo calculado.
+              </div>
+              <div id="feedback4" class="hidden mt-3 p-3 rounded-xl text-xs sm:text-sm"></div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- MODULE 9: RESUMEN Y CIERRE -->
+        <!-- ======================================================== -->
+        <section id="module-9" class="module-content pt-4 space-y-6 hidden">
+          <div class="bg-gradient-to-br from-indigo-50 via-white to-emerald-50 border border-indigo-100 rounded-3xl p-6 sm:p-8 text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-xs">
+              ✓
+            </div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">¡Felicitaciones! Has completado el recorrido</h3>
+            <p class="text-slate-600 text-sm max-w-xl mx-auto mb-6">
+              Ya conoces los principios esenciales que rigen la lógica de programación y la construcción de algoritmos eficaces.
+            </p>
+
+            <!-- Key Takeaways Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-3xl mx-auto mb-8">
+              <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-start space-x-3">
+                <span class="text-indigo-600 font-bold text-lg">•</span>
+                <p class="text-xs sm:text-sm text-slate-700"><strong>Un algoritmo</strong> organiza pasos precisos, definidos y finitos para solucionar un problema.</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-start space-x-3">
+                <span class="text-indigo-600 font-bold text-lg">•</span>
+                <p class="text-xs sm:text-sm text-slate-700"><strong>Toda solución</strong> se articula en torno a Entrada (datos), Proceso (cálculos) y Salida (resultados).</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-start space-x-3">
+                <span class="text-indigo-600 font-bold text-lg">•</span>
+                <p class="text-xs sm:text-sm text-slate-700"><strong>Las variables</strong> guardan valores en memoria y la flecha (<span class="font-mono">←</span>) asigna nueva información.</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-start space-x-3">
+                <span class="text-indigo-600 font-bold text-lg">•</span>
+                <p class="text-xs sm:text-sm text-slate-700"><strong>Las decisiones</strong> evalúan condiciones para bifurcar y elegir el camino de ejecución correcto.</p>
+              </div>
+              <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-start space-x-3 md:col-span-2">
+                <span class="text-indigo-600 font-bold text-lg">•</span>
+                <p class="text-xs sm:text-sm text-slate-700"><strong>Pseudocódigo y Diagramas de flujo</strong> son dos formas equivalentes (textual y gráfica) de representar la misma lógica.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-4">
+              <button onclick="goToModule(1)" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-sm transition">
+                Volver al inicio (Módulo 1)
+              </button>
+              <button onclick="resetEntirePlatform()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition">
+                Reiniciar todo el recorrido
+              </button>
+              <a href="../../../index.html" class="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm rounded-xl border border-slate-200 transition shadow-2xs inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Volver al Repositorio Docente
+              </a>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /* State Tracking */
+    let currentModule = 1;
+    const totalModules = 8; // Modules 1..8 + 9 (Summary)
+    const completedModules = new Set();
+
+    /* Module Headers Dictionary */
+    const moduleHeadings = {
+      1: "¿Qué es un algoritmo?",
+      2: "Fases para resolver un problema",
+      3: "Entrada, proceso y salida",
+      4: "Instrucciones básicas",
+      5: "Simulador de variables",
+      6: "Toma de decisiones",
+      7: "Pseudocódigo y diagrama de flujo",
+      8: "Retos finales",
+      9: "Resumen y Cierre"
+    };
+
+    const toggleMenuBtn = document.getElementById('toggleMenuBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const sidebarNav = document.getElementById('sidebarNav');
+    const mobileDrawerBackdrop = document.getElementById('mobileDrawerBackdrop');
+
+    function openMobileDrawer() {
+      sidebarNav.classList.remove('-translate-x-full');
+      mobileDrawerBackdrop.classList.remove('hidden');
+    }
+
+    function closeMobileDrawer() {
+      sidebarNav.classList.add('-translate-x-full');
+      mobileDrawerBackdrop.classList.add('hidden');
+    }
+
+    toggleMenuBtn.addEventListener('click', openMobileDrawer);
+    closeMenuBtn.addEventListener('click', closeMobileDrawer);
+    mobileDrawerBackdrop.addEventListener('click', closeMobileDrawer);
+
+    function updateNavUI() {
+      // Update heading & badges
+      document.getElementById('currentModuleHeading').textContent = moduleHeadings[currentModule];
+      const badge = document.getElementById('currentModuleBadge');
+      if (currentModule <= 8) {
+        badge.textContent = `Módulo ${currentModule} de 8`;
+      } else {
+        badge.textContent = `Resumen General`;
+      }
+
+      // Hide all modules, show current
+      for (let i = 1; i <= 9; i++) {
+        const sec = document.getElementById(`module-${i}`);
+        if (sec) sec.classList.add('hidden');
+
+        const navBtn = document.getElementById(`nav-btn-${i}`);
+        if (navBtn) {
+          if (i === currentModule) {
+            navBtn.classList.add('bg-indigo-50', 'text-indigo-900', 'font-bold');
+            navBtn.classList.remove('text-slate-700');
+          } else {
+            navBtn.classList.remove('bg-indigo-50', 'text-indigo-900', 'font-bold');
+            navBtn.classList.add('text-slate-700');
+          }
+
+          // Checkmark indicator
+          const statusIcon = navBtn.querySelector('.badge-status');
+          if (statusIcon) {
+            if (completedModules.has(i)) {
+              statusIcon.classList.remove('hidden');
+            } else {
+              statusIcon.classList.add('hidden');
+            }
+          }
+        }
+      }
+
+      const activeSec = document.getElementById(`module-${currentModule}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+
+      // Prev / Next button state
+      document.getElementById('prevModuleBtn').disabled = (currentModule === 1);
+      const nextBtn = document.getElementById('nextModuleBtn');
+      if (currentModule === 9) {
+        nextBtn.innerHTML = `<span>Finalizar</span>`;
+        nextBtn.disabled = true;
+      } else {
+        nextBtn.innerHTML = `<span>Siguiente</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
+        nextBtn.disabled = false;
+      }
+
+      // Progress bar
+      const progressPercent = Math.min(100, Math.round((completedModules.size / totalModules) * 100));
+      document.getElementById('topProgressBar').style.width = `${progressPercent}%`;
+      document.getElementById('topProgressText').textContent = `${progressPercent}%`;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goToModule(modNumber) {
+      currentModule = modNumber;
+      closeMobileDrawer();
+      updateNavUI();
+    }
+
+    function navigateStep(direction) {
+      const next = currentModule + direction;
+      if (next >= 1 && next <= 9) {
+        goToModule(next);
+      }
+    }
+
+    function markModuleCompleted(modNum) {
+      completedModules.add(modNum);
+      updateNavUI();
+    }
+
+    const correctTeaOrder = [
+      "Colocar agua en una taza.",
+      "Añadir una bolsita de té.",
+      "Verter agua caliente.",
+      "Esperar unos minutos.",
+      "Retirar la bolsita y servir."
+    ];
+
+    let currentTeaList = [
+      "Esperar unos minutos.",
+      "Colocar agua en una taza.",
+      "Retirar la bolsita y servir.",
+      "Añadir una bolsita de té.",
+      "Verter agua caliente."
+    ];
+
+    function renderTeaSteps() {
+      const ul = document.getElementById('teaStepsList');
+      ul.innerHTML = '';
+      currentTeaList.forEach((text, idx) => {
+        const li = document.createElement('li');
+        li.className = "flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-2xs hover:border-slate-300";
+        li.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-xs">${idx + 1}</span>
+            <span class="text-xs sm:text-sm font-medium text-slate-800">${text}</span>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="moveTeaStep(${idx}, -1)" class="p-1 rounded hover:bg-slate-100 text-slate-500 disabled:opacity-30" ${idx === 0 ? 'disabled' : ''} title="Subir">▲</button>
+            <button onclick="moveTeaStep(${idx}, 1)" class="p-1 rounded hover:bg-slate-100 text-slate-500 disabled:opacity-30" ${idx === currentTeaList.length - 1 ? 'disabled' : ''} title="Bajar">▼</button>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    function moveTeaStep(index, delta) {
+      const targetIndex = index + delta;
+      if (targetIndex < 0 || targetIndex >= currentTeaList.length) return;
+      const temp = currentTeaList[index];
+      currentTeaList[index] = currentTeaList[targetIndex];
+      currentTeaList[targetIndex] = temp;
+      renderTeaSteps();
+      document.getElementById('teaFeedback').classList.add('hidden');
+    }
+
+    function resetTeaExercise() {
+      currentTeaList = [
+        "Esperar unos minutos.",
+        "Colocar agua en una taza.",
+        "Retirar la bolsita y servir.",
+        "Añadir una bolsita de té.",
+        "Verter agua caliente."
+      ];
+      renderTeaSteps();
+      document.getElementById('teaFeedback').classList.add('hidden');
+    }
+
+    function checkTeaOrder() {
+      const isCorrect = currentTeaList.every((val, i) => val === correctTeaOrder[i]);
+      const feedback = document.getElementById('teaFeedback');
+      feedback.classList.remove('hidden');
+
+      if (isCorrect) {
+        feedback.className = "mt-4 p-4 rounded-xl text-xs sm:text-sm bg-emerald-50 text-emerald-900 border border-emerald-200";
+        feedback.innerHTML = `
+          <div class="font-bold mb-1">✅ ¡Excelente! El orden es correcto.</div>
+          <p>Has definido una secuencia finita y precisa que cumple el objetivo sin ambigüedades.</p>
+        `;
+        markModuleCompleted(1);
+      } else {
+        feedback.className = "mt-4 p-4 rounded-xl text-xs sm:text-sm bg-amber-50 text-amber-900 border border-amber-200";
+        feedback.innerHTML = `
+          <div class="font-bold mb-1">⚠️ El orden todavía no es el adecuado.</div>
+          <p>Recuerda el orden lógico: primero preparas los elementos en la taza, luego viertes el agua caliente, esperas la infusión y finalmente retiras la bolsita para servir. ¡Inténtalo de nuevo!</p>
+        `;
+      }
+    }
+
+    function toggleTeaExplanation() {
+      const box = document.getElementById('teaExplanation');
+      const btn = document.getElementById('teaExplBtn');
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        btn.textContent = "Ocultar explicación";
+      } else {
+        box.classList.add('hidden');
+        btn.textContent = "Ver explicación";
+      }
+    }
+
+    const phasesData = [
+      { id: 1, title: "Análisis", fullTitle: "Análisis del problema", desc: "Definir qué se necesita resolver, qué datos hay y qué resultado se espera." },
+      { id: 2, title: "Diseño", fullTitle: "Diseño del algoritmo", desc: "Organizar los pasos para resolver el problema." },
+      { id: 3, title: "Codificación", fullTitle: "Codificación", desc: "Escribir la solución usando un lenguaje de programación." },
+      { id: 4, title: "Ejecución", fullTitle: "Ejecución y verificación", desc: "Ejecutar el programa y comprobar el resultado." },
+      { id: 5, title: "Depuración", fullTitle: "Depuración", desc: "Encontrar y corregir errores." },
+      { id: 6, title: "Mantenimiento", fullTitle: "Mantenimiento", desc: "Actualizar el programa cuando cambian las necesidades." },
+      { id: 7, title: "Documentación", fullTitle: "Documentación", desc: "Dejar explicaciones y referencias útiles sobre la solución." }
+    ];
+
+    function renderPhasesButtons() {
+      const container = document.getElementById('phasesButtonsContainer');
+      container.innerHTML = '';
+      phasesData.forEach((phase) => {
+        const btn = document.createElement('button');
+        btn.className = `phase-btn p-2 rounded-xl text-xs font-semibold border transition text-center flex flex-col items-center justify-center ${phase.id === 1 ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`;
+        btn.innerHTML = `
+          <span class="opacity-70 text-2xs mb-0.5">Paso ${phase.id}</span>
+          <span class="truncate w-full">${phase.title}</span>
+        `;
+        btn.onclick = () => selectPhase(phase.id);
+        btn.id = `phase-step-btn-${phase.id}`;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectPhase(phaseId) {
+      const p = phasesData.find(x => x.id === phaseId);
+      if (!p) return;
+      document.getElementById('phaseDetailNumber').textContent = p.id;
+      document.getElementById('phaseDetailTitle').textContent = p.fullTitle;
+      document.getElementById('phaseDetailDesc').textContent = p.desc;
+
+      phasesData.forEach(item => {
+        const btn = document.getElementById(`phase-step-btn-${item.id}`);
+        if (item.id === phaseId) {
+          btn.className = "phase-btn p-2 rounded-xl text-xs font-semibold border border-indigo-600 bg-indigo-600 text-white shadow-sm text-center flex flex-col items-center justify-center";
+        } else {
+          btn.className = "phase-btn p-2 rounded-xl text-xs font-semibold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-center flex flex-col items-center justify-center";
+        }
+      });
+    }
+
+    const phaseSituations = [
+      {
+        text: "“Aún no sabemos qué datos debe ingresar el usuario.”",
+        correct: "Análisis",
+        options: ["Análisis", "Codificación", "Depuración", "Mantenimiento"],
+        explanation: "En la fase de Análisis se determina con claridad qué información de entrada se requiere y qué se espera obtener."
+      },
+      {
+        text: "“El programa entrega un resultado equivocado y buscamos el error.”",
+        correct: "Depuración",
+        options: ["Diseño", "Depuración", "Documentación", "Ejecución"],
+        explanation: "La Depuración es la tarea específica de localizar, aislar y corregir fallos o errores lógicos."
+      },
+      {
+        text: "“El programa debe modificarse porque cambiaron las necesidades.”",
+        correct: "Mantenimiento",
+        options: ["Análisis", "Codificación", "Mantenimiento", "Diseño"],
+        explanation: "El Mantenimiento consiste en actualizar y adaptar el programa a nuevas reglas o cambios futuros."
+      }
+    ];
+
+    let currentSituationIndex = 0;
+
+    function renderCurrentSituation() {
+      const sit = phaseSituations[currentSituationIndex];
+      document.getElementById('situationsProgress').textContent = `Situación ${currentSituationIndex + 1} de ${phaseSituations.length}`;
+      document.getElementById('situationText').textContent = sit.text;
+      document.getElementById('situationFeedback').classList.add('hidden');
+      document.getElementById('situationNextBtn').classList.add('hidden');
+
+      const optContainer = document.getElementById('situationOptions');
+      optContainer.innerHTML = '';
+      sit.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "py-2.5 px-3 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-xs font-semibold text-slate-700 transition text-left";
+        btn.textContent = opt;
+        btn.onclick = () => checkSituationAnswer(opt);
+        optContainer.appendChild(btn);
+      });
+    }
+
+    function checkSituationAnswer(selectedOption) {
+      const sit = phaseSituations[currentSituationIndex];
+      const feedback = document.getElementById('situationFeedback');
+      feedback.classList.remove('hidden');
+
+      if (selectedOption === sit.correct) {
+        feedback.className = "p-3 rounded-xl text-xs sm:text-sm bg-emerald-50 text-emerald-900 border border-emerald-200";
+        feedback.innerHTML = `<strong>¡Correcto!</strong> ${sit.explanation}`;
+        document.getElementById('situationNextBtn').classList.remove('hidden');
+
+        if (currentSituationIndex === phaseSituations.length - 1) {
+          markModuleCompleted(2);
+        }
+      } else {
+        feedback.className = "p-3 rounded-xl text-xs sm:text-sm bg-red-50 text-red-900 border border-red-200";
+        feedback.innerHTML = `<strong>No exactamente.</strong> Intenta reflexionar de nuevo en qué fase encaja mejor esta actividad.`;
+      }
+    }
+
+    function nextSituation() {
+      if (currentSituationIndex < phaseSituations.length - 1) {
+        currentSituationIndex++;
+        renderCurrentSituation();
+      } else {
+        currentSituationIndex = 0;
+        renderCurrentSituation();
+      }
+    }
+
+    function calculateTriangleArea() {
+      const baseInput = document.getElementById('triangleBase');
+      const heightInput = document.getElementById('triangleHeight');
+      const errorDiv = document.getElementById('triangleError');
+      const resultBox = document.getElementById('triangleStepsResult');
+
+      const b = parseFloat(baseInput.value);
+      const h = parseFloat(heightInput.value);
+
+      if (isNaN(b) || isNaN(h)) {
+        errorDiv.textContent = "Por favor, ingresa números válidos para la base y la altura.";
+        errorDiv.classList.remove('hidden');
+        resultBox.classList.add('opacity-40');
+        return;
+      }
+
+      if (b < 0 || h < 0) {
+        errorDiv.textContent = "Datos errados: ingresa valores iguales o mayores que cero.";
+        errorDiv.classList.remove('hidden');
+        resultBox.classList.add('opacity-40');
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+      resultBox.classList.remove('opacity-40');
+
+      const area = (b * h) / 2;
+      document.getElementById('tStep1').textContent = `1. Entrada: base = ${b}, altura = ${h}`;
+      document.getElementById('tStep2').textContent = `2. Proceso: área = (${b} × ${h}) / 2 = ${b * h} / 2`;
+      document.getElementById('tStep3').textContent = `3. Salida: área = ${area}`;
+
+      markModuleCompleted(3);
+    }
+
+    function resetTriangleCalculator() {
+      document.getElementById('triangleBase').value = "6";
+      document.getElementById('triangleHeight').value = "4";
+      document.getElementById('triangleError').classList.add('hidden');
+      calculateTriangleArea();
+    }
+
+    const instructionQuizzes = [
+      {
+        snippet: "total ← precio * cantidad",
+        type: "Asignación",
+        explanation: "Utiliza la flecha (←) para almacenar el resultado de un cálculo matemático en la variable 'total'."
+      },
+      {
+        snippet: "LEER(numero1, numero2)",
+        type: "Lectura",
+        explanation: "La instrucción 'LEER' solicita e ingresa datos provenientes del usuario para utilizarlos en el algoritmo."
+      },
+      {
+        snippet: "SI promedio >= 11 ENTONCES...",
+        type: "Bifurcación",
+        explanation: "La palabra 'SI' evalúa una condición lógica para bifurcar el flujo de ejecución en dos posibles rutas."
+      },
+      {
+        snippet: "ESCRIBIR(\"El resultado es:\", resultado)",
+        type: "Escritura",
+        explanation: "La instrucción 'ESCRIBIR' proyecta o comunica un mensaje o valor de salida hacia el usuario."
+      }
+    ];
+
+    let currentInstIndex = 0;
+
+    function renderCurrentInstructionQuiz() {
+      const q = instructionQuizzes[currentInstIndex];
+      document.getElementById('instructionQuizCount').textContent = `${currentInstIndex + 1} de ${instructionQuizzes.length}`;
+      document.getElementById('instructionSnippet').textContent = q.snippet;
+      document.getElementById('instructionFeedback').classList.add('hidden');
+      document.getElementById('instructionNextBtn').classList.add('hidden');
+    }
+
+    function classifyInstruction(chosenType) {
+      const q = instructionQuizzes[currentInstIndex];
+      const feedback = document.getElementById('instructionFeedback');
+      feedback.classList.remove('hidden');
+
+      if (chosenType === q.type) {
+        feedback.className = "p-3 rounded-xl text-xs sm:text-sm bg-emerald-50 text-emerald-900 border border-emerald-200";
+        feedback.innerHTML = `<strong>¡Correcto! Es una instrucción de ${q.type}.</strong> ${q.explanation}`;
+        document.getElementById('instructionNextBtn').classList.remove('hidden');
+
+        if (currentInstIndex === instructionQuizzes.length - 1) {
+          markModuleCompleted(4);
+        }
+      } else {
+        feedback.className = "p-3 rounded-xl text-xs sm:text-sm bg-red-50 text-red-900 border border-red-200";
+        feedback.innerHTML = `<strong>Incorrecto.</strong> Analiza la acción: ¿guarda un cálculo (←), recibe datos (LEER), muestra resultados (ESCRIBIR) o decide según condición (SI)?`;
+      }
+    }
+
+    function nextInstructionQuiz() {
+      if (currentInstIndex < instructionQuizzes.length - 1) {
+        currentInstIndex++;
+        renderCurrentInstructionQuiz();
+      } else {
+        currentInstIndex = 0;
+        renderCurrentInstructionQuiz();
+      }
+    }
+
+    let simStep = 0;
+    let initialAVal = 10;
+    let initialBVal = 20;
+
+    const simHistory = [
+      { step: 0, a: "-", b: "-", aux: "-", line: 0, expl: "Presiona 'Siguiente' para comenzar la ejecución paso a paso.", labelA: "Sin inicializar", labelB: "Sin inicializar", labelAux: "Vacía" },
+      { step: 1, a: 10, b: "-", aux: "-", line: 1, expl: "Paso 1: Asignamos el valor 10 a la variable A. La memoria de A ahora guarda 10.", labelA: "Valor asignado", labelB: "Sin inicializar", labelAux: "Vacía" },
+      { step: 2, a: 10, b: 20, aux: "-", line: 2, expl: "Paso 2: Asignamos el valor 20 a la variable B. La memoria de B ahora guarda 20.", labelA: "Conserva 10", labelB: "Valor asignado", labelAux: "Vacía" },
+      { step: 3, a: 10, b: 20, aux: 10, line: 3, expl: "Paso 3 (AUX ← A): Se copia el valor de A (10) en AUX para respaldarlo de forma segura.", labelA: "Conserva 10", labelB: "Conserva 20", labelAux: "Copia de A (10)" },
+      { step: 4, a: 20, b: 20, aux: 10, line: 4, expl: "Paso 4 (A ← B): El valor de B (20) se guarda en A. En este momento ambas valen 20, pero el valor original de A no se perdió gracias a AUX.", labelA: "Recibe valor de B (20)", labelB: "Conserva 20", labelAux: "Respaldo (10)" },
+      { step: 5, a: 20, b: 10, aux: 10, line: 5, expl: "Paso 5 (B ← AUX): El valor respaldado en AUX (10) se guarda en B. ¡El intercambio se ha completado!", labelA: "A = 20", labelB: "B = 10", labelAux: "AUX = 10" }
+    ];
+
+    function applyNewSimulatorValues() {
+      const a = parseInt(document.getElementById('initialA').value, 10);
+      const b = parseInt(document.getElementById('initialB').value, 10);
+
+      initialAVal = isNaN(a) ? 10 : a;
+      initialBVal = isNaN(b) ? 20 : b;
+
+      // Update static labels in code list
+      document.querySelectorAll('.val-a-init').forEach(el => el.textContent = initialAVal);
+      document.querySelectorAll('.val-b-init').forEach(el => el.textContent = initialBVal);
+
+      // Rebuild history table with new values
+      simHistory[1].a = initialAVal;
+      simHistory[1].expl = `Paso 1: Asignamos el valor ${initialAVal} a la variable A.`;
+      
+      simHistory[2].a = initialAVal;
+      simHistory[2].b = initialBVal;
+      simHistory[2].expl = `Paso 2: Asignamos el valor ${initialBVal} a la variable B.`;
+
+      simHistory[3].a = initialAVal;
+      simHistory[3].b = initialBVal;
+      simHistory[3].aux = initialAVal;
+      simHistory[3].expl = `Paso 3 (AUX ← A): Se copia el valor de A (${initialAVal}) en AUX.`;
+      simHistory[3].labelAux = `Copia de A (${initialAVal})`;
+
+      simHistory[4].a = initialBVal;
+      simHistory[4].b = initialBVal;
+      simHistory[4].aux = initialAVal;
+      simHistory[4].expl = `Paso 4 (A ← B): Se asigna el valor de B (${initialBVal}) a la variable A.`;
+      simHistory[4].labelA = `Recibe valor de B (${initialBVal})`;
+
+      simHistory[5].a = initialBVal;
+      simHistory[5].b = initialAVal;
+      simHistory[5].aux = initialAVal;
+      simHistory[5].expl = `Paso 5 (B ← AUX): El valor de AUX (${initialAVal}) se guarda en B. ¡Intercambio exitoso!`;
+      simHistory[5].labelA = `A = ${initialBVal}`;
+      simHistory[5].labelB = `B = ${initialAVal}`;
+      simHistory[5].labelAux = `AUX = ${initialAVal}`;
+
+      document.getElementById('simFinalFormula').textContent = `A = ${initialBVal}, B = ${initialAVal}, AUX = ${initialAVal}`;
+
+      simReset();
+    }
+
+    function renderSimulatorUI() {
+      const state = simHistory[simStep];
+
+      // Update memory displays
+      document.getElementById('displayVarA').textContent = state.a;
+      document.getElementById('displayVarB').textContent = state.b;
+      document.getElementById('displayVarAux').textContent = state.aux;
+
+      document.getElementById('labelVarA').textContent = state.labelA;
+      document.getElementById('labelVarB').textContent = state.labelB;
+      document.getElementById('labelVarAux').textContent = state.labelAux;
+
+      document.getElementById('simulatorExplanation').textContent = state.expl;
+
+      // Highlight active code line
+      for (let i = 1; i <= 5; i++) {
+        const line = document.getElementById(`sim-line-${i}`);
+        if (i === state.line) {
+          line.className = "p-2 rounded-lg bg-indigo-600/30 border border-indigo-400 text-white font-bold transition-all";
+        } else {
+          line.className = "p-2 rounded-lg border border-transparent transition-all flex items-center justify-between text-slate-300";
+        }
+      }
+
+      // Buttons state
+      document.getElementById('simPrevBtn').disabled = (simStep === 0);
+      document.getElementById('simNextBtn').disabled = (simStep === 5);
+
+      const finalState = document.getElementById('simFinalState');
+      if (simStep === 5) {
+        finalState.classList.remove('hidden');
+        markModuleCompleted(5);
+      } else {
+        finalState.classList.add('hidden');
+      }
+    }
+
+    function simStepNext() {
+      if (simStep < 5) {
+        simStep++;
+        renderSimulatorUI();
+      }
+    }
+
+    function simStepPrev() {
+      if (simStep > 0) {
+        simStep--;
+        renderSimulatorUI();
+      }
+    }
+
+    function simReset() {
+      simStep = 0;
+      renderSimulatorUI();
+    }
+
+    function simRunAll() {
+      simStep = 5;
+      renderSimulatorUI();
+    }
+
+    function switchDecisionTab(tab) {
+      const ageCase = document.getElementById('decisionCaseAge');
+      const salaryCase = document.getElementById('decisionCaseSalary');
+      const tabAge = document.getElementById('tabDecAge');
+      const tabSalary = document.getElementById('tabDecSalary');
+
+      if (tab === 'age') {
+        ageCase.classList.remove('hidden');
+        salaryCase.classList.add('hidden');
+        tabAge.className = "py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 border-indigo-600 text-indigo-700 transition";
+        tabSalary.className = "py-2.5 px-4 font-semibold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition";
+      } else {
+        salaryCase.classList.remove('hidden');
+        ageCase.classList.add('hidden');
+        tabSalary.className = "py-2.5 px-4 font-bold text-xs sm:text-sm border-b-2 border-indigo-600 text-indigo-700 transition";
+        tabAge.className = "py-2.5 px-4 font-semibold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition";
+      }
+    }
+
+    function evaluateAges() {
+      const age1 = parseFloat(document.getElementById('inputAge1').value);
+      const age2 = parseFloat(document.getElementById('inputAge2').value);
+      const errBox = document.getElementById('ageError');
+      const resultBox = document.getElementById('ageResultBox');
+
+      if (isNaN(age1) || isNaN(age2) || age1 < 0 || age2 < 0) {
+        errBox.textContent = "Datos errados: ingresa valores de edad válidos e iguales o mayores a 0.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+      errBox.classList.add('hidden');
+
+      // Reset branch styles
+      ['branchAge1', 'branchAge2', 'branchAgeEqual'].forEach(id => {
+        const el = document.getElementById(id);
+        el.className = "p-3.5 rounded-xl border border-slate-200 bg-slate-50 transition-all";
+      });
+      document.getElementById('badgeBranch1').textContent = "Falso";
+      document.getElementById('badgeBranch1').className = "mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-slate-200 text-slate-600";
+      document.getElementById('badgeBranch2').textContent = "Falso";
+      document.getElementById('badgeBranch2').className = "mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-slate-200 text-slate-600";
+      document.getElementById('badgeBranch3').textContent = "Falso";
+      document.getElementById('badgeBranch3').className = "mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-slate-200 text-slate-600";
+
+      if (age1 > age2) {
+        const active = document.getElementById('branchAge1');
+        active.className = "p-3.5 rounded-xl border-2 border-indigo-500 bg-indigo-50/70 shadow-sm transition-all";
+        const badge = document.getElementById('badgeBranch1');
+        badge.textContent = "Verdadero (Camino elegido)";
+        badge.className = "mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-indigo-600 text-white";
+
+        resultBox.innerHTML = `
+          <p class="font-bold text-indigo-950">Condición cumplida: Edad1 (${age1}) > Edad2 (${age2})</p>
+          <p class="mt-1">Resultado del algoritmo: <strong>"La primera persona tiene mayor edad"</strong>.</p>
+        `;
+      } else if (age2 > age1) {
+        const active = document.getElementById('branchAge2');
+        active.className = "p-3.5 rounded-xl border-2 border-indigo-500 bg-indigo-50/70 shadow-sm transition-all";
+        const badge = document.getElementById('badgeBranch2');
+        badge.textContent = "Verdadero (Camino elegido)";
+        badge.className = "mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-indigo-600 text-white";
+
+        resultBox.innerHTML = `
+          <p class="font-bold text-indigo-950">Condición cumplida: Edad2 (${age2}) > Edad1 (${age1})</p>
+          <p class="mt-1">Resultado del algoritmo: <strong>"La segunda persona tiene mayor edad"</strong>.</p>
+        `;
+      } else {
+        const active = document.getElementById('branchAgeEqual');
+        active.className = "p-3.5 rounded-xl border-2 border-indigo-500 bg-indigo-50/70 shadow-sm transition-all";
+        const badge = document.getElementById('badgeBranch3');
+        badge.textContent = "Verdadero (Camino elegido)";
+        badge.className = "mt-2 inline-block px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wider bg-indigo-600 text-white";
+
+        resultBox.innerHTML = `
+          <p class="font-bold text-indigo-950">Condición cumplida: Edad1 (${age1}) == Edad2 (${age2})</p>
+          <p class="mt-1">Resultado del algoritmo: <strong>"Ambas personas tienen la misma edad"</strong>.</p>
+        `;
+      }
+
+      markModuleCompleted(6);
+    }
+
+    function calculateWeeklySalary() {
+      const hours = parseFloat(document.getElementById('inputHours').value);
+      const rate = parseFloat(document.getElementById('inputRate').value);
+      const errBox = document.getElementById('salaryError');
+      const resultBox = document.getElementById('salaryResultBox');
+
+      if (isNaN(hours) || isNaN(rate) || hours < 0 || rate < 0) {
+        errBox.textContent = "Datos errados: las horas trabajadas y el precio por hora deben ser números iguales o mayores a 0.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+      errBox.classList.add('hidden');
+
+      const normalBranch = document.getElementById('branchSalaryNormal');
+      const extraBranch = document.getElementById('branchSalaryExtra');
+      const badgeNormal = document.getElementById('badgeSalaryNormal');
+      const badgeExtra = document.getElementById('badgeSalaryExtra');
+
+      if (hours <= 40) {
+        const total = hours * rate;
+        normalBranch.className = "p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50/70 shadow-sm transition-all";
+        extraBranch.className = "p-4 rounded-xl border border-slate-200 bg-slate-50 opacity-50 transition-all";
+        badgeNormal.textContent = "Cumplida";
+        badgeNormal.className = "px-2 py-0.5 rounded text-2xs font-bold uppercase bg-emerald-600 text-white";
+        badgeExtra.textContent = "Inactiva";
+        badgeExtra.className = "px-2 py-0.5 rounded text-2xs font-bold uppercase bg-slate-200 text-slate-600";
+
+        resultBox.innerHTML = `
+          <p class="font-bold text-emerald-950">Condición: horas (${hours}) ≤ 40</p>
+          <p class="mt-1 text-xs">Cálculo simple directo: ${hours} horas × $${rate}/h</p>
+          <p class="mt-1 text-base font-extrabold text-emerald-800">Salario total = $${total.toFixed(2)}</p>
+        `;
+      } else {
+        const basePay = 40 * rate;
+        const extraHours = hours - 40;
+        const overtimeRate = rate * 1.5;
+        const extraPay = extraHours * overtimeRate;
+        const total = basePay + extraPay;
+
+        extraBranch.className = "p-4 rounded-xl border-2 border-indigo-500 bg-indigo-50/70 shadow-sm transition-all";
+        normalBranch.className = "p-4 rounded-xl border border-slate-200 bg-slate-50 opacity-50 transition-all";
+        badgeExtra.textContent = "Cumplida";
+        badgeExtra.className = "px-2 py-0.5 rounded text-2xs font-bold uppercase bg-indigo-600 text-white";
+        badgeNormal.textContent = "Inactiva";
+        badgeNormal.className = "px-2 py-0.5 rounded text-2xs font-bold uppercase bg-slate-200 text-slate-600";
+
+        resultBox.innerHTML = `
+          <p class="font-bold text-indigo-950">Condición: horas (${hours}) > 40</p>
+          <div class="mt-1 space-y-1 text-xs font-mono text-slate-700 bg-white p-2.5 rounded-lg border border-indigo-100">
+            <p>• Pago ordinario (40 horas × $${rate}): $${basePay.toFixed(2)}</p>
+            <p>• Horas extras (${hours} − 40 = ${extraHours} h al 1.5 × $${rate} = $${overtimeRate.toFixed(2)}/h): $${extraPay.toFixed(2)}</p>
+          </div>
+          <p class="mt-2 text-base font-extrabold text-indigo-800">Salario total semanal = $${total.toFixed(2)}</p>
+        `;
+      }
+
+      markModuleCompleted(6);
+    }
+
+    const mappingPairs = {
+      'node-inicio': 'pseudo-inicio',
+      'pseudo-inicio': 'node-inicio',
+
+      'node-leer-base': 'pseudo-leer-base',
+      'pseudo-leer-base': 'node-leer-base',
+
+      'node-leer-alt': 'pseudo-leer-alt',
+      'pseudo-leer-alt': 'node-leer-alt',
+
+      'node-decision': 'pseudo-decision',
+      'pseudo-decision': 'node-decision',
+      'pseudo-sino': 'node-decision',
+      'pseudo-finsi': 'node-decision',
+
+      'node-errados': 'pseudo-errados',
+      'pseudo-errados': 'node-errados',
+
+      'node-calculo': 'pseudo-calculo',
+      'pseudo-calculo': 'node-calculo',
+
+      'node-mostrar-area': 'pseudo-mostrar-area',
+      'pseudo-mostrar-area': 'node-mostrar-area',
+
+      'node-fin': 'pseudo-fin',
+      'pseudo-fin': 'node-fin'
+    };
+
+    function highlightSyncedPair(targetId) {
+      // Clear previous highlights
+      document.querySelectorAll('#pseudocodeContainer > div').forEach(el => {
+        el.classList.remove('bg-indigo-600', 'text-white', 'font-bold');
+      });
+      document.querySelectorAll('.flow-node').forEach(el => {
+        el.classList.remove('active-highlight');
+      });
+
+      // Highlight target and its pair
+      const otherId = mappingPairs[targetId];
+
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        if (targetId.startsWith('pseudo')) {
+          targetEl.classList.add('bg-indigo-600', 'text-white', 'font-bold');
+        } else {
+          targetEl.classList.add('active-highlight');
+        }
+      }
+
+      if (otherId) {
+        const otherEl = document.getElementById(otherId);
+        if (otherEl) {
+          if (otherId.startsWith('pseudo')) {
+            otherEl.classList.add('bg-indigo-600', 'text-white', 'font-bold');
+          } else {
+            otherEl.classList.add('active-highlight');
+          }
+        }
+      }
+
+      markModuleCompleted(7);
+    }
+
+    function toggleHint(challengeNum) {
+      const hint = document.getElementById(`hint${challengeNum}`);
+      hint.classList.toggle('hidden');
+    }
+
+    function checkChallenge1() {
+      const selected = document.querySelector('input[name="c1"]:checked');
+      const fb = document.getElementById('feedback1');
+      const status = document.getElementById('challengeStatus1');
+      fb.classList.remove('hidden');
+
+      if (!selected) {
+        fb.className = "mt-3 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs";
+        fb.textContent = "Por favor, selecciona una opción antes de comprobar.";
+        return;
+      }
+
+      if (selected.value === 'correct') {
+        fb.className = "mt-3 p-3 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>¡Excelente! Respuesta correcta: A = 3, B = 4, C = 15.</strong><br>Explicación: primero C = 3 + (2 × 4) = 3 + 8 = 11. Luego, C = 11 + 4 = 15.`;
+        status.textContent = "Superado ✓";
+        status.className = "text-xs text-emerald-600 font-bold";
+        checkAllChallengesPassed();
+      } else {
+        fb.className = "mt-3 p-3 bg-red-50 text-red-900 border border-red-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>Respuesta incorrecta.</strong> Observa con atención el orden de las operaciones: primero se realiza la multiplicación 2 * B, y en el paso siguiente C actualiza su propio valor sumándole B.`;
+        status.textContent = "Intentar de nuevo";
+        status.className = "text-xs text-red-500 font-semibold";
+      }
+    }
+
+    function checkChallenge2() {
+      const selected = document.querySelector('input[name="c2"]:checked');
+      const fb = document.getElementById('feedback2');
+      const status = document.getElementById('challengeStatus2');
+      fb.classList.remove('hidden');
+
+      if (!selected) {
+        fb.className = "mt-3 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs";
+        fb.textContent = "Por favor, selecciona una opción antes de comprobar.";
+        return;
+      }
+
+      if (selected.value === 'correct') {
+        fb.className = "mt-3 p-3 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>¡Correcto! ESCRIBIR(A, B, C).</strong><br>La instrucción de escritura envía los valores calculados hacia el monitor o pantalla del usuario.`;
+        status.textContent = "Superado ✓";
+        status.className = "text-xs text-emerald-600 font-bold";
+        checkAllChallengesPassed();
+      } else {
+        fb.className = "mt-3 p-3 bg-red-50 text-red-900 border border-red-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>Incorrecto.</strong> LEER sirve para recibir datos del exterior, no para mostrarlos. Inténtalo de nuevo.`;
+        status.textContent = "Intentar de nuevo";
+        status.className = "text-xs text-red-500 font-semibold";
+      }
+    }
+
+    function checkChallenge3() {
+      const selected = document.querySelector('input[name="c3"]:checked');
+      const fb = document.getElementById('feedback3');
+      const status = document.getElementById('challengeStatus3');
+      fb.classList.remove('hidden');
+
+      if (!selected) {
+        fb.className = "mt-3 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs";
+        fb.textContent = "Por favor, selecciona una opción antes de comprobar.";
+        return;
+      }
+
+      if (selected.value === 'correct') {
+        fb.className = "mt-3 p-3 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>¡Correcto! 5 horas.</strong><br>Explicación: las primeras 40 son ordinarias; las horas adicionales extraordinarias son 45 − 40 = 5.`;
+        status.textContent = "Superado ✓";
+        status.className = "text-xs text-emerald-600 font-bold";
+        checkAllChallengesPassed();
+      } else {
+        fb.className = "mt-3 p-3 bg-red-50 text-red-900 border border-red-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>Incorrecto.</strong> Solo el excedente por encima de las 40 horas ordinarias se cuenta como tiempo extraordinario.`;
+        status.textContent = "Intentar de nuevo";
+        status.className = "text-xs text-red-500 font-semibold";
+      }
+    }
+
+    /* Challenge 4 Ordering logic */
+    const correctChallenge4Order = [
+      "Leer base y altura.",
+      "Calcular área = (base × altura) / 2.",
+      "Mostrar el área."
+    ];
+
+    let currentChallenge4Order = [
+      "Mostrar el área.",
+      "Leer base y altura.",
+      "Calcular área = (base × altura) / 2."
+    ];
+
+    function renderChallenge4Steps() {
+      const ul = document.getElementById('challenge4List');
+      ul.innerHTML = '';
+      currentChallenge4Order.forEach((stepText, idx) => {
+        const li = document.createElement('li');
+        li.className = "flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800";
+        li.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="w-5 h-5 rounded bg-indigo-100 text-indigo-800 font-bold flex items-center justify-center text-xs">${idx + 1}</span>
+            <span>${stepText}</span>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="moveChallenge4Step(${idx}, -1)" class="p-1 text-slate-500 hover:bg-slate-200 rounded" ${idx === 0 ? 'disabled' : ''}>▲</button>
+            <button onclick="moveChallenge4Step(${idx}, 1)" class="p-1 text-slate-500 hover:bg-slate-200 rounded" ${idx === currentChallenge4Order.length - 1 ? 'disabled' : ''}>▼</button>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    function moveChallenge4Step(idx, delta) {
+      const target = idx + delta;
+      if (target < 0 || target >= currentChallenge4Order.length) return;
+      const tmp = currentChallenge4Order[idx];
+      currentChallenge4Order[idx] = currentChallenge4Order[target];
+      currentChallenge4Order[target] = tmp;
+      renderChallenge4Steps();
+      document.getElementById('feedback4').classList.add('hidden');
+    }
+
+    function checkChallenge4() {
+      const isCorrect = currentChallenge4Order.every((val, i) => val === correctChallenge4Order[i]);
+      const fb = document.getElementById('feedback4');
+      const status = document.getElementById('challengeStatus4');
+      fb.classList.remove('hidden');
+
+      if (isCorrect) {
+        fb.className = "mt-3 p-3 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>¡Perfecto! Secuencia correcta.</strong><br>Primero se leen los datos (Entrada), luego se calcula la fórmula (Proceso) y finalmente se muestra el resultado (Salida).`;
+        status.textContent = "Superado ✓";
+        status.className = "text-xs text-emerald-600 font-bold";
+        checkAllChallengesPassed();
+      } else {
+        fb.className = "mt-3 p-3 bg-red-50 text-red-900 border border-red-200 rounded-xl text-xs sm:text-sm";
+        fb.innerHTML = `<strong>Secuencia equivocada.</strong> Sigue el flujo natural: Entrada → Proceso → Salida. Utiliza las flechas para reordenar.`;
+        status.textContent = "Intentar de nuevo";
+        status.className = "text-xs text-red-500 font-semibold";
+      }
+    }
+
+    function checkAllChallengesPassed() {
+      const s1 = document.getElementById('challengeStatus1').textContent.includes('Superado');
+      const s2 = document.getElementById('challengeStatus2').textContent.includes('Superado');
+      const s3 = document.getElementById('challengeStatus3').textContent.includes('Superado');
+      const s4 = document.getElementById('challengeStatus4').textContent.includes('Superado');
+
+      if (s1 && s2 && s3 && s4) {
+        markModuleCompleted(8);
+      }
+    }
+
+    function resetEntirePlatform() {
+      completedModules.clear();
+      currentModule = 1;
+
+      // Reset Module 1
+      resetTeaExercise();
+      document.getElementById('teaExplanation').classList.add('hidden');
+      document.getElementById('teaExplBtn').textContent = "Ver explicación";
+
+      // Reset Module 2
+      currentSituationIndex = 0;
+      selectPhase(1);
+      renderCurrentSituation();
+
+      // Reset Module 3
+      resetTriangleCalculator();
+
+      // Reset Module 4
+      currentInstIndex = 0;
+      renderCurrentInstructionQuiz();
+
+      // Reset Module 5
+      document.getElementById('initialA').value = "10";
+      document.getElementById('initialB').value = "20";
+      applyNewSimulatorValues();
+
+      // Reset Module 6
+      document.getElementById('inputAge1').value = "25";
+      document.getElementById('inputAge2').value = "19";
+      document.getElementById('inputHours').value = "45";
+      document.getElementById('inputRate').value = "10";
+      switchDecisionTab('age');
+      evaluateAges();
+      calculateWeeklySalary();
+
+      // Reset Module 7
+      highlightSyncedPair('node-inicio');
+
+      // Reset Module 8
+      document.querySelectorAll('input[name="c1"]').forEach(i => i.checked = false);
+      document.querySelectorAll('input[name="c2"]').forEach(i => i.checked = false);
+      document.querySelectorAll('input[name="c3"]').forEach(i => i.checked = false);
+      ['feedback1', 'feedback2', 'feedback3', 'feedback4', 'hint1', 'hint2', 'hint3', 'hint4'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      ['challengeStatus1', 'challengeStatus2', 'challengeStatus3', 'challengeStatus4'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = "Pendiente";
+        el.className = "text-xs text-slate-400 font-semibold";
+      });
+      currentChallenge4Order = [
+        "Mostrar el área.",
+        "Leer base y altura.",
+        "Calcular área = (base × altura) / 2."
+      ];
+      renderChallenge4Steps();
+
+      updateNavUI();
+    }
+
+    window.onload = function() {
+      renderTeaSteps();
+      renderPhasesButtons();
+      renderCurrentSituation();
+      calculateTriangleArea();
+      renderCurrentInstructionQuiz();
+      renderSimulatorUI();
+      evaluateAges();
+      calculateWeeklySalary();
+      renderChallenge4Steps();
+      updateNavUI();
+    };
+  </script>
+</body>
+</html>
