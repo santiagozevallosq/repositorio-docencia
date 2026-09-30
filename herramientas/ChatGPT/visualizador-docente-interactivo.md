@@ -1,6 +1,6 @@
 ---
 name: visualizador-docente-interactivo
-description: Use when el usuario wants to discuss, design, build, or publish an interactive teaching resource from a specific concept, section, example, formula, chart, process, or exercise in teaching materials.
+description: "Activar cuando el usuario quiera conversar, diseñar, construir o publicar un recurso docente interactivo a partir de un concepto, sección, ejemplo, fórmula, gráfico, proceso o ejercicio de los materiales de clase."
 ---
 
 # Visualizador Docente Interactivo
@@ -9,9 +9,9 @@ Convierte una idea docente concreta en una experiencia web interactiva lista par
 
 ## Principio central
 
-El flujo empieza con una **conversación de diseño**, no con código. el usuario suele detectar personalmente qué parte de una PPT o material merece una visualización. Respeta esa decisión y úsala como punto de partida.
+El flujo empieza con una **conversación de diseño**, no con código. El usuario suele detectar personalmente qué parte de una PPT o material merece una visualización. Respeta esa decisión y úsala como punto de partida.
 
-No conviertas toda una PPT en una app salvo que él lo pida. No programes mientras todavía están explorando la idea, excepto si el usuario dice explícitamente que avances de frente.
+No conviertas toda una PPT en una app salvo que el usuario lo pida. No programes mientras todavía están explorando la idea, excepto si el usuario dice explícitamente que avances de frente.
 
 ## Flujo de trabajo
 
@@ -45,7 +45,7 @@ Antes del código, cuando aporte valor, describe una maqueta conceptual sencilla
 La meta es que el usuario pueda imaginar **cómo se armará** el dashboard, visualizador o simulador antes de generarlo.
 
 ### 4. System prompt: opcional, no obligatorio
-el usuario a veces quiere ver el system prompt y a veces no.
+El usuario a veces quiere ver el system prompt y a veces no.
 
 - Si lo pide explícitamente, muéstralo antes de construir.
 - Si el recurso es complejo, novedoso, tiene varias reglas pedagógicas o depende de una lógica delicada, sugiere brevemente que puede ser útil revisar el system prompt y muéstralo si el usuario acepta o si ya pidió verlo.
@@ -66,7 +66,7 @@ Si el usuario ya pidió “genera y publica”, no vuelvas a pedir aprobación.
 - Usa dependencias externas únicamente cuando aporten valor real. Plotly es apropiado para gráficos interactivos cuando haga falta.
 - No uses Gemini Canvas como paso obligatorio: genera directamente el recurso web final.
 
-### 7. Estilo docente de el usuario
+### 7. Estilo docente del usuario
 - Diseño claro, limpio, didáctico y contemporáneo.
 - Poco texto por pantalla.
 - Jerarquía visual evidente.
@@ -95,7 +95,7 @@ Comprueba:
 ## Publicación en GitHub
 
 El repositorio docente principal es:
-` repositorio docente indicado por el usuario `
+`santiagozevallosq/repositorio-docencia`
 
 Es un repositorio público con GitHub Pages habilitado y rama principal `main`.
 
