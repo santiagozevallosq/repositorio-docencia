@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio de análisis estadístico con Python</title>
+<style>
+:root{--py-blue:#3776ab;--py-yellow:#ffd343;--ink:#10213a;--muted:#607089;--bg:#f5f9fd;--card:#fff;--line:#dfe8f2;--green:#22a06b;--purple:#7057d9;--red:#d9485f}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#f7fbff,#eef5fb);color:var(--ink)}
+button,input,select{font:inherit}.app{max-width:1500px;margin:auto;padding:22px}
+.hero{display:flex;gap:18px;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px 24px;box-shadow:0 12px 32px rgba(55,118,171,.08)}
+.brand{display:flex;align-items:center;gap:16px}.pylogo{width:66px;height:66px;border-radius:18px;background:linear-gradient(135deg,var(--py-blue) 0 50%,var(--py-yellow) 50%);display:grid;place-items:center;color:white;font-weight:900;font-size:24px;box-shadow:0 8px 18px rgba(55,118,171,.22)}
+h1{font-size:clamp(1.6rem,3vw,2.8rem);margin:0}.subtitle{color:var(--muted);margin-top:4px}.hero-note{background:#fff6d6;border:1px solid #f7df88;padding:14px 16px;border-radius:16px;max-width:360px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.step{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}.step.active{outline:3px solid rgba(55,118,171,.18);border-color:#77aee0}.bubble{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;background:var(--py-blue)}.step:nth-child(2) .bubble{background:#2bb6ad}.step:nth-child(3) .bubble{background:var(--purple)}.step:nth-child(4) .bubble{background:var(--green)}
+.stage{display:none}.stage.active{display:block}.grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 22px rgba(16,33,58,.05)}.card h2,.card h3{margin-top:0}.label{font-size:.82rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{border-bottom:1px solid #edf2f7;padding:8px;text-align:left}th{background:#f7fbff}td[contenteditable=true]{background:#fffdf1;outline:none}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #cfe0ef;background:#f7fbff;color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:700}.btn.primary{background:var(--py-blue);color:white;border-color:var(--py-blue)}.btn.yellow{background:var(--py-yellow);border-color:#e5bd30}.code{background:#10213a;color:#d9edff;border-radius:12px;padding:14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow:auto}.output{margin-top:10px;background:#f6fafc;border:1px dashed #c7d8e7;border-radius:12px;padding:12px;min-height:92px;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.metric{padding:14px;border-radius:14px;background:#f7fbff;border:1px solid var(--line)}.metric b{font-size:1.45rem;display:block}.chart{height:260px;display:flex;align-items:end;gap:5px;padding:15px;border-left:2px solid #b8cbe0;border-bottom:2px solid #b8cbe0}.bar{flex:1;background:linear-gradient(#79b8f2,#3776ab);border-radius:6px 6px 0 0;min-width:10px}.axis-note{font-size:.82rem;color:var(--muted);margin-top:6px}.insight{border-left:5px solid var(--py-yellow);padding:14px;background:#fffaf0;border-radius:12px}.challenge{background:#fff4f5;border:1px solid #f4c9cf;border-radius:14px;padding:14px}.navrow{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:12px}.slider-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.slider-row input{width:100%}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef4ff;color:#315f9d;font-weight:700;font-size:.8rem}.hypo{display:grid;grid-template-columns:1fr 1fr;gap:12px}.group{background:#f8fbfe;border:1px solid var(--line);padding:14px;border-radius:14px}.decision{padding:16px;border-radius:14px;background:#eefaf4;border:1px solid #bde7d2;font-weight:700}.quiz label{display:block;padding:10px 0}.small{font-size:.87rem;color:var(--muted)}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.hero{align-items:flex-start;flex-direction:column}.hypo{grid-template-columns:1fr}}
+@media(max-width:600px){.steps{grid-template-columns:1fr}.app{padding:10px}.hero{padding:16px}.pylogo{width:52px;height:52px}}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="hero">
+  <div class="brand"><div class="pylogo">Py</div><div><h1>Laboratorio de análisis estadístico con <span style="color:#3776ab">Python</span></h1><div class="subtitle">Explora datos, calcula estadísticas, contrasta hipótesis y toma decisiones.</div></div></div>
+  <div class="hero-note"><b>💡 Un mismo conjunto de datos.</b><br>Cuatro etapas. Una historia completa.</div>
+</section>
+
+<div class="steps">
+  <div class="step active" data-stage="0"><div class="bubble">1</div><div><b>Datos y Pandas</b><div class="small">Explora y organiza</div></div></div>
+  <div class="step" data-stage="1"><div class="bubble">2</div><div><b>NumPy</b><div class="small">Calcula estadísticas</div></div></div>
+  <div class="step" data-stage="2"><div class="bubble">3</div><div><b>SciPy</b><div class="small">Contrasta hipótesis</div></div></div>
+  <div class="step" data-stage="3"><div class="bubble">4</div><div><b>Interpretación</b><div class="small">¿Qué aprendimos?</div></div></div>
+</div>
+
+<section class="stage active" id="stage0">
+<div class="grid">
+  <div class="card">
+    <div class="label">Dataset editable</div><h2>1. Datos y Pandas</h2>
+    <p>Edita precios, ventas o stock. Los cambios se usarán en todo el laboratorio.</p>
+    <table id="dataTable"><thead><tr><th>Producto</th><th>Precio</th><th>Ventas</th><th>Stock</th><th>Categoría</th></tr></thead><tbody></tbody></table>
+    <div class="navrow"><button class="btn" id="resetData">↻ Restablecer</button><span class="pill" id="rowsPill"></span></div>
+  </div>
+  <div class="card">
+    <div class="label">Comandos de Pandas</div><h3>¿Qué hace cada comando?</h3>
+    <div class="toolbar">
+      <button class="btn primary pandasCmd" data-cmd="head">head()</button>
+      <button class="btn pandasCmd" data-cmd="info">info()</button>
+      <button class="btn pandasCmd" data-cmd="describe">describe()</button>
+      <button class="btn pandasCmd" data-cmd="value_counts">value_counts()</button>
+    </div>
+    <div class="code" id="pandasCode">df.head()</div>
+    <div class="output" id="pandasOutput"></div>
+  </div>
+  <div class="card">
+    <div class="label">Visualización</div><h3>Distribución de precios</h3>
+    <div class="chart" id="histogram"></div><div class="axis-note">Cada barra representa un producto. Altura relativa al precio máximo.</div>
+    <div class="insight" id="pandasInsight" style="margin-top:14px"></div>
+  </div>
+</div>
+<div class="navrow"><span></span><button class="btn primary next" data-next="1">Siguiente: NumPy →</button></div>
+</section>
+
+<section class="stage" id="stage1">
+<div class="grid">
+  <div class="card">
+    <div class="label">NumPy en acción</div><h2>2. Calcula estadísticas</h2>
+    <p>Observa cómo cambian las medidas cuando modificas un valor extremo.</p>
+    <div class="metrics">
+      <div class="metric"><span>Media</span><b id="meanVal"></b></div>
+      <div class="metric"><span>Mediana</span><b id="medianVal"></b></div>
+      <div class="metric"><span>Varianza</span><b id="varVal"></b></div>
+      <div class="metric"><span>Desv. estándar</span><b id="stdVal"></b></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="label">Experimenta</div><h3>Simula un valor atípico</h3>
+    <div class="slider-row"><input id="outlierSlider" type="range" min="100" max="8000" step="100" value="3500"><b id="outlierLabel"></b></div>
+    <p class="small">El slider modifica el precio de <b>Laptop</b>. Compara especialmente media y mediana.</p>
+    <div class="code">np.mean(precios)<br>np.median(precios)<br>np.var(precios)<br>np.std(precios)</div>
+  </div>
+  <div class="card">
+    <div class="label">Descubrimiento</div><h3>¿Qué cambió?</h3>
+    <div class="insight" id="numpyInsight"></div>
+    <div class="challenge" style="margin-top:14px"><b>Reto:</b> mueve el valor atípico por encima de S/ 6,000. ¿Qué medida cambia más: la media o la mediana?</div>
+  </div>
+</div>
+<div class="navrow"><button class="btn back" data-prev="0">← Pandas</button><button class="btn primary next" data-next="2">Siguiente: SciPy →</button></div>
+</section>
+
+<section class="stage" id="stage2">
+<div class="grid">
+  <div class="card">
+    <div class="label">SciPy</div><h2>3. Contrasta hipótesis</h2>
+    <p>Compara dos grupos de tiempos de tarea (minutos).</p>
+    <div class="hypo">
+      <div class="group"><b>Grupo A</b><div class="small">Capacitación tradicional</div><div id="groupA"></div></div>
+      <div class="group"><b>Grupo B</b><div class="small">Capacitación en línea</div><div id="groupB"></div></div>
+    </div>
+    <div class="code" style="margin-top:12px">from scipy.stats import ttest_ind<br>t, p = ttest_ind(grupoA, grupoB)</div>
+  </div>
+  <div class="card">
+    <div class="label">Control experimental</div><h3>Desplaza el Grupo B</h3>
+    <div class="slider-row"><input id="groupShift" type="range" min="-5" max="8" step="1" value="0"><b id="shiftLabel">0</b></div>
+    <p class="small">Esto suma o resta minutos a todos los valores del Grupo B para mostrar cómo cambia la evidencia.</p>
+    <div class="metrics"><div class="metric"><span>Estadístico t</span><b id="tVal"></b></div><div class="metric"><span>p-valor</span><b id="pVal"></b></div></div>
+  </div>
+  <div class="card">
+    <div class="label">Interpretación</div><h3>¿Rechazamos H₀?</h3>
+    <div class="decision" id="scipyDecision"></div>
+    <p class="small">Regla didáctica usada aquí: α = 0.05. Si p &lt; 0.05, hay evidencia estadística contra H₀.</p>
+  </div>
+</div>
+<div class="navrow"><button class="btn back" data-prev="1">← NumPy</button><button class="btn primary next" data-next="3">Siguiente: Interpretación →</button></div>
+</section>
+
+<section class="stage" id="stage3">
+<div class="grid">
+  <div class="card">
+    <div class="label">Cierre</div><h2>4. De números a decisiones</h2>
+    <div class="insight"><b>Pandas</b> ayuda a inspeccionar y organizar.<br><b>NumPy</b> resume cuantitativamente.<br><b>SciPy</b> permite contrastar hipótesis.<br><b>Interpretar</b> conecta los resultados con una decisión.</div>
+  </div>
+  <div class="card quiz">
+    <div class="label">Mini reto final</div><h3>Comprueba lo aprendido</h3>
+    <label><input type="radio" name="q1" value="a"> La media siempre es resistente a outliers.</label>
+    <label><input type="radio" name="q1" value="b"> La mediana suele ser más robusta a outliers.</label>
+    <label><input type="radio" name="q1" value="c"> Un p-valor alto prueba que H₀ es verdadera.</label>
+    <button class="btn yellow" id="checkQuiz">Comprobar</button>
+    <div id="quizResult" style="margin-top:10px;font-weight:700"></div>
+  </div>
+  <div class="card">
+    <div class="label">Takeaway</div><h3>Una idea para recordar</h3>
+    <div class="decision">El análisis estadístico no termina cuando Python devuelve un número: termina cuando puedes explicar qué significa en contexto.</div>
+    <p class="small" style="margin-top:12px">Explora → calcula → contrasta → interpreta.</p>
+  </div>
+</div>
+<div class="navrow"><button class="btn back" data-prev="2">← SciPy</button><button class="btn primary" id="restart">↻ Reiniciar laboratorio</button></div>
+</section>
+</div>
+
+<script>
+const original = [
+{producto:'Laptop',precio:3500,ventas:25,stock:10,categoria:'Tecnología'},
+{producto:'Mouse',precio:80,ventas:120,stock:50,categoria:'Tecnología'},
+{producto:'Teclado',precio:150,ventas:90,stock:35,categoria:'Tecnología'},
+{producto:'Monitor',precio:900,ventas:40,stock:18,categoria:'Tecnología'},
+{producto:'Silla',precio:320,ventas:30,stock:12,categoria:'Oficina'},
+{producto:'Escritorio',precio:450,ventas:20,stock:8,categoria:'Oficina'},
+{producto:'Audífonos',precio:220,ventas:60,stock:25,categoria:'Tecnología'},
+{producto:'Impresora',precio:800,ventas:35,stock:15,categoria:'Oficina'}
+];
+let data = JSON.parse(JSON.stringify(original));
+const tbody=document.querySelector('#dataTable tbody');
+const fmt=n=>new Intl.NumberFormat('es-PE',{maximumFractionDigits:2}).format(n);
+function renderTable(){
+ tbody.innerHTML='';
+ data.forEach((r,i)=>{
+  const tr=document.createElement('tr');
+  ['producto','precio','ventas','stock','categoria'].forEach(k=>{
+   const td=document.createElement('td'); td.textContent=r[k]; td.contentEditable=true;
+   td.addEventListener('blur',()=>{let v=td.textContent.trim(); if(['precio','ventas','stock'].includes(k)) v=Number(v)||0; data[i][k]=v; syncAll();});
+   tr.appendChild(td);
+  }); tbody.appendChild(tr);
+ });
+ document.getElementById('rowsPill').textContent=data.length+' filas × 5 columnas';
+}
+function prices(){return data.map(d=>Number(d.precio)||0)}
+function mean(a){return a.reduce((s,x)=>s+x,0)/a.length}
+function median(a){const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function variance(a){const m=mean(a);return a.reduce((s,x)=>s+(x-m)**2,0)/a.length}
+function std(a){return Math.sqrt(variance(a))}
+function renderHistogram(){const a=prices(),mx=Math.max(...a,1),el=document.getElementById('histogram');el.innerHTML='';a.forEach((v,i)=>{const b=document.createElement('div');b.className='bar';b.style.height=(12+88*v/mx)+'%';b.title=data[i].producto+': S/ '+fmt(v);el.appendChild(b)})}
+function pandas(cmd='head'){
+ const out=document.getElementById('pandasOutput'),code=document.getElementById('pandasCode');
+ document.querySelectorAll('.pandasCmd').forEach(b=>b.classList.toggle('primary',b.dataset.cmd===cmd));
+ if(cmd==='head'){code.textContent='df.head()';out.textContent=data.slice(0,5).map((r,i)=>`${i}  ${r.producto.padEnd(11)}  S/ ${String(r.precio).padStart(5)}  ventas=${r.ventas}`).join('\n')}
+ if(cmd==='info'){code.textContent='df.info()';out.textContent=`RangeIndex: ${data.length} entries\nColumns: 5\nproducto: object\nprecio: int/float\nventas: int/float\nstock: int/float\ncategoria: object\nValores nulos: 0`}
+ if(cmd==='describe'){code.textContent='df.describe()';const p=prices();out.textContent=`precio\ncount  ${p.length}\nmean   ${fmt(mean(p))}\nstd    ${fmt(std(p))}\nmin    ${fmt(Math.min(...p))}\n50%    ${fmt(median(p))}\nmax    ${fmt(Math.max(...p))}`}
+ if(cmd==='value_counts'){code.textContent="df['categoria'].value_counts()";const c={};data.forEach(r=>c[r.categoria]=(c[r.categoria]||0)+1);out.textContent=Object.entries(c).map(([k,v])=>k.padEnd(14)+v).join('\n')}
+}
+function renderNumPy(){const a=prices();document.getElementById('meanVal').textContent='S/ '+fmt(mean(a));document.getElementById('medianVal').textContent='S/ '+fmt(median(a));document.getElementById('varVal').textContent=fmt(variance(a));document.getElementById('stdVal').textContent='S/ '+fmt(std(a));const ratio=Math.abs(mean(a)-median(a));document.getElementById('numpyInsight').innerHTML=`La diferencia entre media y mediana es <b>S/ ${fmt(ratio)}</b>. Cuando el valor extremo aumenta, la media suele desplazarse mucho más que la mediana.`}
+function ttest(a,b){const ma=mean(a),mb=mean(b);const va=a.reduce((s,x)=>s+(x-ma)**2,0)/(a.length-1);const vb=b.reduce((s,x)=>s+(x-mb)**2,0)/(b.length-1);const se=Math.sqrt(va/a.length+vb/b.length);const t=(ma-mb)/se;const df=((va/a.length+vb/b.length)**2)/(((va/a.length)**2)/(a.length-1)+((vb/b.length)**2)/(b.length-1)); const x=Math.abs(t);const p=Math.min(1,2*Math.exp(-0.717*x-0.416*x*x));return {t,p,df}}
+const groupA=[12,14,15,10,13],groupB0=[18,16,20,17,19];
+function renderSciPy(){const shift=Number(document.getElementById('groupShift').value),b=groupB0.map(x=>x+shift);document.getElementById('shiftLabel').textContent=(shift>=0?'+':'')+shift+' min';document.getElementById('groupA').textContent=groupA.join(', ');document.getElementById('groupB').textContent=b.join(', ');const r=ttest(groupA,b);document.getElementById('tVal').textContent=fmt(r.t);document.getElementById('pVal').textContent=r.p.toFixed(4);document.getElementById('scipyDecision').innerHTML=r.p<.05?'p < 0.05 → <b>rechazamos H₀</b>. Hay evidencia de diferencia entre las medias.':'p ≥ 0.05 → <b>no rechazamos H₀</b>. La evidencia no es suficiente para afirmar una diferencia.'}
+function syncAll(){renderHistogram();pandas(document.querySelector('.pandasCmd.primary')?.dataset.cmd||'head');renderNumPy();document.getElementById('pandasInsight').innerHTML=`El dataset contiene <b>${data.length} productos</b>. Precio promedio: <b>S/ ${fmt(mean(prices()))}</b>. El precio máximo puede influir fuertemente en la media.`}
+document.querySelectorAll('.pandasCmd').forEach(b=>b.onclick=()=>pandas(b.dataset.cmd));
+document.getElementById('resetData').onclick=()=>{data=JSON.parse(JSON.stringify(original));document.getElementById('outlierSlider').value=3500;renderTable();syncAll()};
+document.getElementById('outlierSlider').oninput=e=>{data[0].precio=Number(e.target.value);document.getElementById('outlierLabel').textContent='S/ '+fmt(data[0].precio);renderTable();syncAll()};
+document.getElementById('groupShift').oninput=renderSciPy;
+function go(n){document.querySelectorAll('.stage').forEach((s,i)=>s.classList.toggle('active',i===n));document.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('active',i===n));window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.step').forEach(s=>s.onclick=()=>go(Number(s.dataset.stage)));document.querySelectorAll('.next').forEach(b=>b.onclick=()=>go(Number(b.dataset.next)));document.querySelectorAll('.back').forEach(b=>b.onclick=()=>go(Number(b.dataset.prev)));
+document.getElementById('restart').onclick=()=>{data=JSON.parse(JSON.stringify(original));renderTable();syncAll();document.getElementById('groupShift').value=0;renderSciPy();go(0)};
+document.getElementById('checkQuiz').onclick=()=>{const v=document.querySelector('input[name=q1]:checked')?.value;const el=document.getElementById('quizResult');if(!v){el.textContent='Selecciona una respuesta.';return}el.textContent=v==='b'?'✓ Correcto: la mediana suele ser más robusta frente a valores extremos.':'✗ Revisa: la media es sensible a outliers y un p-valor alto no prueba H₀.'};
+document.getElementById('outlierLabel').textContent='S/ 3,500';renderTable();syncAll();renderSciPy();
+</script>
+</body>
+</html>
