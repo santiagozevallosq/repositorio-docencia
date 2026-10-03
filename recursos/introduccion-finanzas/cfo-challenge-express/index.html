@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f">
+<title>CFO Challenge Express</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#0d1b2e;--panel2:#12243b;--line:#233a57;
+  --text:#f8fafc;--muted:#9fb0c6;--blue:#45a3ff;--cyan:#63e6ff;
+  --green:#36d399;--amber:#fbbf24;--red:#fb7185;--violet:#a78bfa;
+  --shadow:0 18px 60px rgba(0,0,0,.35);--radius:22px
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 20% 0%,#123159 0,#07111f 40%,#050b14 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input,textarea{font:inherit}
+button{touch-action:manipulation}
+.app{max-width:560px;margin:0 auto;min-height:100vh;padding:env(safe-area-inset-top) 16px calc(28px + env(safe-area-inset-bottom))}
+.topbar{position:sticky;top:0;z-index:20;margin:0 -16px 14px;padding:12px 16px;background:rgba(7,17,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.07)}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font-weight:900;letter-spacing:.06em;font-size:.82rem;color:#d9efff}.brand span{color:var(--cyan)}
+.roundtag{font-size:.74rem;color:var(--muted);white-space:nowrap}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}
+.metric{background:#0b1728;border:1px solid var(--line);border-radius:13px;padding:8px 6px;text-align:center}
+.metric b{display:block;font-size:1rem;line-height:1.1}.metric small{display:block;color:var(--muted);font-size:.62rem;margin-top:2px}
+.progress{display:flex;justify-content:center;gap:8px;margin:14px 0 2px}
+.dot{width:32px;height:5px;border-radius:999px;background:#1e334e}.dot.active{background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 16px rgba(69,163,255,.5)}
+.screen{display:none;animation:fade .28s ease}.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{padding:34px 4px 20px;text-align:center}
+.logoOrb{width:92px;height:92px;border-radius:28px;margin:0 auto 20px;display:grid;place-items:center;font-size:2.7rem;background:linear-gradient(145deg,#123c69,#0b2038);border:1px solid #2f5b84;box-shadow:0 20px 70px rgba(45,141,255,.24),inset 0 0 30px rgba(99,230,255,.08)}
+h1{font-size:2rem;line-height:1.02;margin:0 0 10px;letter-spacing:-.04em}h2{font-size:1.45rem;line-height:1.12;margin:0 0 9px;letter-spacing:-.025em}
+.kicker{color:var(--cyan);font-weight:800;text-transform:uppercase;letter-spacing:.11em;font-size:.72rem;margin-bottom:9px}
+.lead{color:var(--muted);line-height:1.55;margin:0 auto;max-width:480px}
+.pills{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:24px 0}
+.pill{background:rgba(18,36,59,.8);border:1px solid var(--line);border-radius:16px;padding:13px 7px;font-size:.76rem;color:#d8e4f3}.pill .ico{font-size:1.4rem;display:block;margin-bottom:4px}
+.btn{width:100%;border:0;border-radius:16px;padding:15px 18px;font-weight:900;letter-spacing:.02em;cursor:pointer;transition:.18s transform,.18s filter}
+.btn:active{transform:scale(.985)}.btn-primary{background:linear-gradient(135deg,#258dff,#42d3ff);color:#03101d;box-shadow:0 14px 35px rgba(38,153,255,.25)}.btn-secondary{background:#12243b;color:#e7f2ff;border:1px solid #2b4668}.btn-danger{background:#351624;color:#ffd8e1;border:1px solid #6b263e}.btn:disabled{opacity:.42;cursor:not-allowed}
+.card{background:linear-gradient(160deg,rgba(18,36,59,.96),rgba(10,24,41,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin:12px 0}
+.field{margin:14px 0}.field label{display:block;font-size:.78rem;color:#bdd0e4;margin-bottom:7px;font-weight:700}
+.input,textarea{width:100%;background:#071522;border:1px solid #294461;color:#fff;border-radius:14px;padding:13px 14px;outline:none}.input:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(69,163,255,.12)}
+.member-row{display:flex;gap:8px;margin:8px 0}.member-row .input{flex:1}.remove{width:44px;border-radius:13px;border:1px solid #503142;background:#26121c;color:#ffb0c0}
+.smallbtn{border:1px dashed #395978;background:#0c1d31;color:#bfe6ff;border-radius:13px;padding:10px 12px;width:100%;font-weight:800}
+.game-title{padding:8px 1px 2px}.situation{font-size:1rem;line-height:1.55;color:#d8e5f2}
+.options{display:grid;gap:11px;margin:16px 0}
+.option{position:relative;text-align:left;border:1px solid #294461;background:linear-gradient(150deg,#10243d,#0a192b);color:#fff;border-radius:19px;padding:15px;cursor:pointer;transition:.18s}
+.option:hover{border-color:#3f6c99}.option.selected{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(99,230,255,.13),0 16px 40px rgba(0,0,0,.23);transform:translateY(-1px)}
+.option .title{font-weight:900;margin-bottom:4px}.option .detail{color:#a8bdd3;font-size:.83rem;line-height:1.4}.option .badge{display:inline-block;margin-top:8px;padding:5px 9px;border-radius:999px;background:#152f4c;color:#bce5ff;font-size:.7rem;font-weight:800}
+.impact{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0}.impact div{padding:12px;border-radius:14px;background:#0a1829;border:1px solid #223a58}.impact strong{display:block;font-size:1.1rem}.plus{color:var(--green)}.minus{color:var(--red)}.neutral{color:var(--amber)}
+.unlock{border:1px solid #6e5a1e;background:linear-gradient(145deg,#2b240d,#171a18);border-radius:18px;padding:15px;margin:15px 0}.unlock b{color:#ffe485}.unlock p{margin:6px 0 0;color:#d8d1ab;line-height:1.45;font-size:.86rem}
+.event{border-color:#6d4224;background:radial-gradient(circle at top right,#4a2418,#1a1821 58%,#101924);text-align:center}.event .big{font-size:3.3rem;display:block;margin:3px 0 9px}
+.vs{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0}.actor{background:#0d2138;border:1px solid #294a6b;border-radius:17px;padding:13px;width:42%;text-align:center}.vsword{color:var(--red);font-weight:900}
+.resultHero{text-align:center;padding:20px 4px 8px}.scoreBadge{display:inline-flex;padding:8px 13px;border-radius:999px;background:#132c49;border:1px solid #2e5b88;color:#bfe7ff;font-weight:900;font-size:.78rem}
+.finalmetrics{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:14px 0}.fm{border-radius:17px;background:#0b192b;border:1px solid #253d5d;padding:13px}.fm .bar{height:7px;background:#1c3049;border-radius:999px;margin-top:8px;overflow:hidden}.fm .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.history{display:grid;gap:8px}.history .row{background:#091727;border:1px solid #223a58;border-radius:14px;padding:11px}.history b{display:block;font-size:.76rem;color:#91abc5;margin-bottom:4px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.notice{font-size:.74rem;color:#8098b0;line-height:1.4;text-align:center;margin:11px 0}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:55vh;text-align:center}.spinner{width:54px;height:54px;border:4px solid #17304d;border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:18px}@keyframes spin{to{transform:rotate(360deg)}}
+.deltaFlash{position:fixed;z-index:99;top:72px;left:50%;transform:translateX(-50%);background:#0b1a2c;border:1px solid #315475;border-radius:999px;padding:9px 15px;box-shadow:var(--shadow);font-weight:900;animation:pop 1.25s ease forwards}@keyframes pop{0%{opacity:0;transform:translate(-50%,8px) scale(.9)}20%{opacity:1;transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-8px)}}
+.footerlink{text-align:center;margin-top:18px;color:#6f879f;font-size:.72rem}
+@media(min-width:720px){.app{max-width:760px}.options{grid-template-columns:repeat(3,1fr)}.option{min-height:190px}.topbar{border-radius:0 0 18px 18px}.card{padding:22px}}
+@media print{.topbar,.btn,.smallbtn,.notice{display:none!important}.app{max-width:none}.screen{display:none!important}#finalScreen{display:block!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar" id="topbar" hidden>
+    <div class="toprow"><div class="brand">CFO <span>CHALLENGE</span></div><div class="roundtag" id="roundTag">Ronda 1 de 3</div></div>
+    <div class="metrics" id="metrics"></div>
+    <div class="progress"><span class="dot" id="d0"></span><span class="dot" id="d1"></span><span class="dot" id="d2"></span></div>
+  </header>
+
+  <section class="screen active" id="homeScreen">
+    <div class="hero">
+      <div class="logoOrb">💼</div>
+      <div class="kicker">Simulación financiera · 15 min</div>
+      <h1>CFO Challenge<br>Express</h1>
+      <p class="lead">¿Puedes hacer crecer tu empresa sin ponerla en riesgo? Tu equipo tomará tres decisiones clave y verá sus consecuencias.</p>
+      <div class="pills">
+        <div class="pill"><span class="ico">📈</span>Inversión</div>
+        <div class="pill"><span class="ico">🏦</span>Financiamiento</div>
+        <div class="pill"><span class="ico">🤝</span>Agencia</div>
+      </div>
+      <button class="btn btn-primary" onclick="goSetup()">INICIAR PARTIDA</button>
+      <p class="notice">Pensado para equipos · Uso desde celular · El progreso se guarda en este dispositivo</p>
+    </div>
+  </section>
+
+  <section class="screen" id="setupScreen">
+    <div class="game-title"><div class="kicker">Registro del equipo</div><h2>Antes de comenzar</h2><p class="lead">Identifiquen al grupo que asumirá la dirección financiera de Café Andino SAC.</p></div>
+    <div class="card">
+      <div class="field"><label>Nombre del grupo</label><input class="input" id="groupName" maxlength="50" placeholder="Ej. Grupo 5"></div>
+      <div class="field"><label>Integrantes</label><div id="members"></div><button class="smallbtn" onclick="addMember()">＋ Agregar integrante</button></div>
+    </div>
+    <button class="btn btn-primary" onclick="startGame()">CREAR EMPRESA</button>
+  </section>
+
+  <section class="screen" id="gameScreen">
+    <div class="game-title"><div class="kicker" id="roundKicker">Ronda 1</div><h2 id="roundTitle"></h2></div>
+    <div class="card">
+      <p class="situation" id="roundSituation"></p>
+      <div id="roundExtra"></div>
+      <div class="options" id="options"></div>
+      <button class="btn btn-primary" id="confirmBtn" disabled onclick="confirmDecision()">CONFIRMAR DECISIÓN</button>
+    </div>
+  </section>
+
+  <section class="screen" id="loadingScreen">
+    <div class="loading"><div class="spinner"></div><h2>Analizando impacto financiero...</h2><p class="lead">Tu empresa está cambiando según la decisión del equipo.</p></div>
+  </section>
+
+  <section class="screen" id="roundResultScreen">
+    <div class="game-title"><div class="kicker">Impacto financiero</div><h2 id="resultTitle">Resultado de tu decisión</h2></div>
+    <div class="card">
+      <p class="situation" id="resultText"></p>
+      <div class="impact" id="impactGrid"></div>
+      <div class="unlock"><b>🏆 CONCEPTO DESBLOQUEADO</b><h3 id="conceptTitle"></h3><p id="conceptText"></p></div>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">SIGUIENTE</button>
+    </div>
+  </section>
+
+  <section class="screen" id="eventScreen">
+    <div class="card event">
+      <span class="big">⚡</span><div class="kicker">Evento inesperado</div><h2 id="eventTitle"></h2><p class="situation" id="eventText"></p>
+      <div class="impact" id="eventImpact"></div>
+      <p class="lead">Las decisiones financieras también dependen de eventos que la empresa no controla.</p>
+    </div>
+    <button class="btn btn-primary" onclick="continueAfterEvent()">CONTINUAR</button>
+  </section>
+
+  <section class="screen" id="reflectionScreen">
+    <div class="game-title"><div class="kicker">Cierre de la partida</div><h2>Piensen como CFO</h2><p class="lead">Después de conocer las consecuencias, hagan una última reflexión.</p></div>
+    <div class="card"><div class="field"><label>¿Qué decisión cambiarían después de conocer sus consecuencias?</label><textarea id="reflection" rows="5" maxlength="300" placeholder="Escriban una reflexión breve del grupo..."></textarea></div></div>
+    <button class="btn btn-primary" onclick="finishGame()">VER RESULTADOS</button>
+  </section>
+
+  <section class="screen" id="finalScreen">
+    <div class="resultHero">
+      <div class="scoreBadge">✓ CFO CHALLENGE COMPLETADO</div>
+      <h1 id="finalGroup" style="margin-top:14px"></h1>
+      <p class="lead" id="finalMembers"></p>
+    </div>
+    <div class="card">
+      <div class="kicker">Perfil del equipo</div><h2 id="profileName"></h2><p class="situation" id="profileText"></p>
+      <div class="finalmetrics" id="finalMetrics"></div>
+    </div>
+    <div class="card"><div class="kicker">Historial</div><h2>Tus decisiones</h2><div class="history" id="history"></div></div>
+    <div class="card"><div class="kicker">Reflexión</div><p class="situation" id="finalReflection"></p></div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="downloadResult('png')">📸 PNG</button>
+      <button class="btn btn-secondary" onclick="downloadResult('jpg')">🖼️ JPG</button>
+    </div>
+    <p class="notice">La imagen final incluye grupo, integrantes, decisiones, evento y resultados. Puedes enviarla directamente al docente.</p>
+    <button class="btn btn-danger" onclick="resetGame()">REINICIAR PARTIDA</button>
+    <div class="footerlink">Introducción a las Finanzas · Recurso docente</div>
+  </section>
+</div>
+
+<script>
+const KEY="cfoChallengeExpressV1";
+const initial={screen:"home",group:"",members:[""],round:0,selected:null,metrics:{cash:100,value:60,risk:30,trust:70},decisions:[],event:null,reflection:""};
+let state=load()||JSON.parse(JSON.stringify(initial));
+
+const rounds=[
+ {title:"¿Dónde invertir?",situation:"Café Andino SAC tiene S/100,000 disponibles y quiere crecer. El equipo financiero debe decidir cómo utilizar estos recursos.",concept:"Decisión de inversión",conceptText:"Un CFO decide dónde colocar los recursos considerando rentabilidad, riesgo y liquidez.",options:[
+  {id:"machine",icon:"⚙️",title:"Comprar nueva maquinaria",badge:"Costo S/70,000",detail:"Aumentará la capacidad productiva, pero reducirá significativamente la liquidez.",effect:{cash:-35,value:25,risk:10,trust:5},result:"La maquinaria aumenta la capacidad futura y el potencial de creación de valor, pero deja menos efectivo disponible."},
+  {id:"marketing",icon:"📣",title:"Invertir en marketing",badge:"Costo S/40,000",detail:"Puede acelerar las ventas, pero el resultado comercial es más incierto.",effect:{cash:-20,value:15,risk:15,trust:3},result:"El marketing puede acelerar el crecimiento, pero sus resultados son menos predecibles que una inversión física."},
+  {id:"liquidity",icon:"💰",title:"Mantener liquidez",badge:"Costo S/0",detail:"Conserva efectivo, pero posterga oportunidades de crecimiento.",effect:{cash:5,value:-5,risk:-10,trust:-3},result:"Conservar caja reduce exposición y mejora flexibilidad, aunque puede significar renunciar a oportunidades de crecimiento."}
+ ]},
+ {title:"¿Cómo financiar el crecimiento?",situation:"La empresa identifica una oportunidad para abrir un segundo local y necesita S/120,000 adicionales.",concept:"Estructura de capital",conceptText:"Las inversiones pueden financiarse con deuda, capital de propietarios o una combinación. Cada alternativa implica costos, riesgos y control diferentes.",options:[
+  {id:"loan",icon:"🏦",title:"Préstamo bancario",badge:"Tasa 12%",detail:"Conserva la propiedad, pero aumenta las obligaciones financieras.",effect:{cash:25,value:15,risk:25,trust:3},result:"La deuda permite crecer sin ceder propiedad, pero incrementa compromisos de pago y exposición financiera."},
+  {id:"investor",icon:"🤝",title:"Nuevo inversionista",badge:"25% de participación",detail:"Aporta S/120,000. No genera cuotas de deuda, pero se comparte propiedad.",effect:{cash:30,value:12,risk:-5,trust:12},result:"El nuevo socio reduce la presión de pago fijo y comparte riesgo, a cambio de participación en la propiedad y resultados."},
+  {id:"wait",icon:"⏳",title:"No expandirse todavía",badge:"Sin financiamiento",detail:"Evita nuevas obligaciones, pero pierde la oportunidad inmediata.",effect:{cash:5,value:-8,risk:-10,trust:-5},result:"Esperar protege la estabilidad financiera, aunque puede retrasar el crecimiento y reducir expectativas de los inversionistas."}
+ ]},
+ {title:"¿Qué harías con el gerente?",situation:"La empresa tuvo buenos resultados. El gerente propone usar S/30,000 para renovar oficinas ejecutivas y financiar un viaje corporativo. Los accionistas prefieren reinvertir.",concept:"Problema de agencia",conceptText:"Puede aparecer cuando los intereses de administradores y propietarios no coinciden. Incentivos, supervisión y gobierno corporativo ayudan a alinearlos.",agency:true,options:[
+  {id:"approve",icon:"✅",title:"Aprobar todo",badge:"Se acepta la propuesta",detail:"El gerente obtiene todos los beneficios solicitados.",effect:{cash:-15,value:-5,risk:5,trust:-20},result:"La decisión satisface al gerente, pero puede alejar recursos de usos que los propietarios consideran prioritarios."},
+  {id:"reject",icon:"🛑",title:"Rechazar completamente",badge:"Sin gasto ejecutivo",detail:"Los accionistas bloquean todos los beneficios propuestos.",effect:{cash:5,value:3,risk:-5,trust:3},result:"Se protegen recursos y se refuerza el control, aunque una política demasiado rígida también puede afectar incentivos y relación con la dirección."},
+  {id:"align",icon:"🎯",title:"Negociar incentivos",badge:"Beneficios vinculados a desempeño",detail:"Se aprueba parcialmente y los futuros beneficios dependen de metas.",effect:{cash:-5,value:10,risk:-5,trust:15},result:"Se busca equilibrar beneficios del gerente con resultados que también interesen a los propietarios."}
+ ]}
+];
+
+const events=[
+ {id:"sales",title:"Las ventas caen 15%",text:"La demanda se debilita durante el trimestre.",base:{cash:-10,value:-5,risk:0,trust:0},loanExtra:{risk:10}},
+ {id:"rates",title:"Suben las tasas de interés",text:"El costo del dinero aumenta en el mercado.",base:{cash:0,value:0,risk:3,trust:0},loanExtra:{risk:7}},
+ {id:"competitor",title:"Un competidor abandona el mercado",text:"Se abre una oportunidad inesperada para ganar participación.",base:{cash:0,value:10,risk:0,trust:5},loanExtra:{}},
+ {id:"client",title:"Un cliente importante retrasa sus pagos",text:"La empresa enfrenta presión temporal sobre su caja.",base:{cash:-15,value:0,risk:4,trust:0},loanExtra:{risk:4}}
+];
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function clamp(n){return Math.max(0,Math.min(100,n))}
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
+function goSetup(){state.screen="setup";save();render()}
+function addMember(value=""){const wrap=document.getElementById("members");const row=document.createElement("div");row.className="member-row";row.innerHTML='<input class="input member" maxlength="60" placeholder="Nombre y apellido" value="'+escapeAttr(value)+'"><button class="remove" type="button" aria-label="Eliminar integrante">✕</button>';row.querySelector(".remove").onclick=()=>{row.remove();if(!document.querySelector(".member")) addMember()};wrap.appendChild(row)}
+function escapeAttr(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function startGame(){const group=document.getElementById("groupName").value.trim();const members=[...document.querySelectorAll(".member")].map(i=>i.value.trim()).filter(Boolean);if(!group||members.length<1){alert("Completa el nombre del grupo y al menos un integrante.");return}state={...JSON.parse(JSON.stringify(initial)),screen:"game",group,members};save();render()}
+function metricLabel(k){return {cash:"💰 Caja",value:"📈 Valor",risk:"⚠️ Riesgo",trust:"🤝 Confianza"}[k]}
+function renderMetrics(){const m=state.metrics;document.getElementById("metrics").innerHTML=Object.keys(m).map(k=>'<div class="metric"><b>'+m[k]+'</b><small>'+metricLabel(k).split(" ").slice(1).join(" ")+'</small></div>').join("")}
+function choose(id){state.selected=id;save();document.querySelectorAll(".option").forEach(x=>x.classList.toggle("selected",x.dataset.id===id));document.getElementById("confirmBtn").disabled=false}
+function renderRound(){
+ const r=rounds[state.round];document.getElementById("roundKicker").textContent="Ronda "+(state.round+1);document.getElementById("roundTitle").textContent=r.title;document.getElementById("roundSituation").textContent=r.situation;
+ document.getElementById("roundExtra").innerHTML=r.agency?'<div class="vs"><div class="actor">👥<br><b>Accionistas</b></div><div class="vsword">VS</div><div class="actor">👔<br><b>Gerente</b></div></div>':"";
+ document.getElementById("options").innerHTML=r.options.map(o=>'<button class="option '+(state.selected===o.id?"selected":"")+'" data-id="'+o.id+'" onclick="choose(\''+o.id+'\')"><div style="font-size:1.7rem;margin-bottom:7px">'+o.icon+'</div><div class="title">'+o.title+'</div><div class="detail">'+o.detail+'</div><span class="badge">'+o.badge+'</span></button>').join("");
+ document.getElementById("confirmBtn").disabled=!state.selected
+}
+function applyEffect(effect){Object.keys(effect).forEach(k=>state.metrics[k]=clamp(state.metrics[k]+effect[k]))}
+function flash(text){const x=document.createElement("div");x.className="deltaFlash";x.textContent=text;document.body.appendChild(x);setTimeout(()=>x.remove(),1300)}
+function confirmDecision(){
+ const r=rounds[state.round],o=r.options.find(x=>x.id===state.selected);if(!o)return;
+ const before={...state.metrics};applyEffect(o.effect);state.decisions[state.round]={round:state.round,option:o.id,title:o.title,effect:o.effect,before,after:{...state.metrics},result:o.result};
+ state.screen="loading";save();render();setTimeout(()=>{state.screen="roundResult";save();render()},950)
+}
+function impactHTML(before,after){
+ return Object.keys(after).map(k=>{const d=after[k]-before[k];const cls=d>0?(k==="risk"?"minus":"plus"):d<0?(k==="risk"?"plus":"minus"):"neutral";return '<div><small>'+metricLabel(k)+'</small><strong>'+before[k]+' → '+after[k]+'</strong><span class="'+cls+'">'+(d>0?"+":"")+d+' pts</span></div>'}).join("")
+}
+function renderRoundResult(){
+ const d=state.decisions[state.round],r=rounds[state.round];document.getElementById("resultText").textContent=d.result;document.getElementById("impactGrid").innerHTML=impactHTML(d.before,d.after);document.getElementById("conceptTitle").textContent=r.concept;document.getElementById("conceptText").textContent=r.conceptText;
+ document.getElementById("nextBtn").textContent=state.round===2?"REFLEXIÓN FINAL":"SIGUIENTE";
+}
+function nextStep(){
+ if(state.round===0){state.round=1;state.selected=null;state.screen="game"}
+ else if(state.round===1){triggerEvent();return}
+ else{state.screen="reflection"}
+ save();render()
+}
+function triggerEvent(){
+ if(!state.event){const ev=events[Math.floor(Math.random()*events.length)];const effect={...ev.base};const financedWithLoan=state.decisions[1]&&state.decisions[1].option==="loan";if(financedWithLoan)Object.keys(ev.loanExtra).forEach(k=>effect[k]=(effect[k]||0)+ev.loanExtra[k]);const before={...state.metrics};applyEffect(effect);state.event={...ev,effect,before,after:{...state.metrics}}}
+ state.screen="event";save();render()
+}
+function continueAfterEvent(){state.round=2;state.selected=null;state.screen="game";save();render()}
+function finishGame(){state.reflection=document.getElementById("reflection").value.trim()||"El equipo mantendría sus decisiones y reconoce los trade-offs asumidos.";state.screen="final";save();render()}
+function profile(){
+ const m=state.metrics;
+ if(m.risk<=45&&m.value>=78&&m.trust>=72)return {name:"CFO Estratégico",text:"Combinó crecimiento, control del riesgo y confianza. Punto de atención: sostener el equilibrio cuando cambie el entorno."};
+ if(m.risk>=62||m.value>=90)return {name:"CFO Expansivo",text:"Priorizó crecimiento y oportunidades. Fortaleza: ambición de creación de valor. Punto de atención: vigilar liquidez y exposición financiera."};
+ if(m.cash>=72&&m.risk<=40)return {name:"CFO Conservador",text:"Priorizó estabilidad, liquidez y menor exposición. Fortaleza: resiliencia financiera. Punto de atención: no dejar pasar oportunidades con buen retorno."};
+ return {name:"CFO Equilibrado",text:"Buscó balance entre crecimiento, liquidez y riesgo. Punto de atención: revisar continuamente si ese balance sigue siendo adecuado."}
+function renderFinal(){
+ const p=profile();document.getElementById("finalGroup").textContent=state.group;document.getElementById("finalMembers").textContent=state.members.join(" · ");document.getElementById("profileName").textContent=p.name;document.getElementById("profileText").textContent=p.text;
+ document.getElementById("finalMetrics").innerHTML=Object.keys(state.metrics).map(k=>'<div class="fm"><b>'+metricLabel(k)+'</b><div style="font-size:1.5rem;font-weight:900;margin-top:5px">'+state.metrics[k]+'/100</div><div class="bar"><div class="fill" style="width:'+state.metrics[k]+'%"></div></div></div>').join("");
+ const hs=state.decisions.map((d,i)=>'<div class="row"><b>Ronda '+(i+1)+' · '+rounds[i].concept+'</b>'+d.title+'</div>').join("")+'<div class="row"><b>Evento inesperado</b>'+state.event.title+'</div>';
+ document.getElementById("history").innerHTML=hs;document.getElementById("finalReflection").textContent=state.reflection
+}
+function renderEvent(){const e=state.event;document.getElementById("eventTitle").textContent=e.title;document.getElementById("eventText").textContent=e.text;document.getElementById("eventImpact").innerHTML=impactHTML(e.before,e.after)}
+function render(){
+ const map={home:"homeScreen",setup:"setupScreen",game:"gameScreen",loading:"loadingScreen",roundResult:"roundResultScreen",event:"eventScreen",reflection:"reflectionScreen",final:"finalScreen"};show(map[state.screen]||"homeScreen");
+ const playing=!["home","setup","final"].includes(state.screen);document.getElementById("topbar").hidden=!playing;
+ if(playing){renderMetrics();document.getElementById("roundTag").textContent="Ronda "+Math.min(state.round+1,3)+" de 3";[0,1,2].forEach(i=>document.getElementById("d"+i).classList.toggle("active",i<=state.round))}
+ if(state.screen==="setup"){document.getElementById("groupName").value=state.group||"";const wrap=document.getElementById("members");wrap.innerHTML="";(state.members&&state.members.length?state.members:[""]).forEach(m=>addMember(m))}
+ if(state.screen==="game")renderRound();
+ if(state.screen==="roundResult")renderRoundResult();
+ if(state.screen==="event")renderEvent();
+ if(state.screen==="reflection")document.getElementById("reflection").value=state.reflection||"";
+ if(state.screen==="final")renderFinal()
+}
+function resetGame(){if(confirm("¿Reiniciar la partida y borrar el progreso guardado?")){localStorage.removeItem(KEY);state=JSON.parse(JSON.stringify(initial));render()}}
+function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines){
+ const words=String(text).split(/\s+/);let line="",lines=[];
+ for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}
+ if(line)lines.push(line);if(maxLines&&lines.length>maxLines){lines=lines.slice(0,maxLines);lines[maxLines-1]=lines[maxLines-1].replace(/[.…]*$/,"")+"…"}
+ lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));return y+lines.length*lineHeight
+}
+function roundRect(ctx,x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}}
+function downloadResult(type){
+ const c=document.createElement("canvas");c.width=1080;c.height=1350;const x=c.getContext("2d");
+ const g=x.createLinearGradient(0,0,1080,1350);g.addColorStop(0,"#07111f");g.addColorStop(.55,"#10243b");g.addColorStop(1,"#050b14");x.fillStyle=g;x.fillRect(0,0,c.width,c.height);
+ x.fillStyle="#63e6ff";x.font="700 28px Arial";x.fillText("CFO CHALLENGE EXPRESS",70,85);x.fillStyle="#ffffff";x.font="900 62px Arial";x.fillText(state.group,70,158);
+ x.fillStyle="#9fb0c6";x.font="28px Arial";wrapText(x,state.members.join(" · "),70,205,940,38,2);
+ const p=profile();roundRect(x,70,285,940,135,26,"#10243b","#2d527a");x.fillStyle="#63e6ff";x.font="700 22px Arial";x.fillText("PERFIL DEL EQUIPO",100,330);x.fillStyle="#fff";x.font="900 42px Arial";x.fillText(p.name,100,380);
+ const keys=["cash","value","risk","trust"],labels=["Caja","Valor","Riesgo","Confianza"],colors=["#36d399","#45a3ff","#fb7185","#a78bfa"];
+ keys.forEach((k,i)=>{const col=i%2,row=Math.floor(i/2),bx=70+col*480,by=455+row*150;roundRect(x,bx,by,450,125,22,"#0b192b","#233a57");x.fillStyle="#a9bed3";x.font="700 22px Arial";x.fillText(labels[i],bx+25,by+38);x.fillStyle="#fff";x.font="900 46px Arial";x.fillText(state.metrics[k]+"/100",bx+25,by+90);x.fillStyle="#1c3049";x.fillRect(bx+210,by+65,205,12);x.fillStyle=colors[i];x.fillRect(bx+210,by+65,205*state.metrics[k]/100,12)});
+ x.fillStyle="#63e6ff";x.font="700 23px Arial";x.fillText("DECISIONES TOMADAS",70,790);x.fillStyle="#fff";x.font="700 27px Arial";
+ let yy=840;state.decisions.forEach((d,i)=>{x.fillStyle="#9fb0c6";x.font="700 19px Arial";x.fillText("RONDA "+(i+1),70,yy);x.fillStyle="#fff";x.font="700 27px Arial";x.fillText(d.title,230,yy);yy+=50});
+ x.fillStyle="#9fb0c6";x.font="700 19px Arial";x.fillText("EVENTO",70,yy);x.fillStyle="#fff";x.font="700 27px Arial";wrapText(x,state.event.title,230,yy,760,34,2);
+ yy+=90;roundRect(x,70,yy,940,180,22,"#0a1829","#233a57");x.fillStyle="#63e6ff";x.font="700 21px Arial";x.fillText("REFLEXIÓN DEL EQUIPO",98,yy+42);x.fillStyle="#dbe7f3";x.font="25px Arial";wrapText(x,state.reflection,98,yy+82,880,34,3);
+ x.fillStyle="#71869e";x.font="20px Arial";x.fillText("Introducción a las Finanzas · "+new Date().toLocaleDateString("es-PE"),70,1310);
+ const mime=type==="jpg"?"image/jpeg":"image/png";const url=c.toDataURL(mime,type==="jpg"?.94:1);const a=document.createElement("a");const safe=state.group.replace(/[^a-z0-9_-]+/gi,"_");a.download="CFO_Challenge_"+safe+"."+type;a.href=url;a.click()
+}
+render();
+</script>
+</body>
+</html>
