@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GeoGuardIA · Monitoreo Municipal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section id="login" class="login-screen">
+  <div class="hero">
+    <div class="brand"><div class="brand-mark">G</div><div><h1>GeoGuardIA</h1><span>Cloud + IA para vigilancia territorial</span></div></div>
+    <div class="hero-main">
+      <div class="eyebrow">Proyecto académico · Maestría en IA</div>
+      <h2>Monitoreo inteligente de quebradas para apoyar decisiones municipales.</h2>
+      <p>Mock institucional de una plataforma de vigilancia periódica con drones, procesamiento geoespacial, inteligencia artificial y validación humana.</p>
+      <div class="students">
+        <div class="students-title">Participantes del proyecto</div>
+        <div class="student-grid">
+          <div class="student">Eddy Santiago Zevallos Quispe</div>
+          <div class="student">Antony Alcantara Tamayo</div>
+          <div class="student">Héctor Enrique López Mariluz</div>
+          <div class="student">Lizzie Pérez Torres</div>
+          <div class="student">Jonathan Jurado Sandoval</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-foot">Curso: IoT y Soluciones Cloud · Semestre 2026-2 · Proyecto GeoGuardIA</div>
+  </div>
+  <div class="login-panel">
+    <form id="loginForm" class="login-card">
+      <div class="seal">M</div>
+      <h3>Acceso institucional</h3>
+      <p>Municipalidad Distrital de Lurigancho-Chosica · Centro de Operaciones de Emergencia Local</p>
+      <label>Usuario<input id="user" value="muni" autocomplete="username"></label>
+      <label>Contraseña<input id="pass" type="password" value="muni" autocomplete="current-password"></label>
+      <button class="primary full" type="submit">Ingresar a GeoGuardIA</button>
+      <div id="loginError" class="error">Usuario o contraseña incorrectos.</div>
+      <div class="demo-note"><b>Acceso demo:</b> usuario <b>muni</b> · contraseña <b>muni</b>. El login es una capa visual del prototipo.</div>
+    </form>
+  </div>
+</section>
+
+<section id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="side-brand"><div class="brand-mark sm">G</div><div><strong>GeoGuardIA</strong><small>Monitoreo Territorial</small></div></div>
+    <nav id="nav" class="nav">
+      <button class="active" data-page="inicio">▦ <span>Inicio</span></button>
+      <button data-page="mapa">⌖ <span>Mapa territorial</span></button>
+      <button data-page="quebradas">△ <span>Quebradas</span></button>
+      <button data-page="hallazgos">⚠ <span>Hallazgos</span></button>
+      <button data-page="intervenciones">✓ <span>Intervenciones</span></button>
+      <button data-page="campanas">✈ <span>Campañas UAV</span></button>
+      <button data-page="obras">▱ <span>Obras de protección</span></button>
+      <button data-page="analitica">▥ <span>Analítica</span></button>
+      <button data-page="reportes">▤ <span>Reportes</span></button>
+      <div class="sep"></div>
+      <button data-page="historial">◷ <span>Historial</span></button>
+      <button data-page="sistema">⚙ <span>Sistema</span></button>
+    </nav>
+    <div class="side-user"><div class="avatar">M</div><div><strong>Usuario Municipal</strong><small>COEL · Gestión del Riesgo</small></div></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><div class="top-title">Municipalidad Distrital de Lurigancho-Chosica</div><div class="top-sub">Centro de Monitoreo Territorial · Proyecto GeoGuardIA</div></div>
+      <div class="top-actions"><span class="status-pill">Servicios operativos</span><button id="notifBtn" class="icon-btn">🔔</button><button id="logoutBtn" class="icon-btn">↪</button></div>
+    </header>
+    <div class="content">
+      <section id="inicio" class="page active">
+        <div class="page-head"><div><h2>Centro de Monitoreo Territorial</h2><p>Estado operativo consolidado · actualización simulada al 05 oct. 2026, 15:42</p></div><button class="secondary" onclick="toast('Datos del mock actualizados')">Actualizar</button></div>
+        <div id="kpis" class="grid-kpi"></div>
+        <div class="dashboard-grid">
+          <div class="card"><div class="card-head"><h3>Mapa operativo del distrito</h3><div class="legend"><span><i class="dot green"></i>Normal</span><span><i class="dot yellow"></i>Observación</span><span><i class="dot orange"></i>Alta</span><span><i class="dot red"></i>Emergencia</span></div></div><div id="homeMap" class="map"></div></div>
+          <div class="card"><div class="card-head"><h3>Priorización actual</h3><span>8 quebradas</span></div><div class="card-body"><div id="riskList" class="risk-list"></div><div class="alert-feed"><h4>Actividad reciente</h4><p>✅ Hallazgo GG-014 validado · Quirio</p><p>✈ CAM-026 procesada · 42 GB</p><p>📋 INT-026 creada · inspección física</p></div></div></div>
+        </div>
+      </section>
+
+      <section id="mapa" class="page"><div class="page-head"><div><h2>Mapa territorial</h2><p>Visor SIG simulado con capas operativas de quebradas, tramos, obras y hallazgos.</p></div></div><div class="two-col"><div class="card"><div class="card-head"><h3>Visor geoespacial</h3><span>WGS84 · Mock cartográfico</span></div><div id="mainMap" class="map tall"></div></div><div class="card"><div class="card-head"><h3>Capas</h3><span>11 disponibles</span></div><div id="layerList" class="card-body layer-list"></div></div></div></section>
+
+      <section id="quebradas" class="page"><div class="page-head"><div><h2>Quebradas monitoreadas</h2><p>Inventario operativo y estado consolidado del piloto distrital.</p></div></div><div class="card"><div class="card-body"><div class="filters"><input placeholder="Buscar quebrada..."><select><option>Todos los estados</option><option>Normal</option><option>Observación</option><option>Alta prioridad</option></select></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Quebrada</th><th>Estado</th><th>Último vuelo</th><th>Hallazgos</th><th>Tramos</th><th>Prioridad</th></tr></thead><tbody id="qBody"></tbody></table></div></div></div></section>
+
+      <section id="hallazgos" class="page"><div class="page-head"><div><h2>Hallazgos</h2><p>Detecciones preliminares y validadas por campaña, tipo y tramo.</p></div></div><div class="card"><div class="card-body"><div class="filters"><input placeholder="Buscar ID o quebrada"><select><option>Todos los tipos</option><option>Sedimento</option><option>Bloque de roca</option><option>Grieta</option></select><select><option>Todos los estados</option><option>Validado</option><option>Pendiente</option></select></div><div class="table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Fecha</th><th>Quebrada</th><th>Tramo</th><th>Tipo</th><th>Nivel</th><th>Validación</th></tr></thead><tbody id="hBody"></tbody></table></div></div></div><div class="card mt"><div class="card-head"><h3>Detalle · GG-014</h3><span>Hallazgo validado</span></div><div class="card-body detail-layout"><div><div class="evidence"><div class="evidence-box before"><span>Campaña 21 Sep</span></div><div class="evidence-box after"><span>Campaña 05 Oct</span></div></div><div class="metric-row"><div class="metric"><small>Volumen anterior</small><b>620 m³</b></div><div class="metric"><small>Volumen actual</small><b>1,040 m³</b></div><div class="metric"><small>Variación</small><b class="warn-text">+420 m³</b></div></div></div><div><div class="workflow"><div><b>1. IA propone</b><small>Segmentación + detección de cambio · confianza 91%</small></div><div><b>2. Especialista valida</b><small>05/10/2026 · 12:22</small></div><div><b>3. COEL decide</b><small>Intervención, nuevo vuelo o seguimiento</small></div></div><div class="decision-actions"><button class="primary" onclick="createIntervention()">Crear intervención</button><button class="secondary" onclick="toast('Nuevo vuelo solicitado')">Solicitar nuevo vuelo</button></div></div></div></div></section>
+
+      <section id="intervenciones" class="page"><div class="page-head"><div><h2>Intervenciones municipales</h2><p>Acciones creadas a partir de hallazgos validados.</p></div><button class="primary" onclick="createIntervention()">+ Nueva intervención</button></div><div class="card"><div class="card-body table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Origen</th><th>Acción</th><th>Responsable</th><th>Fecha límite</th><th>Prioridad</th><th>Estado</th></tr></thead><tbody id="iBody"></tbody></table></div></div></section>
+
+      <section id="campanas" class="page"><div class="page-head"><div><h2>Campañas UAV</h2><p>Historial de vuelos, carga, procesamiento, IA, validación y publicación.</p></div></div><div class="card"><div class="card-body table-wrap"><table class="data-table"><thead><tr><th>Campaña</th><th>Fecha</th><th>Quebrada</th><th>Volumen</th><th>Procesamiento</th><th>Comparabilidad</th><th>Estado</th></tr></thead><tbody><tr><td><b>CAM-026</b></td><td>05/10/2026</td><td>Quirio</td><td>42 GB</td><td>10 h 18 min</td><td>98%</td><td><span class="badge b-green">Publicada</span></td></tr><tr><td><b>CAM-025</b></td><td>21/09/2026</td><td>Quirio</td><td>38 GB</td><td>9 h 44 min</td><td>97%</td><td><span class="badge b-green">Publicada</span></td></tr><tr><td><b>CAM-024</b></td><td>07/09/2026</td><td>Quirio</td><td>51 GB</td><td>11 h 29 min</td><td>89%</td><td><span class="badge b-yellow">Revisar</span></td></tr></tbody></table></div></div><div class="card mt"><div class="card-head"><h3>Pipeline · CAM-026</h3><span>Proceso completado</span></div><div class="card-body pipeline"><span>✓ Captura</span><span>✓ Transferencia S3</span><span>✓ Fotogrametría</span><span>✓ Análisis IA</span><span>✓ Validación</span><span>✓ Publicación</span></div></div></section>
+
+      <section id="obras" class="page"><div class="page-head"><div><h2>Obras de protección</h2><p>Inventario de infraestructura de mitigación vinculada a quebradas y tramos.</p></div></div><div class="card"><div class="card-body table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Tipo</th><th>Quebrada</th><th>Capacidad</th><th>Llenado</th><th>Última medición</th><th>Estado</th></tr></thead><tbody><tr><td><b>BD-04</b></td><td>Barrera dinámica</td><td>Quirio</td><td>2,000 m³</td><td><b>54%</b></td><td>05 Oct 2026</td><td><span class="badge b-orange">Prioridad alta</span></td></tr><tr><td>MC-02</td><td>Muro de contención</td><td>Pedregal</td><td>—</td><td>—</td><td>02 Oct 2026</td><td><span class="badge b-yellow">Observación</span></td></tr><tr><td>DQ-03</td><td>Dique</td><td>Quirio</td><td>1,450 m³</td><td>31%</td><td>05 Oct 2026</td><td><span class="badge b-green">Operativo</span></td></tr></tbody></table></div></div></section>
+
+      <section id="analitica" class="page"><div class="page-head"><div><h2>Analítica del piloto</h2><p>Indicadores de calidad, oportunidad, utilidad y desempeño del sistema.</p></div></div><div id="analyticsKpis" class="grid-kpi"></div><div class="two-col"><div class="card"><div class="card-head"><h3>Hallazgos por campaña</h3></div><div class="card-body"><div class="bars" id="bars"></div></div></div><div class="card"><div class="card-head"><h3>Distribución por tipo</h3></div><div class="card-body"><div class="type-list"><p>Sedimentos <b>12</b></p><p>Elevación <b>8</b></p><p>Bloques <b>6</b></p><p>Grietas <b>5</b></p><p>Represamiento <b>3</b></p><p>Sección de cauce <b>3</b></p></div></div></div></div></section>
+
+      <section id="reportes" class="page"><div class="page-head"><div><h2>Reportes</h2><p>Productos simulados para gestión municipal y seguimiento.</p></div></div><div class="report-grid"><div class="report card"><h3>Reporte ejecutivo COEL</h3><p>Estado consolidado, alertas, intervenciones y próximos hitos.</p><button class="secondary" onclick="toast('Reporte ejecutivo generado')">Generar PDF</button></div><div class="report card"><h3>Reporte de quebrada</h3><p>Campañas, cambios, obras, hallazgos e historial.</p><button class="secondary" onclick="toast('Reporte de quebrada generado')">Generar PDF</button></div><div class="report card"><h3>Reporte de intervenciones</h3><p>Acciones, responsables, plazos y estado.</p><button class="secondary" onclick="toast('Reporte generado')">Generar PDF</button></div></div></section>
+
+      <section id="historial" class="page"><div class="page-head"><div><h2>Historial y trazabilidad</h2><p>Registro simulado de campañas, validaciones, decisiones y responsables.</p></div></div><div class="card"><div class="card-body timeline"><p><b>15:42 · Usuario muni inició sesión</b><small>Rol COEL · sesión de demostración</small></p><p><b>13:10 · INT-026 asignada</b><small>Gestión del Riesgo · GG-014</small></p><p><b>12:40 · INT-026 creada</b><small>Inspección física prioritaria</small></p><p><b>12:22 · GG-014 validado</b><small>Especialista técnico</small></p><p><b>11:50 · CAM-026 procesada</b><small>Modelo geoguardia-change-v1.4</small></p></div></div></section>
+
+      <section id="sistema" class="page"><div class="page-head"><div><h2>Estado del sistema</h2><p>Vista operativa simulada de servicios cloud, datos y modelos.</p></div><span class="status-pill">Sin incidencias</span></div><div class="health-grid"><div>Amazon S3 <span>Operativo</span></div><div>Batch / ODM <span>Operativo</span></div><div>SageMaker <span>Operativo</span></div><div>PostGIS <span>Operativo</span></div><div>Cognito / IAM <span>Operativo</span></div><div>SNS <span>Operativo</span></div></div><div class="card mt"><div class="card-head"><h3>Gobernanza de la decisión</h3></div><div class="card-body governance"><div><b>IA propone</b><small>Hallazgos preliminares</small></div><div>→</div><div><b>Especialista valida</b><small>Aprueba o descarta</small></div><div>→</div><div><b>Municipalidad decide</b><small>Prioriza y comunica</small></div></div></div></section>
+    </div>
+  </main>
+</section>
+<div id="toast" class="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
