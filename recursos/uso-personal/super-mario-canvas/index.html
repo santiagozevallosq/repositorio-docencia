@@ -45,9 +45,15 @@
     .hud-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
+      flex-wrap: wrap;
     }
-    .hud-back-btn {
+    .hud-right {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+    .hud-back-btn, .hud-map-btn {
       pointer-events: auto;
       display: inline-flex;
       align-items: center;
@@ -61,9 +67,10 @@
       font-weight: bold;
       text-decoration: none;
       backdrop-filter: blur(4px);
+      cursor: pointer;
       transition: background 0.15s, transform 0.1s;
     }
-    .hud-back-btn:hover {
+    .hud-back-btn:hover, .hud-map-btn:hover {
       background: rgba(0, 0, 0, 0.75);
       transform: translateY(-1px);
     }
@@ -71,6 +78,42 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      font-size: 16px;
+    }
+    /* Barra de misiones */
+    #missionBar {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 16px 6px;
+      flex-wrap: wrap;
+      pointer-events: none;
+    }
+    .mission-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-radius: 20px;
+      padding: 4px 12px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      text-shadow: 1px 1px 0 #000;
+      transition: transform 0.15s, border-color 0.2s, background 0.2s;
+    }
+    .mission-chip.mission-done {
+      border-color: #2ecc71;
+      background: rgba(20, 90, 50, 0.65);
+    }
+    .mission-chip.pulse {
+      animation: missionPulse 0.5s ease;
+    }
+    @keyframes missionPulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.3); }
+      100% { transform: scale(1); }
     }
     .controls-guide {
       text-align: center;
@@ -104,16 +147,24 @@
       transition: opacity 0.25s;
       padding: 20px;
       text-align: center;
+      overflow-y: auto;
     }
     .hidden {
       opacity: 0;
       pointer-events: none;
     }
     h1 {
-      font-size: 40px;
+      font-size: 36px;
       color: #e52521;
       text-shadow: 3px 3px 0 #000, -2px -2px 0 #fff;
-      margin: 0 0 12px;
+      margin: 0 0 10px;
+    }
+    h2 {
+      font-size: 15px;
+      color: #ffd700;
+      margin: 0 0 18px;
+      text-shadow: 1px 1px 0 #000;
+      letter-spacing: 1px;
     }
     p {
       font-size: 16px;
@@ -134,6 +185,7 @@
       cursor: pointer;
       box-shadow: 0 6px 0 #900, 0 8px 16px rgba(0,0,0,0.4);
       transition: transform 0.1s, box-shadow 0.1s;
+      margin: 6px;
     }
     .btn:hover {
       transform: translateY(-2px);
@@ -143,6 +195,83 @@
       transform: translateY(4px);
       box-shadow: 0 2px 0 #900;
     }
+    .btn.secondary {
+      background: #2d7dd2;
+      box-shadow: 0 6px 0 #16436e, 0 8px 16px rgba(0,0,0,0.4);
+    }
+    .btn.secondary:hover { box-shadow: 0 8px 0 #16436e, 0 10px 20px rgba(0,0,0,0.5); }
+    .btn.secondary:active { box-shadow: 0 2px 0 #16436e; }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      filter: grayscale(0.6);
+    }
+
+    /* Mapa de niveles */
+    #worldMapNodes {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .level-node {
+      font-family: inherit;
+      width: 150px;
+      background: rgba(255,255,255,0.08);
+      border: 3px solid #ffd700;
+      border-radius: 14px;
+      padding: 14px 10px;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .level-node:hover:not(.locked) {
+      transform: translateY(-4px) scale(1.04);
+      background: rgba(255,255,255,0.18);
+    }
+    .level-node.locked {
+      border-color: #777;
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .level-node-number {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ffd700;
+      text-shadow: 2px 2px 0 #000;
+    }
+    .level-node-name {
+      font-size: 12px;
+      margin: 6px 0;
+      line-height: 1.3;
+      min-height: 32px;
+    }
+    .level-node-stars {
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+
+    /* Resultados de nivel */
+    .stars-row {
+      font-size: 42px;
+      margin-bottom: 10px;
+      letter-spacing: 8px;
+    }
+    .mission-result-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      text-align: left;
+    }
+    .mission-result-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     #touchControls {
       display: none;
       pointer-events: auto;
@@ -154,7 +283,8 @@
       #touchControls { display: flex; }
       .controls-guide { display: none; }
       .hud { font-size: 15px; padding: 10px 14px; }
-      h1 { font-size: 28px; }
+      h1 { font-size: 26px; }
+      .level-node { width: 120px; }
     }
     .touch-btn {
       width: 60px;
@@ -179,45 +309,58 @@
   <canvas id="gameCanvas"></canvas>
 
   <div id="uiLayer">
-    <div class="hud">
-      <div class="hud-left">
-        <a href="../../../index.html" class="hud-back-btn">
-          <span>←</span> Repositorio Docente
-        </a>
-        <div class="hud-stat"><span style="color:#f1c40f">🪙</span> <span id="scoreDisplay">0</span></div>
+    <div>
+      <div class="hud">
+        <div class="hud-left">
+          <a href="../../../index.html" class="hud-back-btn">
+            <span>←</span> Repositorio Docente
+          </a>
+          <button class="hud-map-btn" id="mapBtn">🗺️ Mapa de Niveles</button>
+          <div class="hud-stat"><span style="color:#f1c40f">🪙</span> <span id="scoreDisplay">0</span></div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-stat"><span>⏱</span> <span id="timeDisplay">0</span></div>
+          <div class="hud-stat"><span style="color:#ff4444">❤</span> <span id="livesDisplay">3</span></div>
+          <button id="soundToggleBtn" style="pointer-events:auto; background:rgba(0,0,0,0.4); border:1px solid #fff; border-radius:6px; color:#fff; font-size:14px; padding:4px 8px; cursor:pointer;" title="Sonido">🔊</button>
+        </div>
       </div>
-      <div style="display:flex; gap:20px; align-items:center;">
-        <div class="hud-stat"><span style="color:#ff4444">❤</span> <span id="livesDisplay">3</span></div>
-        <button id="soundToggleBtn" style="pointer-events:auto; background:rgba(0,0,0,0.4); border:1px solid #fff; border-radius:6px; color:#fff; font-size:14px; padding:4px 8px; cursor:pointer;" title="Sonido">🔊</button>
-      </div>
+      <div id="missionBar"></div>
     </div>
 
     <div class="controls-guide">
-      Mover: <span class="key-cap">A</span><span class="key-cap">D</span> o <span class="key-cap">←</span><span class="key-cap">→</span> &nbsp;|&nbsp; 
-      Saltar: <span class="key-cap">ESPACIO</span> / <span class="key-cap">W</span> / <span class="key-cap">↑</span> &nbsp;|&nbsp; 
-      ¡Elimina Goombas pisándolos!
+      Mover: <span class="key-cap">A</span><span class="key-cap">D</span> o <span class="key-cap">←</span><span class="key-cap">→</span> &nbsp;|&nbsp;
+      Saltar: <span class="key-cap">ESPACIO</span> / <span class="key-cap">W</span> / <span class="key-cap">↑</span> &nbsp;|&nbsp;
+      ¡Pisa enemigos, busca bloques ocultos y atrapa el hongo!
     </div>
 
-    <!-- Pantalla de Inicio -->
-    <div id="startScreen" class="overlay">
+    <!-- Mapa de Niveles / Menú Principal -->
+    <div id="worldMapScreen" class="overlay">
       <h1>SUPER MARIO BROS</h1>
-      <p>Avanza por el nivel, recoge monedas, salta sobre los bloques <b>?</b> y llega a salvo al castillo final.</p>
-      <button class="btn" id="startBtn">Jugar Nivel</button>
+      <h2>EDICIÓN CANVAS RETRO — SELECCIONA UN NIVEL</h2>
+      <div id="worldMapNodes"></div>
+      <p style="font-size:13px; max-width:480px;">Completa las misiones de cada nivel (monedas, enemigos y el bloque oculto) dentro del tiempo límite para ganar hasta 3 estrellas.</p>
     </div>
 
     <!-- Pantalla de Game Over -->
     <div id="gameOverScreen" class="overlay hidden">
       <h1 style="color:#e74c3c;">GAME OVER</h1>
-      <p>Has agotado tus vidas. ¡Inténtalo de nuevo!</p>
-      <button class="btn" id="restartBtn">Reintentar</button>
+      <p>Has agotado tus vidas en este nivel. ¡Inténtalo de nuevo!</p>
+      <div>
+        <button class="btn" id="retryBtn">Reintentar Nivel</button>
+        <button class="btn secondary" id="gameOverMapBtn">Mapa de Niveles</button>
+      </div>
     </div>
 
-    <!-- Pantalla de Victoria -->
-    <div id="victoryScreen" class="overlay hidden">
+    <!-- Pantalla de Nivel Completado -->
+    <div id="levelCompleteScreen" class="overlay hidden">
       <h1 style="color:#f1c40f;">¡NIVEL COMPLETADO!</h1>
-      <p>¡Llegaste al castillo y completaste el nivel con éxito!</p>
-      <p style="font-size:22px; color:#ffd700; font-weight:bold; margin-bottom:20px;">Puntuación Final: <span id="finalScore">0</span></p>
-      <button class="btn" id="playAgainBtn">Jugar de Nuevo</button>
+      <div class="stars-row" id="starsRow">☆☆☆</div>
+      <div class="mission-result-list" id="missionResultList"></div>
+      <p style="font-size:20px; color:#ffd700; font-weight:bold; margin-bottom:10px;">Puntuación: <span id="finalScore">0</span></p>
+      <div>
+        <button class="btn" id="nextLevelBtn">Siguiente Nivel</button>
+        <button class="btn secondary" id="completeMapBtn">Mapa de Niveles</button>
+      </div>
     </div>
 
     <!-- Controles Táctiles para Móviles -->
@@ -278,6 +421,9 @@
       stomp() {
         playTone(180, 'triangle', 0.12, 0, 60);
       },
+      kick() {
+        playTone(220, 'square', 0.1, 0, 500);
+      },
       bump() {
         playTone(80, 'square', 0.08, 0, 40);
       },
@@ -290,6 +436,9 @@
         playTone(400, 'sawtooth', 0.15, 0, 300);
         playTone(300, 'sawtooth', 0.15, 0.15, 200);
         playTone(200, 'sawtooth', 0.35, 0.3, 80);
+      },
+      hurt() {
+        playTone(500, 'sawtooth', 0.12, 0, 250);
       },
       win() {
         [523, 659, 784, 1046].forEach((f, i) => {
@@ -311,23 +460,69 @@
 
     const scoreDisplay = document.getElementById('scoreDisplay');
     const livesDisplay = document.getElementById('livesDisplay');
-    const startScreen = document.getElementById('startScreen');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const worldMapScreen = document.getElementById('worldMapScreen');
+    const worldMapNodes = document.getElementById('worldMapNodes');
     const gameOverScreen = document.getElementById('gameOverScreen');
-    const victoryScreen = document.getElementById('victoryScreen');
+    const levelCompleteScreen = document.getElementById('levelCompleteScreen');
     const finalScore = document.getElementById('finalScore');
+    const starsRow = document.getElementById('starsRow');
+    const missionResultList = document.getElementById('missionResultList');
+    const missionBar = document.getElementById('missionBar');
 
     const TILE_SIZE = 48;
     const GRAVITY = 0.65;
     const TERMINAL_VEL = 14;
 
-    const STATE = { MENU: 0, PLAYING: 1, GAMEOVER: 2, VICTORY: 3 };
+    const STATE = { MENU: 0, PLAYING: 1, GAMEOVER: 2, LEVEL_COMPLETE: 3 };
     let currentState = STATE.MENU;
     let animId = null;
-    let camera = { x: 0 };
+    let camera = { x: 0, shakeTime: 0, shakeMag: 0 };
     let score = 0;
     let lives = 3;
     let levelWidth = 0;
     let groundY = 0;
+    let currentLevel = null;
+    let currentTheme = 'day';
+
+    // Paletas visuales por ambientación de nivel
+    const THEME_PALETTE = {
+      day:    { sky: '#5c94fc', ground: '#d85600', groundDeco: '#f8b88c', brick: '#c84c0c', hill: '#00a800' },
+      cave:   { sky: '#1b2140', ground: '#4a4a52', groundDeco: '#6e6e78', brick: '#5a3d2b', hill: '#2c3155' },
+      castle: { sky: '#160c22', ground: '#3a3238', groundDeco: '#5a4f56', brick: '#702020', hill: '#241530' }
+    };
+
+    // ==========================================
+    // PROGRESO PERSISTENTE (localStorage)
+    // ==========================================
+    const STORAGE_KEY = 'smbCanvasProgress_v1';
+
+    function defaultProgress() {
+      return { unlocked: 1, stars: { 1: 0, 2: 0, 3: 0 } };
+    }
+
+    function loadProgress() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultProgress();
+        const parsed = JSON.parse(raw);
+        const base = defaultProgress();
+        return {
+          unlocked: parsed.unlocked || 1,
+          stars: Object.assign(base.stars, parsed.stars || {})
+        };
+      } catch (e) {
+        return defaultProgress();
+      }
+    }
+
+    function saveProgress() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      } catch (e) {}
+    }
+
+    let progress = loadProgress();
 
     // Controles
     const keys = { left: false, right: false, up: false, jumpTriggered: false };
@@ -373,9 +568,18 @@
     window.addEventListener('resize', resize);
     resize();
 
+    function shakeScreen(mag, time) {
+      camera.shakeMag = mag;
+      camera.shakeTime = time;
+    }
+
     // ==========================================
     // CLASES DE ENTIDADES
     // ==========================================
+
+    const SMALL_HEIGHT = 42;
+    const BIG_HEIGHT = 58;
+    const PLAYER_WIDTH = 32;
 
     class Player {
       constructor(x, y) {
@@ -383,8 +587,9 @@
         this.startY = y;
         this.x = x;
         this.y = y;
-        this.width = 32;
-        this.height = 42;
+        this.width = PLAYER_WIDTH;
+        this.height = SMALL_HEIGHT;
+        this.power = 'small'; // 'small' | 'big'
         this.vx = 0;
         this.vy = 0;
         this.speed = 0.6;
@@ -393,11 +598,13 @@
         this.airFriction = 0.94;
         this.jumpForce = -14.2; // Salto accesible para plataformas de 3 bloques
         this.isGrounded = false;
+        this.wasGrounded = false;
         this.coyoteTime = 0;
         this.jumpBuffer = 0;
         this.facingRight = true;
         this.invulnerable = 0;
         this.animFrame = 0;
+        this.dustTimer = 0;
       }
 
       reset() {
@@ -409,8 +616,26 @@
         this.invulnerable = 90;
       }
 
+      grow() {
+        if (this.power === 'big') return;
+        this.power = 'big';
+        const diff = BIG_HEIGHT - SMALL_HEIGHT;
+        this.height = BIG_HEIGHT;
+        this.y -= diff;
+      }
+
+      shrink() {
+        if (this.power !== 'big') return;
+        const diff = BIG_HEIGHT - SMALL_HEIGHT;
+        this.power = 'small';
+        this.height = SMALL_HEIGHT;
+        this.y += diff;
+        this.invulnerable = 90;
+      }
+
       update() {
         if (this.invulnerable > 0) this.invulnerable--;
+        this.wasGrounded = this.isGrounded;
 
         // Movimiento horizontal
         if (keys.left) {
@@ -430,9 +655,13 @@
         }
         if (Math.abs(this.vx) < 0.08) this.vx = 0;
 
-        // Contador de pasos para animación de correr
+        // Contador de pasos para animación de correr + polvo
         if (Math.abs(this.vx) > 0.5 && this.isGrounded) {
           this.animFrame += 0.25;
+          this.dustTimer++;
+          if (this.dustTimer % 7 === 0) {
+            world.particles.push(new Dust(this.x + this.width / 2, this.y + this.height));
+          }
         } else {
           this.animFrame = 0;
         }
@@ -483,6 +712,12 @@
         this.y += this.vy;
         this.isGrounded = false;
         this.checkCollisionsY();
+
+        // Aterrizaje: polvo de impacto
+        if (this.isGrounded && !this.wasGrounded) {
+          world.particles.push(new Dust(this.x + this.width * 0.2, this.y + this.height));
+          world.particles.push(new Dust(this.x + this.width * 0.8, this.y + this.height));
+        }
 
         // Caída al vacío
         if (this.y > canvas.height + 150) {
@@ -543,6 +778,10 @@
           ctx.scale(-1, 1);
         }
 
+        // Escala vertical para el estado "grande" (hongo), manteniendo el arte base en 32x42
+        const scaleY = this.height / SMALL_HEIGHT;
+        ctx.scale(1, scaleY);
+
         const legWiggle = this.isGrounded ? Math.sin(this.animFrame) * 4 : 0;
 
         // Gorra roja
@@ -564,8 +803,8 @@
         // Bigote
         ctx.fillRect(18, 16, 9, 4);
 
-        // Camisa roja
-        ctx.fillStyle = '#e52521';
+        // Camisa (azul si está "grande" para distinguir el power-up, roja si es pequeño)
+        ctx.fillStyle = this.power === 'big' ? '#0033f0' : '#e52521';
         ctx.fillRect(4, 20, 20, 10);
         // Mangas
         ctx.fillRect(0, 21, 6, 8);
@@ -576,8 +815,8 @@
         ctx.fillRect(-2, 26, 6, 5);
         ctx.fillRect(22, 26, 6, 5);
 
-        // Overol azul
-        ctx.fillStyle = '#0033f0';
+        // Overol (rojo si está "grande", azul si es pequeño)
+        ctx.fillStyle = this.power === 'big' ? '#e52521' : '#0033f0';
         ctx.fillRect(6, 26, 16, 10);
         // Botones amarillos
         ctx.fillStyle = '#f1c40f';
@@ -593,7 +832,7 @@
       }
     }
 
-    // Bloques: Ladrillo, Misterio (?), Tubo, Suelo
+    // Bloques: Ladrillo, Misterio (?), Misterio-Hongo, Oculto (estrella), Tubo, Suelo, Usado
     class Block {
       constructor(x, y, type = 'ground') {
         this.x = x;
@@ -601,7 +840,7 @@
         this.baseY = y;
         this.width = TILE_SIZE;
         this.height = TILE_SIZE;
-        this.type = type; // 'ground', 'brick', 'question', 'used', 'pipe'
+        this.type = type; // 'ground', 'brick', 'question', 'mushroom_block', 'hidden', 'used', 'pipe'
         this.bounceOffset = 0;
       }
 
@@ -611,9 +850,24 @@
           this.bounce();
           sfx.coin();
           score += 100;
+          world.missionProgress.coins++;
           updateHUD();
-          // Crear moneda voladora
           world.particles.push(new CoinParticle(this.x + this.width / 2, this.y - 10));
+        } else if (this.type === 'mushroom_block') {
+          this.type = 'used';
+          this.bounce();
+          sfx.bump();
+          world.mushrooms.push(new Mushroom(this.x, this.y - TILE_SIZE));
+        } else if (this.type === 'hidden') {
+          this.type = 'used';
+          this.bounce();
+          sfx.powerup();
+          world.missionProgress.star = 1;
+          score += 500;
+          updateHUD();
+          for (let i = 0; i < 8; i++) {
+            world.particles.push(new Burst(this.x + this.width / 2, this.y, '#ffd700'));
+          }
         } else if (this.type === 'brick') {
           this.bounce();
           sfx.bump();
@@ -633,64 +887,58 @@
 
       draw(ctx) {
         const renderY = this.y + this.bounceOffset;
+        const pal = THEME_PALETTE[currentTheme];
+
+        if (this.type === 'hidden') {
+          return; // Totalmente invisible hasta ser golpeado
+        }
 
         if (this.type === 'ground') {
-          // Suelo de tierra con césped arriba
-          ctx.fillStyle = '#d85600';
+          ctx.fillStyle = pal.ground;
           ctx.fillRect(this.x, renderY, this.width, this.height);
-          // Textura de bloques
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
           ctx.strokeRect(this.x, renderY, this.width, this.height);
-          // Puntos de textura
-          ctx.fillStyle = '#f8b88c';
+          ctx.fillStyle = pal.groundDeco;
           ctx.fillRect(this.x + 6, renderY + 6, 8, 8);
           ctx.fillRect(this.x + 26, renderY + 24, 8, 8);
         } else if (this.type === 'brick') {
-          // Ladrillo marrón rompible
-          ctx.fillStyle = '#c84c0c';
+          ctx.fillStyle = pal.brick;
           ctx.fillRect(this.x, renderY, this.width, this.height);
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
           ctx.strokeRect(this.x, renderY, this.width, this.height);
-          // Mortero
           ctx.fillStyle = '#000';
           ctx.fillRect(this.x, renderY + this.height / 2, this.width, 2);
           ctx.fillRect(this.x + this.width / 2, renderY, 2, this.height / 2);
           ctx.fillRect(this.x + this.width / 4, renderY + this.height / 2, 2, this.height / 2);
           ctx.fillRect(this.x + (this.width * 3) / 4, renderY + this.height / 2, 2, this.height / 2);
-        } else if (this.type === 'question') {
-          // Bloque amarillo con ?
+        } else if (this.type === 'question' || this.type === 'mushroom_block') {
           ctx.fillStyle = '#fcb040';
           ctx.fillRect(this.x, renderY, this.width, this.height);
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
           ctx.strokeRect(this.x, renderY, this.width, this.height);
-          // Tornillos esquinas
           ctx.fillStyle = '#7a3e00';
           ctx.fillRect(this.x + 3, renderY + 3, 3, 3);
           ctx.fillRect(this.x + this.width - 6, renderY + 3, 3, 3);
           ctx.fillRect(this.x + 3, renderY + this.height - 6, 3, 3);
           ctx.fillRect(this.x + this.width - 6, renderY + this.height - 6, 3, 3);
-          // Signo ?
           ctx.fillStyle = '#fff';
           ctx.font = 'bold 26px Courier New';
           ctx.fillText('?', this.x + 16, renderY + 34);
         } else if (this.type === 'used') {
-          // Bloque vacío metálico
           ctx.fillStyle = '#a07850';
           ctx.fillRect(this.x, renderY, this.width, this.height);
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
           ctx.strokeRect(this.x, renderY, this.width, this.height);
         } else if (this.type === 'pipe') {
-          // Tubo verde Mario
           ctx.fillStyle = '#00a800';
           ctx.fillRect(this.x, renderY, this.width, this.height);
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 2;
           ctx.strokeRect(this.x, renderY, this.width, this.height);
-          // Brillo tubo
           ctx.fillStyle = '#80d010';
           ctx.fillRect(this.x + 4, renderY, 8, this.height);
         }
@@ -708,6 +956,7 @@
         this.vy = 0;
         this.isDead = false;
         this.squashTimer = 0;
+        this.kind = 'goomba';
       }
 
       update() {
@@ -716,11 +965,9 @@
           return;
         }
 
-        // Gravedad
         this.vy += GRAVITY;
         this.y += this.vy;
 
-        // Colisión suelo Y
         for (const block of world.blocks) {
           if (this.isColliding(block)) {
             if (this.vy > 0) {
@@ -730,10 +977,8 @@
           }
         }
 
-        // Movimiento X
         this.x += this.vx;
 
-        // Colisión con paredes
         for (const block of world.blocks) {
           if (this.isColliding(block)) {
             if (this.vx > 0) {
@@ -758,7 +1003,6 @@
 
       draw(ctx) {
         if (this.isDead) {
-          // Goomba aplastado
           ctx.fillStyle = '#884400';
           ctx.fillRect(this.x, this.y + 18, this.width, 12);
           ctx.fillStyle = '#000';
@@ -767,7 +1011,6 @@
           return;
         }
 
-        // Cabeza Goomba
         ctx.fillStyle = '#884400';
         ctx.beginPath();
         ctx.arc(this.x + this.width / 2, this.y + 12, 16, Math.PI, 0);
@@ -776,7 +1019,6 @@
         ctx.closePath();
         ctx.fill();
 
-        // Ojos enojados
         ctx.fillStyle = '#fff';
         ctx.fillRect(this.x + 7, this.y + 8, 6, 8);
         ctx.fillRect(this.x + 21, this.y + 8, 6, 8);
@@ -784,11 +1026,197 @@
         ctx.fillRect(this.x + 10, this.y + 10, 3, 5);
         ctx.fillRect(this.x + 21, this.y + 10, 3, 5);
 
-        // Pies negros que caminan
         ctx.fillStyle = '#000';
         const step = Math.sin(Date.now() / 120);
         ctx.fillRect(this.x + 2, this.y + 24 + (step > 0 ? -2 : 0), 12, 6);
         ctx.fillRect(this.x + 20, this.y + 24 + (step < 0 ? -2 : 0), 12, 6);
+      }
+    }
+
+    // Enemigo Koopa Troopa: camina -> caparazón quieto -> caparazón lanzado
+    class Koopa {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 34;
+        this.height = 38;
+        this.vx = -1.1;
+        this.vy = 0;
+        this.state = 'walk'; // 'walk' | 'shell' | 'shellMoving'
+        this.isDead = false; // marcado true solo cuando es destruido por una cadena de caparazón
+        this.squashTimer = 0;
+      }
+
+      update() {
+        if (this.isDead) {
+          this.squashTimer++;
+          return;
+        }
+
+        this.vy += GRAVITY;
+        this.y += this.vy;
+
+        for (const block of world.blocks) {
+          if (this.isColliding(block) && this.vy > 0) {
+            this.y = block.y - this.height;
+            this.vy = 0;
+          }
+        }
+
+        if (this.state !== 'shell') {
+          this.x += this.vx;
+          for (const block of world.blocks) {
+            if (this.isColliding(block)) {
+              if (this.vx > 0) {
+                this.x = block.x - this.width;
+                this.vx = -this.vx;
+              } else {
+                this.x = block.x + block.width;
+                this.vx = -this.vx;
+              }
+            }
+          }
+        }
+
+        // Un caparazón en movimiento elimina a otros enemigos que toque
+        if (this.state === 'shellMoving') {
+          for (const other of world.enemies) {
+            if (other !== this && !other.isDead && other.state !== 'shellMoving') {
+              if (this.isColliding(other)) {
+                other.isDead = true;
+                other.squashTimer = 0;
+                score += 100;
+                world.missionProgress.enemies++;
+                updateHUD();
+                for (let i = 0; i < 5; i++) {
+                  world.particles.push(new Burst(other.x + other.width / 2, other.y + other.height / 2, '#884400'));
+                }
+              }
+            }
+          }
+        }
+      }
+
+      becomeShell() {
+        this.state = 'shell';
+        this.vx = 0;
+      }
+
+      kick(directionFromPlayer) {
+        this.state = 'shellMoving';
+        this.vx = directionFromPlayer > 0 ? 5.5 : -5.5;
+        sfx.kick();
+      }
+
+      stopShell() {
+        this.state = 'shell';
+        this.vx = 0;
+      }
+
+      isColliding(b) {
+        return (
+          this.x < b.x + b.width &&
+          this.x + this.width > b.x &&
+          this.y < b.y + b.height &&
+          this.y + this.height > b.y
+        );
+      }
+
+      draw(ctx) {
+        if (this.isDead) {
+          ctx.fillStyle = '#2ecc71';
+          ctx.fillRect(this.x, this.y + 20, this.width, 14);
+          return;
+        }
+
+        if (this.state === 'walk') {
+          // Cuerpo con cabeza/pies visibles
+          ctx.fillStyle = '#ffdd55';
+          ctx.fillRect(this.x + 6, this.y, this.width - 12, 16);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(this.x + 10, this.y + 4, 4, 4);
+          ctx.fillRect(this.x + this.width - 14, this.y + 4, 4, 4);
+        }
+
+        // Caparazón (siempre visible)
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.ellipse(this.x + this.width / 2, this.y + 24, this.width / 2, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#1e8449';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#eafaf1';
+        ctx.beginPath();
+        ctx.ellipse(this.x + this.width / 2, this.y + 26, this.width / 2 - 8, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (this.state === 'walk') {
+          ctx.fillStyle = '#000';
+          const step = Math.sin(Date.now() / 110);
+          ctx.fillRect(this.x + 4, this.y + 32 + (step > 0 ? -2 : 0), 10, 6);
+          ctx.fillRect(this.x + this.width - 14, this.y + 32 + (step < 0 ? -2 : 0), 10, 6);
+        }
+      }
+    }
+
+    // Power-up: Hongo (hace crecer a Mario)
+    class Mushroom {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 32;
+        this.height = 28;
+        this.vx = 1.6;
+        this.vy = -3; // Emerge del bloque
+        this.collected = false;
+      }
+
+      update() {
+        this.vy += GRAVITY;
+        if (this.vy > TERMINAL_VEL) this.vy = TERMINAL_VEL;
+        this.y += this.vy;
+        for (const block of world.blocks) {
+          if (this.isColliding(block) && this.vy > 0) {
+            this.y = block.y - this.height;
+            this.vy = 0;
+          }
+        }
+        this.x += this.vx;
+        for (const block of world.blocks) {
+          if (this.isColliding(block)) {
+            if (this.vx > 0) {
+              this.x = block.x - this.width;
+              this.vx = -this.vx;
+            } else {
+              this.x = block.x + block.width;
+              this.vx = -this.vx;
+            }
+          }
+        }
+      }
+
+      isColliding(b) {
+        return (
+          this.x < b.x + b.width &&
+          this.x + this.width > b.x &&
+          this.y < b.y + b.height &&
+          this.y + this.height > b.y
+        );
+      }
+
+      draw(ctx) {
+        ctx.fillStyle = '#e52521';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + 10, this.width / 2, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(this.x + 9, this.y + 7, 4, 0, Math.PI * 2);
+        ctx.arc(this.x + this.width - 9, this.y + 7, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffe0b2';
+        ctx.fillRect(this.x + 6, this.y + 10, this.width - 12, 14);
       }
     }
 
@@ -843,6 +1271,59 @@
       }
     }
 
+    // Polvo al correr / aterrizar
+    class Dust {
+      constructor(x, y) {
+        this.x = x + (Math.random() * 10 - 5);
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = -1 - Math.random();
+        this.life = 14;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.1;
+        this.life--;
+      }
+      draw(ctx) {
+        if (this.life <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life / 14) * 0.6;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Partícula de impacto genérica (golpes, derrotas, descubrimientos)
+    class Burst {
+      constructor(x, y, color = '#fff') {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 6;
+        this.vy = -Math.random() * 6 - 2;
+        this.life = 22;
+        this.color = color;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.4;
+        this.life--;
+      }
+      draw(ctx) {
+        if (this.life <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life / 22);
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x - 3, this.y - 3, 6, 6);
+        ctx.restore();
+      }
+    }
+
     // Meta: Castillo y Asta de Bandera
     class FlagpoleAndCastle {
       constructor(x, y) {
@@ -854,16 +1335,13 @@
       }
 
       draw(ctx) {
-        // Asta
         ctx.fillStyle = '#000';
         ctx.fillRect(this.x + 6, this.y - this.poleHeight, 6, this.poleHeight);
-        // Bola dorada superior
         ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
         ctx.arc(this.x + 9, this.y - this.poleHeight, 8, 0, Math.PI * 2);
         ctx.fill();
 
-        // Bandera verde
         ctx.fillStyle = '#2ecc71';
         ctx.beginPath();
         ctx.moveTo(this.x + 12, this.flagY);
@@ -872,22 +1350,17 @@
         ctx.closePath();
         ctx.fill();
 
-        // Castillo
         const cx = this.castleX;
         const cy = this.y - 120;
-        // Base
-        ctx.fillStyle = '#d85600';
+        ctx.fillStyle = THEME_PALETTE[currentTheme].ground;
         ctx.fillRect(cx, cy + 40, 140, 80);
-        // Segundo piso
         ctx.fillRect(cx + 25, cy, 90, 40);
-        // Almenas
         for (let i = 0; i < 5; i++) {
           ctx.fillRect(cx + i * 28, cy + 28, 14, 12);
         }
         for (let i = 0; i < 3; i++) {
           ctx.fillRect(cx + 30 + i * 26, cy - 12, 14, 12);
         }
-        // Puerta negra
         ctx.fillStyle = '#000';
         ctx.fillRect(cx + 50, cy + 70, 40, 50);
         ctx.beginPath();
@@ -897,31 +1370,96 @@
     }
 
     // ==========================================
-    // DISEÑO DEL MUNDO Y DEL NIVEL (EQUILIBRADO)
+    // DEFINICIÓN DE NIVELES Y MISIONES
     // ==========================================
-    // 'G': Suelo (Ground)
-    // 'B': Ladrillo (Brick)
-    // '?': Bloque Interrogación
-    // 'P': Tubo (Pipe)
-    // 'C': Moneda
-    // 'E': Goomba
-    // 'M': Mario inicio
-    // 'F': Asta y Castillo
-    // ' ': Aire
-    const LEVEL_MAP = [
+    // 'G': Suelo  'B': Ladrillo  '?': Bloque Moneda  'U': Bloque Hongo (visualmente igual a '?')
+    // 'H': Bloque Oculto (invisible, contiene la estrella)  'P': Tubo  'C': Moneda
+    // 'E': Goomba  'K': Koopa  'M': Mario inicio  'F': Asta y Castillo  ' ': Aire
+    const LEVEL_1_MAP = [
       "                                                                                                                    ",
       "                                                                                                                    ",
       "                                                                                                                    ",
       "                                                                                                                    ",
       "                                                                                                                    ",
-      "                                          ???                                    BBBB                               ",
+      "                                          ??U                                    BBBB                               ",
       "                   C                     BBBBB             C       C                                                ",
-      "          ?   B?B?B              C                      B?B?B    B?B?B             C                F               ",
+      "          ?   B?B?B         H    C                      B?B?B    B?B?B             C                F               ",
       "                                B?B                                                                                 ",
-      "                         E                E                 E                E          E                           ",
+      "                         E                K                 E                K          E                           ",
       "               P                  P               P                  P                                              ",
       "  M            P         E        P               P                  P                                              ",
       "GGGGGGGGGGGGGGGG   GGGGGGGGGGGGGGGGGGGGGGGG   GGGGGGGGGGGGGGGG   GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
+    ];
+
+    const LEVEL_2_MAP = [
+      "                                                                                                                    ",
+      "                                                                                                                    ",
+      "                                                                                                                    ",
+      "                                                                                                                    ",
+      "                                                                                                                    ",
+      "                              BBB                      ??U                            BBBBB                        ",
+      "            C                                 C                    C          C                                    ",
+      "       ?   B?B?B    H              K                              B?B?B                           C          F      ",
+      "                            B?B                        K                                                           ",
+      "                     K                E          K                          E              K                       ",
+      "          P                                P                       P                                              ",
+      "  M       P        E           P            P      E                P        K                                     ",
+      "GGGGGGGGGGGGGGGGGGGGGGGGGGGGG   GGGGGGGGGGGGGG   GGGGGGGGGGGGGGGGGGG   GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
+    ];
+
+    const LEVEL_3_MAP = [
+      "                                                                                                                              ",
+      "                                                                                                                              ",
+      "                                                                                                                              ",
+      "                                                                                                                              ",
+      "                                                                                                                              ",
+      "                       BBBB                       ??U                        BBBB              BBBBB                        ",
+      "          C                        C                          C     C                  C                  C                  ",
+      "     ?   B?B?B    H                        K                B?B?B                  K               B?B?B          F          ",
+      "                          B?B                                                B?B                                            ",
+      "                K                   E          K                    K                  E             K                       ",
+      "       P                     P               P                P                   P              P                           ",
+      "  M    P        K            P      E         P      K        P        E           P     K        P                          ",
+      "GGGGGGGGGGGGGGG   GGGGGGGGGGGG   GGGGGGGGGGGGGG   GGGGGGGGGGGGGG   GGGGGGGGGGGGGGGGGG   GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
+    ];
+
+    const LEVELS = [
+      {
+        id: 1,
+        name: '1-1 Llanura Soleada',
+        theme: 'day',
+        timeLimit: 150,
+        map: LEVEL_1_MAP,
+        missions: [
+          { id: 'coins', icon: '🪙', type: 'coins', target: 10 },
+          { id: 'enemies', icon: '💀', type: 'enemies', target: 4 },
+          { id: 'star', icon: '⭐', type: 'star', target: 1 }
+        ]
+      },
+      {
+        id: 2,
+        name: '1-2 Cuevas Subterráneas',
+        theme: 'cave',
+        timeLimit: 160,
+        map: LEVEL_2_MAP,
+        missions: [
+          { id: 'coins', icon: '🪙', type: 'coins', target: 10 },
+          { id: 'enemies', icon: '💀', type: 'enemies', target: 5 },
+          { id: 'star', icon: '⭐', type: 'star', target: 1 }
+        ]
+      },
+      {
+        id: 3,
+        name: '1-3 Castillo Nocturno',
+        theme: 'castle',
+        timeLimit: 170,
+        map: LEVEL_3_MAP,
+        missions: [
+          { id: 'coins', icon: '🪙', type: 'coins', target: 12 },
+          { id: 'enemies', icon: '💀', type: 'enemies', target: 6 },
+          { id: 'star', icon: '⭐', type: 'star', target: 1 }
+        ]
+      }
     ];
 
     const world = {
@@ -930,31 +1468,37 @@
       enemies: [],
       coins: [],
       particles: [],
-      flagpole: null
+      mushrooms: [],
+      flagpole: null,
+      missionProgress: { coins: 0, enemies: 0, star: 0 },
+      levelTime: 0
     };
 
-    function parseLevel() {
+    function parseLevel(level) {
+      const map = level.map;
       world.blocks = [];
       world.enemies = [];
       world.coins = [];
       world.particles = [];
+      world.mushrooms = [];
       world.flagpole = null;
+      world.missionProgress = { coins: 0, enemies: 0, star: 0 };
+      world.levelTime = level.timeLimit;
+      currentTheme = level.theme;
 
-      // Calcular suelo para que quede exactamente anclado a la parte inferior del canvas
-      const rows = LEVEL_MAP.length;
+      const rows = map.length;
       const baseTop = Math.max(30, canvas.height - rows * TILE_SIZE);
       groundY = baseTop + (rows - 1) * TILE_SIZE;
-      levelWidth = LEVEL_MAP[0].length * TILE_SIZE;
+      levelWidth = map[0].length * TILE_SIZE;
 
       for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < LEVEL_MAP[r].length; c++) {
-          const ch = LEVEL_MAP[r][c];
+        for (let c = 0; c < map[r].length; c++) {
+          const ch = map[r][c];
           const x = c * TILE_SIZE;
           const y = baseTop + r * TILE_SIZE;
 
           if (ch === 'G') {
             world.blocks.push(new Block(x, y, 'ground'));
-            // Llenar hacia abajo hasta el borde de pantalla para evitar huecos en resoluciones grandes
             let fillY = y + TILE_SIZE;
             while (fillY < canvas.height + TILE_SIZE) {
               world.blocks.push(new Block(x, fillY, 'ground'));
@@ -964,12 +1508,18 @@
             world.blocks.push(new Block(x, y, 'brick'));
           } else if (ch === '?') {
             world.blocks.push(new Block(x, y, 'question'));
+          } else if (ch === 'U') {
+            world.blocks.push(new Block(x, y, 'mushroom_block'));
+          } else if (ch === 'H') {
+            world.blocks.push(new Block(x, y, 'hidden'));
           } else if (ch === 'P') {
             world.blocks.push(new Block(x, y, 'pipe'));
           } else if (ch === 'C') {
             world.coins.push(new Coin(x, y));
           } else if (ch === 'E') {
             world.enemies.push(new Enemy(x, y));
+          } else if (ch === 'K') {
+            world.enemies.push(new Koopa(x, y));
           } else if (ch === 'M') {
             world.player = new Player(x, y);
           } else if (ch === 'F') {
@@ -980,44 +1530,184 @@
     }
 
     // ==========================================
+    // MAPA DE NIVELES (MENÚ)
+    // ==========================================
+
+    function starsHTML(n) {
+      let s = '';
+      for (let i = 0; i < 3; i++) s += i < n ? '⭐' : '☆';
+      return s;
+    }
+
+    function renderWorldMap() {
+      worldMapNodes.innerHTML = '';
+      LEVELS.forEach((lvl) => {
+        const unlocked = lvl.id <= progress.unlocked;
+        const stars = progress.stars[lvl.id] || 0;
+        const node = document.createElement('button');
+        node.className = 'level-node' + (unlocked ? '' : ' locked');
+        node.disabled = !unlocked;
+        node.innerHTML = `
+          <div class="level-node-number">${lvl.id}</div>
+          <div class="level-node-name">${lvl.name}</div>
+          <div class="level-node-stars">${unlocked ? starsHTML(stars) : '🔒'}</div>
+        `;
+        if (unlocked) {
+          node.addEventListener('click', () => {
+            initAudio();
+            startLevel(lvl.id);
+          });
+        }
+        worldMapNodes.appendChild(node);
+      });
+    }
+
+    function hideAllOverlays() {
+      worldMapScreen.classList.add('hidden');
+      gameOverScreen.classList.add('hidden');
+      levelCompleteScreen.classList.add('hidden');
+    }
+
+    function goToWorldMap() {
+      currentState = STATE.MENU;
+      renderWorldMap();
+      hideAllOverlays();
+      worldMapScreen.classList.remove('hidden');
+    }
+
+    // ==========================================
+    // BARRA DE MISIONES (HUD)
+    // ==========================================
+
+    function missionLabel(type) {
+      if (type === 'coins') return 'Monedas';
+      if (type === 'enemies') return 'Enemigos';
+      if (type === 'star') return 'Bloque oculto';
+      return '';
+    }
+
+    function buildMissionHUD(level) {
+      missionBar.innerHTML = '';
+      level.missions.forEach((m) => {
+        const chip = document.createElement('div');
+        chip.className = 'mission-chip';
+        chip.id = 'mission_' + m.id;
+        chip.innerHTML = `<span>${m.icon}</span><span class="mission-count"></span>`;
+        missionBar.appendChild(chip);
+      });
+      updateMissionHUD(true);
+    }
+
+    function updateMissionHUD(skipPulse = false) {
+      if (!currentLevel) return;
+      for (const m of currentLevel.missions) {
+        const val = world.missionProgress[m.type] || 0;
+        const el = document.getElementById('mission_' + m.id);
+        if (!el) continue;
+        const countEl = el.querySelector('.mission-count');
+        const done = val >= m.target;
+        countEl.textContent = m.type === 'star'
+          ? (done ? '¡Listo!' : '0/1')
+          : `${Math.min(val, m.target)}/${m.target}`;
+        if (done && !el.classList.contains('mission-done')) {
+          el.classList.add('mission-done');
+          if (!skipPulse) {
+            el.classList.add('pulse');
+            setTimeout(() => el.classList.remove('pulse'), 500);
+          }
+        } else if (!done) {
+          el.classList.remove('mission-done');
+        }
+      }
+      timeDisplay.textContent = Math.max(0, Math.ceil(world.levelTime));
+    }
+
+    // ==========================================
     // CONTROL DEL JUEGO Y ESTADOS
     // ==========================================
 
-    function resetGame(full = false) {
-      if (full) {
-        score = 0;
-        lives = 3;
-        updateHUD();
-      }
-      parseLevel();
+    function startLevel(id) {
+      currentLevel = LEVELS.find((l) => l.id === id);
+      if (!currentLevel) return;
+      lives = 3;
+      score = 0;
+      updateHUD();
+      parseLevel(currentLevel);
+      buildMissionHUD(currentLevel);
       camera.x = 0;
+      camera.shakeTime = 0;
       currentState = STATE.PLAYING;
-      startScreen.classList.add('hidden');
-      gameOverScreen.classList.add('hidden');
-      victoryScreen.classList.add('hidden');
-
+      hideAllOverlays();
       if (!animId) gameLoop();
     }
 
     function updateHUD() {
       scoreDisplay.innerText = score;
       livesDisplay.innerText = lives;
+      updateMissionHUD();
     }
 
     function takeDamage() {
-      if (world.player.invulnerable > 0) return;
+      const p = world.player;
+      if (!p || p.invulnerable > 0) return;
+      shakeScreen(6, 14);
+
+      if (p.power === 'big') {
+        p.shrink();
+        sfx.hurt();
+        return;
+      }
+
       sfx.die();
       lives--;
       updateHUD();
 
       if (lives <= 0) {
         currentState = STATE.GAMEOVER;
+        hideAllOverlays();
         gameOverScreen.classList.remove('hidden');
       } else {
-        // Respawn Mario y resetear cámara a su punto de inicio
-        world.player.reset();
+        p.reset();
         camera.x = 0;
       }
+    }
+
+    function completeLevel() {
+      currentState = STATE.LEVEL_COMPLETE;
+      sfx.win();
+      const lvl = currentLevel;
+      const mp = world.missionProgress;
+      const missionsOk = lvl.missions.every((m) => mp[m.type] >= m.target);
+      const timeOk = world.levelTime > lvl.timeLimit * 0.4;
+      let stars = 1 + (missionsOk ? 1 : 0) + (timeOk ? 1 : 0);
+      stars = Math.min(3, stars);
+
+      progress.stars[lvl.id] = Math.max(progress.stars[lvl.id] || 0, stars);
+      const hasNext = LEVELS.some((l) => l.id === lvl.id + 1);
+      if (lvl.id === progress.unlocked && hasNext) {
+        progress.unlocked = lvl.id + 1;
+      }
+      saveProgress();
+
+      starsRow.textContent = starsHTML(stars);
+      missionResultList.innerHTML = '';
+      lvl.missions.forEach((m) => {
+        const val = mp[m.type] || 0;
+        const ok = val >= m.target;
+        const row = document.createElement('div');
+        row.className = 'mission-result-item';
+        row.innerHTML = `<span>${ok ? '✅' : '◻️'}</span><span>${m.icon} ${missionLabel(m.type)}: ${m.type === 'star' ? (ok ? 'encontrado' : 'no encontrado') : Math.min(val, m.target) + '/' + m.target}</span>`;
+        missionResultList.appendChild(row);
+      });
+      const timeRow = document.createElement('div');
+      timeRow.className = 'mission-result-item';
+      timeRow.innerHTML = `<span>${timeOk ? '✅' : '◻️'}</span><span>⏱ Bono de tiempo</span>`;
+      missionResultList.appendChild(timeRow);
+
+      finalScore.innerText = score;
+      document.getElementById('nextLevelBtn').style.display = hasNext ? 'inline-block' : 'none';
+      hideAllOverlays();
+      levelCompleteScreen.classList.remove('hidden');
     }
 
     function update() {
@@ -1026,16 +1716,22 @@
       const p = world.player;
       p.update();
 
-      // Bloques actualización
       for (const b of world.blocks) b.update();
 
-      // Partículas
       for (let i = world.particles.length - 1; i >= 0; i--) {
         world.particles[i].update();
         if (world.particles[i].life <= 0) world.particles.splice(i, 1);
       }
 
-      // Cámara suave: sigue a Mario manteniéndolo cerca del 35% de la pantalla
+      // Temporizador del nivel
+      world.levelTime -= 1 / 60;
+      if (world.levelTime <= 0) {
+        world.levelTime = currentLevel.timeLimit;
+        takeDamage();
+      }
+      updateMissionHUD();
+
+      // Cámara suave
       const targetX = p.x - canvas.width * 0.35;
       if (targetX > camera.x) {
         camera.x += (targetX - camera.x) * 0.12;
@@ -1043,6 +1739,8 @@
       if (camera.x < 0) camera.x = 0;
       const maxCam = levelWidth - canvas.width;
       if (camera.x > maxCam) camera.x = maxCam;
+
+      if (camera.shakeTime > 0) camera.shakeTime--;
 
       // Colisión con Monedas
       for (const c of world.coins) {
@@ -1055,10 +1753,26 @@
           ) {
             c.collected = true;
             score += 50;
+            world.missionProgress.coins++;
             updateHUD();
             sfx.coin();
           }
         }
+      }
+
+      // Hongos (power-up)
+      for (let i = world.mushrooms.length - 1; i >= 0; i--) {
+        const m = world.mushrooms[i];
+        m.update();
+        if (p.isColliding(m)) {
+          p.grow();
+          score += 1000;
+          updateHUD();
+          sfx.powerup();
+          world.mushrooms.splice(i, 1);
+          continue;
+        }
+        if (m.y > canvas.height + 150) world.mushrooms.splice(i, 1);
       }
 
       // Enemigos
@@ -1066,22 +1780,52 @@
         const e = world.enemies[i];
         e.update();
 
-        // Eliminar aplastados tras un breve instante
         if (e.isDead && e.squashTimer > 25) {
           world.enemies.splice(i, 1);
           continue;
         }
+        if (e.isDead) continue;
 
-        if (!e.isDead && p.isColliding(e)) {
-          // Pisotón sobre el Goomba
-          if (p.vy > 0 && p.y + p.height < e.y + e.height * 0.75) {
-            e.isDead = true;
-            p.vy = p.jumpForce * 0.7; // Rebote hacia arriba
-            score += 100;
-            updateHUD();
-            sfx.stomp();
-          } else {
-            takeDamage();
+        if (p.isColliding(e)) {
+          const stompedFromAbove = p.vy > 0 && p.y + p.height < e.y + e.height * 0.6;
+
+          if (e.kind === 'goomba' || e instanceof Enemy) {
+            if (stompedFromAbove) {
+              e.isDead = true;
+              p.vy = p.jumpForce * 0.7;
+              score += 100;
+              world.missionProgress.enemies++;
+              updateHUD();
+              sfx.stomp();
+              world.particles.push(new Burst(e.x + e.width / 2, e.y, '#884400'));
+            } else {
+              takeDamage();
+            }
+          } else if (e instanceof Koopa) {
+            if (e.state === 'walk') {
+              if (stompedFromAbove) {
+                e.becomeShell();
+                p.vy = p.jumpForce * 0.65;
+                score += 100;
+                world.missionProgress.enemies++;
+                updateHUD();
+                sfx.stomp();
+              } else {
+                takeDamage();
+              }
+            } else if (e.state === 'shell') {
+              const dir = (p.x + p.width / 2) < (e.x + e.width / 2) ? 1 : -1;
+              e.kick(dir);
+              p.vx += dir * 2;
+            } else if (e.state === 'shellMoving') {
+              if (stompedFromAbove) {
+                e.stopShell();
+                p.vy = p.jumpForce * 0.6;
+                sfx.stomp();
+              } else {
+                takeDamage();
+              }
+            }
           }
         }
       }
@@ -1090,10 +1834,7 @@
       if (world.flagpole) {
         const flagReach = p.x + p.width >= world.flagpole.x && p.x <= world.flagpole.x + 30;
         if (flagReach) {
-          currentState = STATE.VICTORY;
-          sfx.win();
-          finalScore.innerText = score;
-          victoryScreen.classList.remove('hidden');
+          completeLevel();
         }
       }
     }
@@ -1103,27 +1844,47 @@
     // ==========================================
 
     function drawBackground() {
-      // Cielo
-      ctx.fillStyle = '#5c94fc';
+      const pal = THEME_PALETTE[currentTheme];
+      ctx.fillStyle = pal.sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Colinas y nubes con ligero efecto Parallax
       const px = camera.x * 0.3;
 
-      // Nubes
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-      for (let i = 0; i < 15; i++) {
-        const nx = i * 450 - (px % 450);
-        const ny = 60 + (i % 3) * 35;
-        ctx.beginPath();
-        ctx.arc(nx, ny, 24, 0, Math.PI * 2);
-        ctx.arc(nx + 20, ny - 10, 32, 0, Math.PI * 2);
-        ctx.arc(nx + 46, ny, 24, 0, Math.PI * 2);
-        ctx.fill();
+      if (currentTheme === 'day') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        for (let i = 0; i < 15; i++) {
+          const nx = i * 450 - (px % 450);
+          const ny = 60 + (i % 3) * 35;
+          ctx.beginPath();
+          ctx.arc(nx, ny, 24, 0, Math.PI * 2);
+          ctx.arc(nx + 20, ny - 10, 32, 0, Math.PI * 2);
+          ctx.arc(nx + 46, ny, 24, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        // Estrellas para temas oscuros (cueva / castillo)
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        for (let i = 0; i < 40; i++) {
+          const sx = (i * 137 - px * 0.5) % canvas.width;
+          const sy = (i * 53) % (canvas.height * 0.6);
+          ctx.fillRect(((sx % canvas.width) + canvas.width) % canvas.width, sy, 2, 2);
+        }
+        if (currentTheme === 'cave') {
+          // Estalactitas colgando del techo
+          ctx.fillStyle = '#10142a';
+          for (let i = 0; i < 20; i++) {
+            const hx = i * 220 - (px % 220);
+            ctx.beginPath();
+            ctx.moveTo(hx, 0);
+            ctx.lineTo(hx + 30, 0);
+            ctx.lineTo(hx + 15, 40);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
       }
 
-      // Colinas verdes lejanas
-      ctx.fillStyle = '#00a800';
+      ctx.fillStyle = pal.hill;
       for (let i = 0; i < 12; i++) {
         const hx = i * 500 - (px % 500);
         const hy = groundY + TILE_SIZE;
@@ -1135,32 +1896,28 @@
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       drawBackground();
 
       ctx.save();
-      ctx.translate(-Math.floor(camera.x), 0);
+      let shakeX = 0, shakeY = 0;
+      if (camera.shakeTime > 0) {
+        shakeX = (Math.random() - 0.5) * camera.shakeMag;
+        shakeY = (Math.random() - 0.5) * camera.shakeMag;
+      }
+      ctx.translate(-Math.floor(camera.x) + shakeX, shakeY);
 
-      // Dibujar Meta
       if (world.flagpole) world.flagpole.draw(ctx);
-
-      // Dibujar Monedas
       for (const c of world.coins) c.draw(ctx);
 
-      // Dibujar Bloques
       for (const b of world.blocks) {
         if (b.x + b.width > camera.x - 50 && b.x < camera.x + canvas.width + 50) {
           b.draw(ctx);
         }
       }
 
-      // Dibujar Enemigos
+      for (const m of world.mushrooms) m.draw(ctx);
       for (const e of world.enemies) e.draw(ctx);
-
-      // Dibujar Partículas
       for (const pt of world.particles) pt.draw(ctx);
-
-      // Dibujar Jugador
       if (world.player) world.player.draw(ctx);
 
       ctx.restore();
@@ -1173,21 +1930,31 @@
     }
 
     // Botones de pantalla
-    document.getElementById('startBtn').addEventListener('click', () => {
+    document.getElementById('mapBtn').addEventListener('click', () => {
       initAudio();
-      resetGame(true);
+      goToWorldMap();
     });
-    document.getElementById('restartBtn').addEventListener('click', () => {
+    document.getElementById('retryBtn').addEventListener('click', () => {
       initAudio();
-      resetGame(true);
+      startLevel(currentLevel.id);
     });
-    document.getElementById('playAgainBtn').addEventListener('click', () => {
+    document.getElementById('gameOverMapBtn').addEventListener('click', () => {
       initAudio();
-      resetGame(true);
+      goToWorldMap();
+    });
+    document.getElementById('nextLevelBtn').addEventListener('click', () => {
+      initAudio();
+      startLevel(currentLevel.id + 1);
+    });
+    document.getElementById('completeMapBtn').addEventListener('click', () => {
+      initAudio();
+      goToWorldMap();
     });
 
-    // Inicio
-    parseLevel();
+    // Inicio: mostrar el mapa de niveles
+    renderWorldMap();
+    currentTheme = 'day';
+    groundY = canvas.height - TILE_SIZE;
     draw();
   </script>
 </body>
