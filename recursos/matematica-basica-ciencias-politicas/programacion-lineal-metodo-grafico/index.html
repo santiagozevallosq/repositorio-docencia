@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OptiPolis - Programación Lineal para Políticas Públicas</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Plotly.js for responsive mathematical visualization -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains+Mono', monospace;
+    }
+    /* Custom scrollbar for clean academic dashboard */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .badge-step {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-200">
+          Z
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">OptiPolis</h1>
+          <p class="text-xs text-slate-500 font-medium">Método Gráfico para Toma de Decisiones y Políticas Públicas</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1 rounded-xl">
+        <button id="tab-solver" onclick="switchMainTab('solver')" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white text-indigo-700 shadow-sm transition">
+          📐 Solucionador
+        </button>
+        <button id="tab-explore" onclick="switchMainTab('explore')" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-indigo-600 transition">
+          🎛️ Modo Explorar
+        </button>
+        <button id="tab-challenges" onclick="switchMainTab('challenges')" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-indigo-600 transition">
+          🎯 Retos de Políticas
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    
+    <!-- Tab 1: SOLVER & STEP-BY-STEP -->
+    <div id="view-solver" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- LEFT COLUMN: Problem Modeling (5 cols) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Preset Examples -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs uppercase font-bold tracking-wider text-slate-600">Casos Prediseñados</span>
+            <button onclick="openExplainModal('why_lp')" class="text-xs text-indigo-600 hover:underline flex items-center gap-1 font-semibold">
+              <span>¿Por qué lineal?</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="loadExample(1)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-transparent hover:border-indigo-200 transition text-center">
+              🏛️ Recursos Públicos
+            </button>
+            <button onclick="loadExample(2)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-transparent hover:border-indigo-200 transition text-center">
+              🗳️ Campaña Electoral
+            </button>
+            <button onclick="loadExample(3)" class="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-transparent hover:border-indigo-200 transition text-center">
+              📉 Minimizar Costos
+            </button>
+          </div>
+        </div>
+
+        <!-- Math Formulation Card -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+              Modelo Matemático
+            </h2>
+            <span class="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full font-mono">2 Variables</span>
+          </div>
+
+          <!-- Objective Function -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Función Objetivo</label>
+              <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-lg">
+                <button id="btn-opt-max" onclick="setObjectiveType('max')" class="px-2.5 py-1 text-xs font-bold rounded-md bg-white text-indigo-700 shadow-sm">Maximizar</button>
+                <button id="btn-opt-min" onclick="setObjectiveType('min')" class="px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600">Minimizar</button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="font-bold text-slate-700 font-mono text-base">Z =</span>
+              <div class="flex items-center gap-1 flex-1">
+                <input id="obj-a" type="number" step="any" value="40" class="w-full text-center font-mono font-semibold bg-white border border-slate-300 rounded-lg py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="a">
+                <span class="font-bold text-slate-600 text-sm">x</span>
+              </div>
+              <span class="font-bold text-slate-400">+</span>
+              <div class="flex items-center gap-1 flex-1">
+                <input id="obj-b" type="number" step="any" value="30" class="w-full text-center font-mono font-semibold bg-white border border-slate-300 rounded-lg py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="b">
+                <span class="font-bold text-slate-600 text-sm">y</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Constraints Section -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Restricciones Estructurales</label>
+              <span id="constraint-counter" class="text-xs text-slate-600 font-medium">2 de 6 restricciones</span>
+            </div>
+
+            <div id="constraints-list" class="space-y-2.5">
+              <!-- Dynamically injected constraints -->
+            </div>
+
+            <button id="btn-add-constraint" onclick="addConstraintRow()" class="mt-3 w-full py-2 border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:text-indigo-600 text-slate-500 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Agregar restricción
+            </button>
+          </div>
+
+          <!-- Non-negativity constraints notice -->
+          <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl p-3 flex items-start gap-2.5 text-xs text-indigo-950">
+            <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <div>
+              <span class="font-bold">Condición de no negatividad:</span>
+              <span class="font-mono ml-1 font-semibold text-indigo-700">x ≥ 0, y ≥ 0</span>
+              <p class="text-slate-500 text-[11px] mt-0.5">En políticas públicas, no se pueden realizar acciones en cantidades negativas.</p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-2 grid grid-cols-2 gap-2.5">
+            <button onclick="startStepByStep()" class="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-200 transition flex items-center justify-center gap-1.5">
+              <span>👣</span> Resolver paso a paso
+            </button>
+            <button onclick="solveDirectly()" class="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-200 transition flex items-center justify-center gap-1.5">
+              <span>⚡</span> Resolver directo
+            </button>
+          </div>
+
+          <button onclick="resetModel()" class="w-full py-2 text-slate-600 hover:text-slate-800 text-xs font-medium transition text-center">
+            ↺ Reiniciar valores
+          </button>
+        </div>
+
+        <!-- Variable Contextualization (Interpretation) -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Contexto de Política Pública</h3>
+            <span class="text-[11px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded">Opcional</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-slate-500 text-[11px] mb-1 font-medium">Nombre de la variable X:</label>
+              <input id="label-x" type="text" value="Intervenciones urbanas" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-500 text-[11px] mb-1 font-medium">Nombre de la variable Y:</label>
+              <input id="label-y" type="text" value="Intervenciones rurales" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-500 text-[11px] mb-1 font-medium">Objetivo medido en:</label>
+            <input id="label-goal" type="text" value="Personas beneficiarias alcanzadas" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Visualization & Didactic Results (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Visual Step-by-Step Pedagogical Navigator -->
+        <div id="step-navigator" class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white rounded-2xl p-5 shadow-lg hidden">
+          <div class="flex items-center justify-between mb-3 border-b border-indigo-800/80 pb-3">
+            <div class="flex items-center gap-2">
+              <span id="step-badge" class="badge-step bg-amber-400 text-slate-950 font-bold">1</span>
+              <div>
+                <h4 id="step-title" class="font-bold text-sm text-amber-300">Paso 1: Entendiendo la Función Objetivo</h4>
+                <p id="step-subtitle" class="text-xs text-slate-300">¿Hacia dónde queremos dirigir la política pública?</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-prev-step" onclick="navigateStep(-1)" class="px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-semibold transition disabled:opacity-30">Anterior</button>
+              <button id="btn-next-step" onclick="navigateStep(1)" class="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-lg text-xs font-bold transition">Siguiente</button>
+            </div>
+          </div>
+          <div id="step-narrative" class="text-xs text-slate-200 leading-relaxed min-h-[44px]">
+            <!-- Injected explanation text -->
+          </div>
+        </div>
+
+        <!-- Interactive Plot Canvas Card -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm relative">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-slate-900 text-sm">Plano Cartesiano de Factibilidad</h3>
+              <span id="status-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                Región Factible Acotada
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="toggleIsoLine()" id="btn-toggle-isoline" class="text-xs px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium">
+                📏 Recta Z (Nivel)
+              </button>
+              <button onclick="resetGraphView()" class="text-xs px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-600 font-medium">
+                Centrar Vista
+              </button>
+            </div>
+          </div>
+
+          <!-- Plotly Graph Container -->
+          <div id="plot-canvas" class="w-full h-[400px] sm:h-[460px] rounded-xl overflow-hidden bg-slate-50 border border-slate-100"></div>
+
+          <!-- Objective Function Interactive Slider (Recta de Nivel) -->
+          <div id="isoline-controls" class="mt-4 p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-indigo-950 flex items-center gap-1.5">
+                <span class="w-2.5 h-0.5 bg-indigo-600 inline-block"></span>
+                Recta de Nivel: <span class="font-mono text-indigo-700" id="isoline-equation">Z = 40x + 30y = K</span>
+              </span>
+              <span class="font-bold text-indigo-800 font-mono" id="isoline-k-val">K = 0</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input id="slider-isoline" type="range" min="0" max="1000" value="0" step="1" oninput="onIsoSliderChange(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+              <button onclick="animateIsoToOptimum()" class="shrink-0 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                ▶ Animar al Óptimo
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 italic">
+              "Observa cómo la pendiente se mantiene constante al variar K; la recta barre el plano hasta tocar el último vértice factible."
+            </p>
+          </div>
+        </div>
+
+        <!-- Optimal Solution Banner -->
+        <div id="optimal-card" class="bg-gradient-to-br from-emerald-600 to-teal-800 text-white rounded-2xl p-5 shadow-md">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs uppercase tracking-wider font-extrabold bg-white/20 px-2 py-0.5 rounded-full text-white">
+                  Solución Óptima
+                </span>
+                <button onclick="openExplainModal('why_vertices')" class="text-xs text-emerald-100 hover:text-white underline">
+                  ¿Por qué en un vértice?
+                </button>
+              </div>
+              <h4 id="optimal-coords" class="text-2xl font-black font-mono tracking-tight mt-1">
+                (x* = 40.00, y* = 20.00)
+              </h4>
+              <p id="optimal-justification" class="text-xs text-emerald-100 mt-1 max-w-lg leading-relaxed">
+                Entre todas las combinaciones posibles dentro de la región factible, este punto genera el mayor impacto.
+              </p>
+            </div>
+            <div class="sm:text-right bg-white/10 p-3 sm:p-4 rounded-xl border border-white/20">
+              <span class="text-xs uppercase font-medium text-emerald-200">Valor Óptimo Z*</span>
+              <div id="optimal-z" class="text-3xl font-black font-mono text-white">2,200.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evaluation Table -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+              <span>Evaluación de Vértices Candidatos</span>
+              <button onclick="openExplainModal('why_table')" class="text-indigo-600 text-xs font-normal hover:underline">
+                (Teorema Fundamental)
+              </button>
+            </h3>
+            <span class="text-xs text-slate-500" id="vertex-count-badge">4 vértices encontrados</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 font-semibold">
+                  <th class="py-2.5 px-3">Vértice</th>
+                  <th class="py-2.5 px-3 font-mono">X</th>
+                  <th class="py-2.5 px-3 font-mono">Y</th>
+                  <th class="py-2.5 px-3 font-mono">Evaluación: Z = ax + by</th>
+                  <th class="py-2.5 px-3 text-right">Diagnóstico</th>
+                </tr>
+              </thead>
+              <tbody id="vertices-table-body" class="divide-y divide-slate-100 font-medium">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Interpretation in Public Policy Terms -->
+        <div class="bg-indigo-50/50 border border-indigo-200/60 rounded-2xl p-5 shadow-sm space-y-2">
+          <div class="flex items-center gap-2 text-indigo-950 font-bold text-xs uppercase tracking-wider">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            ¿Qué significa este resultado para la toma de decisiones?
+          </div>
+          <p id="policy-interpretation-text" class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+            <!-- Dynamically generated natural narrative -->
+          </p>
+        </div>
+
+        <!-- Pedagogical Takeaway Box -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm">
+          <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+            <span>💡</span> Lo importante que debes llevarte
+          </h4>
+          <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4 leading-relaxed">
+            <li><strong>Las restricciones</strong> representan los límites reales de la política (presupuesto, personal, horas, metas legales).</li>
+            <li><strong>La región factible</strong> es el espacio de todas las decisiones realizables de forma simultánea.</li>
+            <li><strong>Los vértices</strong> son las esquinas extremas donde convergen los recursos limitantes.</li>
+            <li><strong>La función objetivo</strong> permite ordenar las alternativas hasta hallar la que optimiza el bienestar ciudadano.</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Tab 2: MODO EXPLORAR (Sensibilidad) -->
+    <div id="view-explore" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+        <div class="max-w-3xl">
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">Análisis de Sensibilidad Intuitivo</span>
+          <h2 class="text-xl font-bold text-slate-900 mt-2">¿Cómo cambia la decisión si varía una restricción?</h2>
+          <p class="text-xs text-slate-600 mt-1">
+            En la gestión pública, los presupuestos aumentan o disminuyen y las leyes cambian. Modifica los controles deslizantes a continuación y observa en tiempo real cómo la frontera se deforma y cómo cambia la solución óptima.
+          </p>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Sliders list -->
+          <div class="lg:col-span-5 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200" id="explore-sliders-container">
+            <!-- Dynamically populated explore sliders -->
+          </div>
+          <!-- Real-time Plot for Explore -->
+          <div class="lg:col-span-7">
+            <div id="explore-plot-canvas" class="w-full h-[440px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200"></div>
+            <div class="mt-3 bg-indigo-50 p-3 rounded-xl border border-indigo-100 flex items-center justify-between text-xs">
+              <span class="font-bold text-indigo-900" id="explore-status">Óptimo Actual: Cargando...</span>
+              <span class="text-slate-500 font-mono" id="explore-val-z">Z = --</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: MODO RETO (Casos Aplicados) -->
+    <div id="view-challenges" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">Laboratorio de Modelado</span>
+        <h2 class="text-xl font-bold text-slate-900 mt-2">Aprende a formular el problema desde el texto</h2>
+        <p class="text-xs text-slate-600 mt-1">
+          En el mundo real, nadie te entrega las ecuaciones armadas. Lee la situación de política pública, traduce los requerimientos a restricciones matemáticas y comprueba tu modelo.
+        </p>
+
+        <!-- Challenge Selector -->
+        <div class="mt-4 flex gap-2 border-b border-slate-200 pb-3">
+          <button onclick="loadChallenge(0)" id="chal-btn-0" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white">Reto 1: Presupuesto Salud vs Educación</button>
+          <button onclick="loadChallenge(1)" id="chal-btn-1" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Reto 2: Patrullaje de Seguridad</button>
+          <button onclick="loadChallenge(2)" id="chal-btn-2" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Reto 3: Mínimo Nutricional Comunitario</button>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-6 space-y-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs leading-relaxed" id="challenge-story">
+              <!-- Story narrative loaded here -->
+            </div>
+
+            <!-- Student formulation inputs -->
+            <div class="space-y-3 bg-white p-4 rounded-xl border border-slate-200" id="challenge-form">
+              <!-- Challenge questions -->
+            </div>
+
+            <button onclick="validateChallenge()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition">
+              ✓ Comprobar Modelo
+            </button>
+
+            <!-- Feedback alert -->
+            <div id="challenge-feedback" class="hidden p-4 rounded-xl text-xs font-medium border leading-relaxed">
+              <!-- Feedback injected here -->
+            </div>
+          </div>
+
+          <div class="lg:col-span-6 bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col justify-center text-center">
+            <div class="text-slate-400 mb-2">
+              <svg class="w-12 h-12 mx-auto text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <h4 class="font-bold text-slate-800 text-sm">Transferencia al Solucionador</h4>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              Una vez completado con éxito el reto, podrás transferir directamente las ecuaciones al gráfico interactivo para ver la solución óptima.
+            </p>
+            <button id="btn-transfer-challenge" onclick="transferChallengeToSolver()" class="mt-4 mx-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition disabled:opacity-40" disabled>
+              Exportar modelo a la gráfica interactiva ➔
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Educational "Why?" Explanations Modal -->
+  <div id="explain-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 id="modal-title" class="font-bold text-slate-900 text-sm">Micro-Explicación</h3>
+        <button onclick="closeExplainModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+      </div>
+      <div id="modal-body" class="text-xs text-slate-600 leading-relaxed space-y-2">
+        <!-- Injected content -->
+      </div>
+      <button onclick="closeExplainModal()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">
+        Entendido
+      </button>
+    </div>
+  </div>
+
+  <!-- Notification Toast message container -->
+  <div id="toast-msg" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+    Mensaje
+  </div>
+
+  <script>
+    // --- Application State ---
+    const STATE = {
+      objective: {
+        type: 'max', // 'max' or 'min'
+        a: 40,
+        b: 30
+      },
+      constraints: [
+        { id: 1, a: 2, b: 1, op: '<=', c: 100, color: '#3b82f6', label: 'Presupuesto Operativo' },
+        { id: 2, a: 1, b: 2, op: '<=', c: 80, color: '#8b5cf6', label: 'Horas de Personal Especializado' }
+      ],
+      nonNegative: true,
+      labels: {
+        x: 'Intervenciones urbanas',
+        y: 'Intervenciones rurales',
+        goal: 'Personas beneficiarias alcanzadas'
+      },
+      step: 0, // 0 = standard full view; 1..n = step-by-step
+      showIsoline: true,
+      isolineK: 0,
+      cachedResult: null
+    };
+
+    const PALETTE = ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#06b6d4', '#10b981'];
+
+    // --- GEOMETRIC ENGINE FOR 2-VARIABLE LINEAR PROGRAMMING ---
+    const EPSILON = 1e-6;
+
+    /**
+     * Intersects two lines a1*x + b1*y = c1 and a2*x + b2*y = c2
+     */
+    function intersectLines(a1, b1, c1, a2, b2, c2) {
+      const det = a1 * b2 - a2 * b1;
+      if (Math.abs(det) < EPSILON) return null; // Parallel or coincident
+      const x = (c1 * b2 - c2 * b1) / det;
+      const y = (a1 * c2 - a2 * c1) / det;
+      return { x, y };
+    }
+
+    /**
+     * Verifies if a point satisfies a single constraint
+     */
+    function satisfiesConstraint(pt, a, b, op, c) {
+      const val = a * pt.x + b * pt.y;
+      if (op === '<=') return val <= c + EPSILON;
+      if (op === '>=') return val >= c - EPSILON;
+      if (op === '=') return Math.abs(val - c) <= EPSILON;
+      return true;
+    }
+
+    /**
+     * Verifies if point satisfies non-negativity and all active constraints
+     */
+    function isFeasiblePoint(pt, constraints, nonNegative = true) {
+      if (nonNegative) {
+        if (pt.x < -EPSILON || pt.y < -EPSILON) return false;
+      }
+      for (let con of constraints) {
+        if (!satisfiesConstraint(pt, con.a, con.b, con.op, con.c)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Solves the 2-variable LP problem:
+     * Gathers all candidate lines (constraints + axes + bounding window),
+     * computes mutual intersections, filters feasible vertices, sorts into convex polygon,
+     * evaluates Z = ax + by, classifies optimum, multiple solutions, or unboundedness.
+     */
+    function solveLP(objective, constraints, nonNegative = true, boundingMax = 1000) {
+      const lines = [];
+
+      // Add actual constraints
+      constraints.forEach((c, idx) => {
+        lines.push({ a: c.a, b: c.b, c: c.c, source: `Restricción ${idx + 1}` });
+      });
+
+      // Add non-negativity boundary lines
+      if (nonNegative) {
+        lines.push({ a: 1, b: 0, c: 0, source: 'x ≥ 0' });
+        lines.push({ a: 0, b: 1, c: 0, source: 'y ≥ 0' });
+      }
+
+      // Add large bounding box to detect unbounded feasible regions
+      const BOX_LIMIT = boundingMax;
+      lines.push({ a: 1, b: 0, c: BOX_LIMIT, source: '__box_right' });
+      lines.push({ a: 0, b: 1, c: BOX_LIMIT, source: '__box_top' });
+
+      // Generate all pairwise line intersections
+      const candidates = [];
+      for (let i = 0; i < lines.length; i++) {
+        for (let j = i + 1; j < lines.length; j++) {
+          const pt = intersectLines(lines[i].a, lines[i].b, lines[i].c, lines[j].a, lines[j].b, lines[j].c);
+          if (pt !== null) {
+            candidates.push(pt);
+          }
+        }
+      }
+
+      // Filter points that satisfy all constraints (ignoring artificial box)
+      const validPoints = [];
+      for (let p of candidates) {
+        // Must fit inside bounding box to avoid infinite computation
+        if (p.x < -EPSILON || p.y < -EPSILON || p.x > BOX_LIMIT + EPSILON || p.y > BOX_LIMIT + EPSILON) {
+          continue;
+        }
+
+        if (isFeasiblePoint(p, constraints, nonNegative)) {
+          // Avoid duplicate points
+          const isDup = validPoints.some(v => Math.hypot(v.x - p.x, v.y - p.y) < 1e-4);
+          if (!isDup) {
+            validPoints.push({ x: Math.abs(p.x) < 1e-5 ? 0 : p.x, y: Math.abs(p.y) < 1e-5 ? 0 : p.y });
+          }
+        }
+      }
+
+      if (validPoints.length === 0) {
+        return { status: 'INFEASIBLE', vertices: [], optimal: null };
+      }
+
+      // Check for unboundedness if points hit our artificial outer box boundary
+      const hitsOuterBox = validPoints.some(p => p.x >= BOX_LIMIT - 1 || p.y >= BOX_LIMIT - 1);
+
+      // Order polygon vertices clockwise or counterclockwise around centroid
+      const cx = validPoints.reduce((acc, p) => acc + p.x, 0) / validPoints.length;
+      const cy = validPoints.reduce((acc, p) => acc + p.y, 0) / validPoints.length;
+      validPoints.sort((p1, p2) => Math.atan2(p1.y - cy, p1.x - cx) - Math.atan2(p2.y - cy, p2.x - cx));
+
+      // Separate true vertices (excluding artificial boundary points)
+      const trueVertices = validPoints.filter(p => p.x < BOX_LIMIT - 1 && p.y < BOX_LIMIT - 1);
+
+      // Assign letters A, B, C, D...
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      trueVertices.forEach((v, i) => {
+        v.label = letters[i % letters.length];
+        v.z = objective.a * v.x + objective.b * v.y;
+      });
+
+      // Detect unboundedness relative to objective direction
+      if (hitsOuterBox) {
+        // If maximizing and both coefficients > 0, feasible region extends indefinitely
+        if (objective.type === 'max' && (objective.a > 0 || objective.b > 0)) {
+          return { status: 'UNBOUNDED', vertices: trueVertices, optimal: null, polygon: validPoints };
+        }
+      }
+
+      if (trueVertices.length === 0) {
+        return { status: 'INFEASIBLE', vertices: [], optimal: null };
+      }
+
+      // Find optimal vertex
+      let optimal = trueVertices[0];
+      for (let i = 1; i < trueVertices.length; i++) {
+        if (objective.type === 'max') {
+          if (trueVertices[i].z > optimal.z + EPSILON) {
+            optimal = trueVertices[i];
+          }
+        } else {
+          if (trueVertices[i].z < optimal.z - EPSILON) {
+            optimal = trueVertices[i];
+          }
+        }
+      }
+
+      // Detect multiple optimal solutions
+      const alternateOptima = trueVertices.filter(v => Math.abs(v.z - optimal.z) < 1e-4);
+      const isMultiple = alternateOptima.length > 1;
+
+      return {
+        status: isMultiple ? 'MULTIPLE' : 'OPTIMAL',
+        vertices: trueVertices,
+        polygon: validPoints,
+        optimal: optimal,
+        alternates: alternateOptima
+      };
+    }
+
+    function renderConstraintInputs() {
+      const container = document.getElementById('constraints-list');
+      container.innerHTML = '';
+      document.getElementById('constraint-counter').innerText = `${STATE.constraints.length} de 6 restricciones`;
+
+      STATE.constraints.forEach((con, index) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-1.5 p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs';
+        row.innerHTML = `
+          <div class="w-2.5 h-6 rounded-md shrink-0" style="background-color: ${con.color}"></div>
+          <div class="flex items-center gap-1 flex-1">
+            <input type="number" step="any" value="${con.a}" onchange="updateConstraintVal(${index}, 'a', this.value)" class="w-full text-center font-mono font-semibold bg-white border border-slate-300 rounded-md py-1 text-xs">
+            <span class="font-bold text-slate-600">x</span>
+          </div>
+          <span class="font-bold text-slate-400">+</span>
+          <div class="flex items-center gap-1 flex-1">
+            <input type="number" step="any" value="${con.b}" onchange="updateConstraintVal(${index}, 'b', this.value)" class="w-full text-center font-mono font-semibold bg-white border border-slate-300 rounded-md py-1 text-xs">
+            <span class="font-bold text-slate-600">y</span>
+          </div>
+          <select onchange="updateConstraintVal(${index}, 'op', this.value)" class="bg-white border border-slate-300 font-bold rounded-md py-1 px-1 text-xs">
+            <option value="<=" ${con.op === '<=' ? 'selected' : ''}>≤</option>
+            <option value=">=" ${con.op === '>=' ? 'selected' : ''}>≥</option>
+            <option value="=" ${con.op === '=' ? 'selected' : ''}>=</option>
+          </select>
+          <div class="flex items-center flex-1">
+            <input type="number" step="any" value="${con.c}" onchange="updateConstraintVal(${index}, 'c', this.value)" class="w-full text-center font-mono font-semibold bg-white border border-slate-300 rounded-md py-1 text-xs">
+          </div>
+          <button onclick="removeConstraintRow(${index})" class="p-1 text-slate-400 hover:text-red-500 rounded-md transition" title="Eliminar restricción" ${STATE.constraints.length <= 2 ? 'disabled style="opacity:0.3"' : ''}>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function addConstraintRow() {
+      if (STATE.constraints.length >= 6) {
+        showToast('Máximo 6 restricciones permitidas para mantener claridad pedagógica.');
+        return;
+      }
+      const newId = Date.now();
+      const color = PALETTE[STATE.constraints.length % PALETTE.length];
+      STATE.constraints.push({ id: newId, a: 1, b: 1, op: '<=', c: 50, color: color, label: `Restricción ${STATE.constraints.length + 1}` });
+      renderConstraintInputs();
+      solveAndRender();
+    }
+
+    function removeConstraintRow(idx) {
+      if (STATE.constraints.length <= 2) {
+        showToast('Se requieren al menos 2 restricciones para delimitar una región.');
+        return;
+      }
+      STATE.constraints.splice(idx, 1);
+      renderConstraintInputs();
+      solveAndRender();
+    }
+
+    function updateConstraintVal(idx, prop, val) {
+      if (prop === 'op') {
+        STATE.constraints[idx].op = val;
+      } else {
+        const num = parseFloat(val);
+        if (isNaN(num)) {
+          showToast('Ingresa un número válido');
+          return;
+        }
+        STATE.constraints[idx][prop] = num;
+      }
+      solveAndRender();
+    }
+
+    function setObjectiveType(type) {
+      STATE.objective.type = type;
+      const btnMax = document.getElementById('btn-opt-max');
+      const btnMin = document.getElementById('btn-opt-min');
+      if (type === 'max') {
+        btnMax.className = 'px-2.5 py-1 text-xs font-bold rounded-md bg-white text-indigo-700 shadow-sm';
+        btnMin.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600';
+      } else {
+        btnMin.className = 'px-2.5 py-1 text-xs font-bold rounded-md bg-white text-indigo-700 shadow-sm';
+        btnMax.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600';
+      }
+      solveAndRender();
+    }
+
+    /**
+     * Generates Plotly traces and shapes for constraints, feasible region, vertices, and isocost line
+     */
+    function renderPlot(res, stepFilter = null) {
+      const plotEl = document.getElementById('plot-canvas');
+
+      // Auto-compute comfortable axis range
+      let maxIntercept = 40;
+      STATE.constraints.forEach(c => {
+        if (Math.abs(c.a) > EPSILON && c.c / c.a > 0) maxIntercept = Math.max(maxIntercept, c.c / c.a);
+        if (Math.abs(c.b) > EPSILON && c.c / c.b > 0) maxIntercept = Math.max(maxIntercept, c.c / c.b);
+      });
+      res.vertices.forEach(v => {
+        maxIntercept = Math.max(maxIntercept, v.x * 1.3, v.y * 1.3);
+      });
+      const axisMax = Math.ceil(maxIntercept * 1.25);
+
+      const traces = [];
+      const shapes = [];
+
+      // Determine active constraints based on step-by-step filter
+      let activeConstraints = STATE.constraints;
+      if (stepFilter && stepFilter.visibleConstraints !== undefined) {
+        activeConstraints = STATE.constraints.slice(0, stepFilter.visibleConstraints);
+      }
+
+      // Draw each active constraint line & half-plane shading
+      activeConstraints.forEach((c, idx) => {
+        let x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+        if (Math.abs(c.b) < EPSILON) {
+          // Vertical line x = c/a
+          const xVal = c.c / c.a;
+          x1 = xVal; y1 = 0;
+          x2 = xVal; y2 = axisMax;
+        } else if (Math.abs(c.a) < EPSILON) {
+          // Horizontal line y = c/b
+          const yVal = c.c / c.b;
+          x1 = 0; y1 = yVal;
+          x2 = axisMax; y2 = yVal;
+        } else {
+          // Intercepts
+          x1 = 0;
+          y1 = c.c / c.b;
+          x2 = axisMax;
+          y2 = (c.c - c.a * axisMax) / c.b;
+        }
+
+        // Line Trace
+        traces.push({
+          x: [x1, x2],
+          y: [y1, y2],
+          mode: 'lines',
+          name: `R${idx + 1}: ${c.a}x + ${c.b}y ${c.op} ${c.c}`,
+          line: { color: c.color, width: 2.5 },
+          hoverinfo: 'name'
+        });
+
+        // Didactic intercepts annotations for Step 2
+        if (stepFilter && stepFilter.showIntercepts && idx === (activeConstraints.length - 1)) {
+          if (Math.abs(c.a) > EPSILON && (c.c / c.a) >= 0) {
+            traces.push({
+              x: [c.c / c.a],
+              y: [0],
+              mode: 'markers+text',
+              marker: { size: 9, color: c.color },
+              text: [`(${round(c.c / c.a)}, 0)`],
+              textposition: 'bottom right',
+              showlegend: false
+            });
+          }
+          if (Math.abs(c.b) > EPSILON && (c.c / c.b) >= 0) {
+            traces.push({
+              x: [0],
+              y: [c.c / c.b],
+              mode: 'markers+text',
+              marker: { size: 9, color: c.color },
+              text: [`(0, ${round(c.c / c.b)})`],
+              textposition: 'top right',
+              showlegend: false
+            });
+          }
+        }
+      });
+
+      // Feasible Region Polygon
+      const showRegion = (!stepFilter || stepFilter.showRegion);
+      if (showRegion && res.status !== 'INFEASIBLE' && res.polygon && res.polygon.length > 2) {
+        const polyX = res.polygon.map(p => p.x);
+        const polyY = res.polygon.map(p => p.y);
+        // Close polygon loop
+        polyX.push(res.polygon[0].x);
+        polyY.push(res.polygon[0].y);
+
+        traces.push({
+          x: polyX,
+          y: polyY,
+          fill: 'toself',
+          fillcolor: 'rgba(16, 185, 129, 0.22)',
+          line: { color: 'rgba(5, 150, 105, 0.8)', width: 2, dash: 'dot' },
+          name: 'Región Factible',
+          mode: 'lines',
+          hoverinfo: 'none'
+        });
+      }
+
+      // Draw Feasible Vertices
+      const showVertices = (!stepFilter || stepFilter.showVertices);
+      if (showVertices && res.vertices && res.vertices.length > 0) {
+        const vx = res.vertices.map(v => v.x);
+        const vy = res.vertices.map(v => v.y);
+        const vLabels = res.vertices.map(v => `<b>${v.label}</b> (${round(v.x)}, ${round(v.y)})<br>Z = ${round(v.z)}`);
+
+        traces.push({
+          x: vx,
+          y: vy,
+          mode: 'markers+text',
+          name: 'Vértices Factibles',
+          marker: {
+            size: 11,
+            color: '#0f172a',
+            line: { color: '#ffffff', width: 2 }
+          },
+          text: res.vertices.map(v => ` ${v.label}`),
+          textposition: 'top right',
+          hovertext: vLabels,
+          hoverinfo: 'text'
+        });
+
+        // Highlight optimal vertex
+        if (res.optimal && (!stepFilter || stepFilter.showOptimal)) {
+          traces.push({
+            x: [res.optimal.x],
+            y: [res.optimal.y],
+            mode: 'markers+text',
+            name: 'Punto Óptimo',
+            marker: {
+              size: 16,
+              color: '#10b981',
+              symbol: 'star',
+              line: { color: '#064e3b', width: 2 }
+            },
+            text: [` <b>ÓPTIMO (${res.optimal.label})</b>`],
+            textposition: 'bottom right',
+            hoverinfo: 'none'
+          });
+        }
+      }
+
+      // Objective Function Isocost / Isoprofit level line: ax + by = K
+      if (STATE.showIsoline && (!stepFilter || stepFilter.showIsoline)) {
+        const objA = STATE.objective.a;
+        const objB = STATE.objective.b;
+        const K = STATE.isolineK;
+
+        if (Math.abs(objA) > EPSILON || Math.abs(objB) > EPSILON) {
+          let ix1 = 0, iy1 = 0, ix2 = 0, iy2 = 0;
+          if (Math.abs(objB) < EPSILON) {
+            ix1 = K / objA; iy1 = 0;
+            ix2 = K / objA; iy2 = axisMax;
+          } else {
+            ix1 = 0;
+            iy1 = K / objB;
+            ix2 = axisMax;
+            iy2 = (K - objA * axisMax) / objB;
+          }
+
+          traces.push({
+            x: [ix1, ix2],
+            y: [iy1, iy2],
+            mode: 'lines',
+            name: `Recta Z = ${K}`,
+            line: {
+              color: '#4f46e5',
+              width: 3,
+              dash: 'dash'
+            },
+            hoverinfo: 'name'
+          });
+        }
+      }
+
+      // Layout styling
+      const layout = {
+        margin: { l: 45, r: 25, t: 25, b: 40 },
+        autosize: true,
+        xaxis: {
+          title: { text: `Eje X: ${STATE.labels.x || 'x'}`, font: { size: 11, color: '#475569' } },
+          range: [-0.5, axisMax],
+          zeroline: true,
+          zerolinecolor: '#334155',
+          zerolinewidth: 2,
+          gridcolor: '#e2e8f0',
+          dtick: Math.max(1, Math.round(axisMax / 8))
+        },
+        yaxis: {
+          title: { text: `Eje Y: ${STATE.labels.y || 'y'}`, font: { size: 11, color: '#475569' } },
+          range: [-0.5, axisMax],
+          zeroline: true,
+          zerolinecolor: '#334155',
+          zerolinewidth: 2,
+          gridcolor: '#e2e8f0',
+          dtick: Math.max(1, Math.round(axisMax / 8))
+        },
+        showlegend: false,
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: '#f8fafc',
+        hovermode: 'closest'
+      };
+
+      const config = {
+        responsive: true,
+        displayModeBar: false
+      };
+
+      Plotly.react(plotEl, traces, layout, config);
+    }
+
+    function updateResultsUI(res) {
+      const statusBadge = document.getElementById('status-badge');
+      const optCoords = document.getElementById('optimal-coords');
+      const optZ = document.getElementById('optimal-z');
+      const optJust = document.getElementById('optimal-justification');
+      const tableBody = document.getElementById('vertices-table-body');
+      const vertexBadge = document.getElementById('vertex-count-badge');
+      const policyText = document.getElementById('policy-interpretation-text');
+
+      // Update Slider range limits based on optimum
+      const slider = document.getElementById('slider-isoline');
+      const maxZVal = res.optimal ? Math.max(res.optimal.z * 1.5, 100) : 500;
+      slider.max = Math.ceil(maxZVal);
+
+      if (res.status === 'INFEASIBLE') {
+        statusBadge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-800';
+        statusBadge.innerText = 'Región No Factible (Incompatible)';
+        optCoords.innerText = 'Sin Solución';
+        optZ.innerText = 'N/A';
+        optJust.innerText = 'Las restricciones no pueden cumplirse al mismo tiempo. No existe ninguna combinación factible.';
+        tableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay vértices factibles. Modifica o relaja las restricciones.</td></tr>`;
+        vertexBadge.innerText = '0 vértices';
+        policyText.innerHTML = `<strong>Diagnóstico Político:</strong> Las metas u obligaciones exigidas son contradictorias con los recursos vigentes. Para hacer viable el proyecto, el tomador de decisiones debe renegociar presupuestos o reducir metas mínimas.`;
+        return;
+      }
+
+      if (res.status === 'UNBOUNDED') {
+        statusBadge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800';
+        statusBadge.innerText = 'Problema No Acotado (Infinito)';
+        optCoords.innerText = 'No Acotado (∞)';
+        optZ.innerText = 'Z → ∞';
+        optJust.innerText = 'La región factible está abierta en la dirección deseada. La función objetivo puede crecer sin límite.';
+        vertexBadge.innerText = `${res.vertices.length} vértices acotados`;
+        policyText.innerHTML = `<strong>Diagnóstico Político:</strong> El modelo carece de una restricción que limite la expansión del objetivo. En la práctica pública, siempre existen topes reales (capacidad física, tiempo o fondos). Revisa que no falte una restricción presupuestaria de tipo (≤).`;
+      } else {
+        statusBadge.className = 'text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+        statusBadge.innerText = res.status === 'MULTIPLE' ? 'Soluciones Múltiples (Arista Óptima)' : 'Región Factible Acotada';
+        optCoords.innerText = `(${res.optimal.label}) x* = ${round(res.optimal.x)}, y* = ${round(res.optimal.y)}`;
+        optZ.innerText = formatNumber(round(res.optimal.z));
+        optJust.innerText = `Entre todos los vértices factibles, este punto produce el ${STATE.objective.type === 'max' ? 'mayor impacto posible' : 'menor costo posible'} respetando el 100% de las restricciones.`;
+      }
+
+      // Populate Vertices Table
+      tableBody.innerHTML = '';
+      vertexBadge.innerText = `${res.vertices.length} vértices encontrados`;
+
+      res.vertices.forEach(v => {
+        const isOpt = res.optimal && Math.abs(v.z - res.optimal.z) < 1e-4;
+        const tr = document.createElement('tr');
+        tr.className = isOpt ? 'bg-emerald-50/80 font-bold text-emerald-950' : 'hover:bg-slate-50 text-slate-700';
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full ${isOpt ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'} inline-flex items-center justify-center text-[10px] font-bold">
+              ${v.label}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 font-mono">${round(v.x)}</td>
+          <td class="py-2.5 px-3 font-mono">${round(v.y)}</td>
+          <td class="py-2.5 px-3 font-mono">
+            ${STATE.objective.a}(${round(v.x)}) + ${STATE.objective.b}(${round(v.y)}) = <span class="font-bold text-indigo-700">${formatNumber(round(v.z))}</span>
+          </td>
+          <td class="py-2.5 px-3 text-right">
+            ${isOpt 
+              ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold">★ Óptimo</span>` 
+              : `<span class="text-slate-400 text-[11px]">Subóptimo</span>`}
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      // Contextual Public Policy Interpretation
+      if (res.optimal) {
+        const xName = STATE.labels.x.trim() || 'Variable X';
+        const yName = STATE.labels.y.trim() || 'Variable Y';
+        const goalName = STATE.labels.goal.trim() || 'Impacto total';
+        const optWord = STATE.objective.type === 'max' ? 'un valor máximo estimado' : 'un costo mínimo estimado';
+
+        policyText.innerHTML = `
+          La recomendación técnica óptima consiste en asignar exactamente 
+          <span class="font-bold text-indigo-800 bg-white px-1.5 py-0.5 rounded border border-indigo-200">${round(res.optimal.x)} unidades de "${xName}"</span> 
+          y 
+          <span class="font-bold text-indigo-800 bg-white px-1.5 py-0.5 rounded border border-indigo-200">${round(res.optimal.y)} unidades de "${yName}"</span>. 
+          Con esta distribución se alcanza ${optWord} de 
+          <span class="font-bold text-emerald-700 font-mono text-sm">${formatNumber(round(res.optimal.z))}</span> en <em>${goalName}</em>, 
+          garantizando el cumplimiento íntegro de todos los recursos y restricciones normativas.
+        `;
+      }
+    }
+
+    function solveAndRender() {
+      // Read current inputs
+      const a = parseFloat(document.getElementById('obj-a').value) || 0;
+      const b = parseFloat(document.getElementById('obj-b').value) || 0;
+      STATE.objective.a = a;
+      STATE.objective.b = b;
+
+      STATE.labels.x = document.getElementById('label-x').value;
+      STATE.labels.y = document.getElementById('label-y').value;
+      STATE.labels.goal = document.getElementById('label-goal').value;
+
+      // Update Isocost formula label
+      document.getElementById('isoline-equation').innerText = `Z = ${a}x + ${b}y = K`;
+
+      // Solve LP
+      const res = solveLP(STATE.objective, STATE.constraints, STATE.nonNegative);
+      STATE.cachedResult = res;
+
+      // If slider is at 0, initialize to optimum or reasonable value
+      if (STATE.isolineK === 0 && res.optimal) {
+        STATE.isolineK = round(res.optimal.z);
+        document.getElementById('slider-isoline').value = STATE.isolineK;
+        document.getElementById('isoline-k-val').innerText = `K = ${formatNumber(STATE.isolineK)}`;
+      }
+
+      renderPlot(res);
+      updateResultsUI(res);
+    }
+
+    function solveDirectly() {
+      // Exit step-by-step mode and show full results
+      document.getElementById('step-navigator').classList.add('hidden');
+      STATE.step = 0;
+      solveAndRender();
+      showToast('Problema resuelto en su totalidad.');
+    }
+
+    // --- STEP-BY-STEP PEDAGOGICAL ENGINE ---
+    const STEPS = [
+      {
+        title: 'Paso 1: Entendiendo la Función Objetivo',
+        subtitle: 'El vector de dirección y criterio de decisión',
+        render: (res) => {
+          renderPlot(res, { visibleConstraints: 0, showRegion: false, showVertices: false, showOptimal: false, showIsoline: true });
+          const text = `
+            Tu meta es <strong>${STATE.objective.type === 'max' ? 'MAXIMIZAR' : 'MINIMIZAR'}</strong>: 
+            <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-amber-200">Z = ${STATE.objective.a}x + ${STATE.objective.b}y</span>.
+            Cada unidad de <em>${STATE.labels.x}</em> aporta ${STATE.objective.a} al objetivo, mientras que cada unidad de <em>${STATE.labels.y}</em> aporta ${STATE.objective.b}.
+            Sin restricciones, el resultado sería infinito. Por eso necesitamos incorporar los límites de la realidad.
+          `;
+          document.getElementById('step-narrative').innerHTML = text;
+        }
+      },
+      {
+        title: 'Paso 2: Construyendo las Restricciones Individuales',
+        subtitle: 'Transformando desigualdades en rectas frontera y semiplanos',
+        render: (res) => {
+          renderPlot(res, { visibleConstraints: 1, showIntercepts: true, showRegion: false, showVertices: false, showOptimal: false, showIsoline: false });
+          const c1 = STATE.constraints[0];
+          const text = `
+            Analizamos la primera restricción: <span class="font-mono bg-white/20 px-1.5 py-0.5 rounded text-amber-200">${c1.a}x + ${c1.b}y ${c1.op} ${c1.c}</span>.
+            Para dibujarla, convertimos la desigualdad en una igualdad lineal: <span class="font-mono">${c1.a}x + ${c1.b}y = ${c1.c}</span>.
+            Calculamos sus cortes con los ejes: 
+            Si y = 0 &rarr; x = ${round(c1.c / c1.a)}; Si x = 0 &rarr; y = ${round(c1.c / c1.b)}.
+            La recta divide el plano en dos semiplanos; sólo uno de ellos cumple con la condición ${c1.op}.
+          `;
+          document.getElementById('step-narrative').innerHTML = text;
+        }
+      },
+      {
+        title: 'Paso 3: Superposición y Región Factible',
+        subtitle: 'El conjunto de todas las decisiones simultáneamente posibles',
+        render: (res) => {
+          renderPlot(res, { visibleConstraints: STATE.constraints.length, showRegion: true, showVertices: true, showOptimal: false, showIsoline: false });
+          const text = `
+            Al combinar todas las restricciones y la condición de no negatividad (x ≥ 0, y ≥ 0), surge la <strong>Región Factible</strong> (área verde).
+            Cualquier punto interior es válido, pero el <em>Teorema Fundamental de la Programación Lineal</em> demuestra que la mejor decisión siempre se ubicará en alguno de los <strong>vértices</strong> (${res.vertices.map(v => v.label).join(', ')}).
+          `;
+          document.getElementById('step-narrative').innerHTML = text;
+        }
+      },
+      {
+        title: 'Paso 4: Evaluación de Candidatos y Solución Óptima',
+        subtitle: 'Comparación sistemática de vértices e identificación del óptimo',
+        render: (res) => {
+          renderPlot(res, { visibleConstraints: STATE.constraints.length, showRegion: true, showVertices: true, showOptimal: true, showIsoline: true });
+          const text = `
+            Evaluamos la función objetivo Z en cada vértice.
+            El punto <span class="font-mono font-bold text-amber-300">Vértice ${res.optimal ? res.optimal.label : ''} (${round(res.optimal.x)}, ${round(res.optimal.y)})</span> 
+            alcanza el valor óptimo <strong>Z* = ${formatNumber(round(res.optimal ? res.optimal.z : 0))}</strong>.
+            ¡Este es el punto que maximiza el impacto social con los recursos disponibles!
+          `;
+          document.getElementById('step-narrative').innerHTML = text;
+        }
+      }
+    ];
+
+    function startStepByStep() {
+      STATE.step = 1;
+      document.getElementById('step-navigator').classList.remove('hidden');
+      updateStepUI();
+    }
+
+    function navigateStep(dir) {
+      STATE.step = Math.max(1, Math.min(STEPS.length, STATE.step + dir));
+      updateStepUI();
+    }
+
+    function updateStepUI() {
+      const current = STEPS[STATE.step - 1];
+      document.getElementById('step-badge').innerText = STATE.step;
+      document.getElementById('step-title').innerText = current.title;
+      document.getElementById('step-subtitle').innerText = current.subtitle;
+      document.getElementById('btn-prev-step').disabled = (STATE.step === 1);
+      document.getElementById('btn-next-step').innerText = (STATE.step === STEPS.length) ? 'Finalizar' : 'Siguiente ➔';
+
+      if (!STATE.cachedResult) {
+        STATE.cachedResult = solveLP(STATE.objective, STATE.constraints, STATE.nonNegative);
+      }
+      current.render(STATE.cachedResult);
+    }
+
+    function toggleIsoLine() {
+      STATE.showIsoline = !STATE.showIsoline;
+      const btn = document.getElementById('btn-toggle-isoline');
+      btn.className = STATE.showIsoline 
+        ? 'text-xs px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-300 text-indigo-700 font-semibold' 
+        : 'text-xs px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium';
+      renderPlot(STATE.cachedResult);
+    }
+
+    function onIsoSliderChange(val) {
+      STATE.isolineK = parseFloat(val);
+      document.getElementById('isoline-k-val').innerText = `K = ${formatNumber(round(STATE.isolineK))}`;
+      renderPlot(STATE.cachedResult);
+    }
+
+    function animateIsoToOptimum() {
+      if (!STATE.cachedResult || !STATE.cachedResult.optimal) return;
+      const targetK = round(STATE.cachedResult.optimal.z);
+      const startK = 0;
+      const duration = 1200; // ms
+      const startTime = performance.now();
+
+      function stepAnim(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // Smooth ease out cubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const currentK = startK + (targetK - startK) * ease;
+
+        STATE.isolineK = currentK;
+        document.getElementById('slider-isoline').value = currentK;
+        document.getElementById('isoline-k-val').innerText = `K = ${formatNumber(round(currentK))}`;
+        renderPlot(STATE.cachedResult);
+
+        if (progress < 1) {
+          requestAnimationFrame(stepAnim);
+        } else {
+          showToast(`¡Alcanzado el vértice óptimo con Z = ${formatNumber(targetK)}!`);
+        }
+      }
+      requestAnimationFrame(stepAnim);
+    }
+
+    function resetGraphView() {
+      renderPlot(STATE.cachedResult);
+      showToast('Vista del plano centrada.');
+    }
+
+    const PRESETS = [
+      {
+        id: 1,
+        title: 'Recursos Públicos',
+        obj: { type: 'max', a: 40, b: 30 },
+        constraints: [
+          { a: 2, b: 1, op: '<=', c: 100, color: '#3b82f6', label: 'Presupuesto Operativo' },
+          { a: 1, b: 2, op: '<=', c: 80, color: '#8b5cf6', label: 'Personal Especializado' }
+        ],
+        labels: {
+          x: 'Intervenciones en zona urbana',
+          y: 'Intervenciones en zona rural',
+          goal: 'Beneficiarios directos'
+        }
+      },
+      {
+        id: 2,
+        title: 'Campaña Electoral',
+        obj: { type: 'max', a: 150, b: 220 },
+        constraints: [
+          { a: 20, b: 10, op: '<=', c: 2400, color: '#3b82f6', label: 'Presupuesto Total (miles $)' },
+          { a: 1, b: 2, op: '<=', c: 180, color: '#ec4899', label: 'Horas de Vocería Política' },
+          { a: 1, b: 0, op: '<=', c: 90, color: '#10b981', label: 'Límite Territorial' }
+        ],
+        labels: {
+          x: 'Campañas territoriales (mitines)',
+          y: 'Campañas digitales (redes)',
+          goal: 'Ciudadanos contactados'
+        }
+      },
+      {
+        id: 3,
+        title: 'Minimizar Costos de Distribución',
+        obj: { type: 'min', a: 12, b: 16 },
+        constraints: [
+          { a: 1, b: 2, op: '>=', c: 40, color: '#3b82f6', label: 'Meta Mínima de Vacunación' },
+          { a: 3, b: 1, op: '>=', c: 45, color: '#f97316', label: 'Meta Mínima de Pruebas Rápidas' },
+          { a: 1, b: 1, op: '<=', c: 60, color: '#64748b', label: 'Capacidad Logística Máxima' }
+        ],
+        labels: {
+          x: 'Puntos móviles tipo A',
+          y: 'Puntos móviles tipo B',
+          goal: 'Costo total de operación ($)'
+        }
+      }
+    ];
+
+    function loadExample(id) {
+      const ex = PRESETS.find(p => p.id === id);
+      if (!ex) return;
+
+      document.getElementById('obj-a').value = ex.obj.a;
+      document.getElementById('obj-b').value = ex.obj.b;
+      setObjectiveType(ex.obj.type);
+
+      STATE.constraints = JSON.parse(JSON.stringify(ex.constraints));
+      STATE.constraints.forEach((c, i) => c.id = Date.now() + i);
+
+      document.getElementById('label-x').value = ex.labels.x;
+      document.getElementById('label-y').value = ex.labels.y;
+      document.getElementById('label-goal').value = ex.labels.goal;
+
+      // Reset step navigator if open
+      document.getElementById('step-navigator').classList.add('hidden');
+      STATE.step = 0;
+
+      // La recta de nivel debe recalcularse para la escala del nuevo problema,
+      // si no queda con el K del ejemplo anterior (fuera de rango o sin sentido).
+      STATE.isolineK = 0;
+
+      renderConstraintInputs();
+      solveAndRender();
+      showToast(`Ejemplo cargado: ${ex.title}`);
+    }
+
+    function resetModel() {
+      loadExample(1);
+    }
+
+    // --- EXPLORE MODE LOGIC ---
+    let exploreConstraints = [];
+
+    function initExploreMode() {
+      // Clone current constraints to avoid breaking solver tab
+      exploreConstraints = JSON.parse(JSON.stringify(STATE.constraints));
+      const container = document.getElementById('explore-sliders-container');
+      container.innerHTML = '';
+
+      exploreConstraints.forEach((c, idx) => {
+        const box = document.createElement('div');
+        box.className = 'bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-2';
+        box.innerHTML = `
+          <div class="flex items-center justify-between font-bold text-slate-800">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${c.color}"></span>
+              Restricción ${idx + 1}: ${c.label || 'Recurso'}
+            </span>
+            <span class="font-mono text-indigo-700" id="explore-eq-${idx}">
+              ${c.a}x + ${c.b}y ${c.op} ${c.c}
+            </span>
+          </div>
+          <div>
+            <div class="flex justify-between text-[11px] text-slate-500 mb-0.5">
+              <span>Límite disponible (c):</span>
+              <span class="font-mono font-bold text-slate-800" id="explore-c-label-${idx}">${c.c}</span>
+            </div>
+            <input type="range" min="10" max="${Math.max(c.c * 2, 200)}" value="${c.c}" oninput="onExploreSlider(${idx}, this.value)" class="w-full accent-indigo-600 cursor-pointer">
+          </div>
+        `;
+        container.appendChild(box);
+      });
+
+      renderExplorePlot();
+    }
+
+    function onExploreSlider(idx, val) {
+      exploreConstraints[idx].c = parseFloat(val);
+      document.getElementById(`explore-c-label-${idx}`).innerText = val;
+      document.getElementById(`explore-eq-${idx}`).innerText = `${exploreConstraints[idx].a}x + ${exploreConstraints[idx].b}y ${exploreConstraints[idx].op} ${val}`;
+      renderExplorePlot();
+    }
+
+    function renderExplorePlot() {
+      const res = solveLP(STATE.objective, exploreConstraints, true);
+      const plotEl = document.getElementById('explore-plot-canvas');
+
+      const maxIntercept = 180;
+      const traces = [];
+
+      exploreConstraints.forEach((c, idx) => {
+        let x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+        if (Math.abs(c.b) < EPSILON) {
+          x1 = c.c / c.a; y1 = 0;
+          x2 = c.c / c.a; y2 = maxIntercept;
+        } else {
+          x1 = 0; y1 = c.c / c.b;
+          x2 = maxIntercept; y2 = (c.c - c.a * maxIntercept) / c.b;
+        }
+        traces.push({
+          x: [x1, x2],
+          y: [y1, y2],
+          mode: 'lines',
+          name: `R${idx + 1}`,
+          line: { color: c.color, width: 2.5 }
+        });
+      });
+
+      if (res.status !== 'INFEASIBLE' && res.polygon && res.polygon.length > 2) {
+        const polyX = res.polygon.map(p => p.x);
+        const polyY = res.polygon.map(p => p.y);
+        polyX.push(res.polygon[0].x);
+        polyY.push(res.polygon[0].y);
+
+        traces.push({
+          x: polyX,
+          y: polyY,
+          fill: 'toself',
+          fillcolor: 'rgba(99, 102, 241, 0.25)',
+          line: { color: '#4f46e5', width: 2, dash: 'dot' },
+          mode: 'lines',
+          name: 'Región Factible'
+        });
+      }
+
+      if (res.optimal) {
+        traces.push({
+          x: [res.optimal.x],
+          y: [res.optimal.y],
+          mode: 'markers+text',
+          marker: { size: 14, color: '#10b981', symbol: 'star' },
+          text: [` (${round(res.optimal.x)}, ${round(res.optimal.y)})`],
+          textposition: 'top right'
+        });
+        document.getElementById('explore-status').innerText = `Óptimo: x* = ${round(res.optimal.x)}, y* = ${round(res.optimal.y)}`;
+        document.getElementById('explore-val-z').innerText = `Z* = ${formatNumber(round(res.optimal.z))}`;
+      } else {
+        document.getElementById('explore-status').innerText = 'Región Incompatible';
+        document.getElementById('explore-val-z').innerText = 'Z = N/A';
+      }
+
+      const layout = {
+        margin: { l: 40, r: 20, t: 20, b: 35 },
+        autosize: true,
+        xaxis: { title: 'x', range: [-1, maxIntercept], zeroline: true, gridcolor: '#e2e8f0' },
+        yaxis: { title: 'y', range: [-1, maxIntercept], zeroline: true, gridcolor: '#e2e8f0' },
+        showlegend: false,
+        plot_bgcolor: '#f8fafc'
+      };
+
+      Plotly.react(plotEl, traces, layout, { responsive: true, displayModeBar: false });
+    }
+
+    // --- CHALLENGES (MODO RETO) LOGIC ---
+    const CHALLENGES = [
+      {
+        title: 'Reto 1: Presupuesto Salud vs Educación',
+        story: `
+          <strong>Caso:</strong> Un municipio regional desea planificar dos programas comunitarios: 
+          <strong>x</strong> (centros de salud móvil) e <strong>y</strong> (aulas digitales rodantes). 
+          Cada centro de salud beneficia a 50 familias y cada aula digital beneficia a 40 familias. 
+          Se dispone de un presupuesto total de $120,000. Instalar cada centro de salud cuesta $3,000 y cada aula digital $2,000. 
+          Además, el equipo técnico sólo cuenta con 60 días para operar, sabiendo que cada centro requiere 1 día de montaje y cada aula digital 1 día.
+        `,
+        questionGoal: '¿Qué combinación de función objetivo y restricciones describe correctamente el problema?',
+        solverExport: {
+          objective: { type: 'max', a: 50, b: 40 },
+          constraints: [
+            { a: 3000, b: 2000, op: '<=', c: 120000, color: '#3b82f6', label: 'Presupuesto Financiero' },
+            { a: 1, b: 1, op: '<=', c: 60, color: '#8b5cf6', label: 'Días Disponibles' }
+          ],
+          labels: { x: 'Centros de Salud Móvil', y: 'Aulas Digitales Rodantes', goal: 'Familias Beneficiadas' }
+        }
+      },
+      {
+        title: 'Reto 2: Patrullaje de Seguridad Ciudadana',
+        story: `
+          <strong>Caso:</strong> La Dirección de Seguridad debe repartir horas entre <strong>x</strong> (patrullaje en vehículo) e <strong>y</strong> (patrullaje a pie). 
+          El patrullaje en vehículo cubre 80 km² y el patrullaje a pie 20 km². 
+          El combustible disponible permite máximo 400 litros (el vehículo consume 5 L/turno y a pie 0 L). 
+          Además, la plantilla policial combinada no puede superar 90 turnos en total por semana.
+        `,
+        solverExport: {
+          objective: { type: 'max', a: 80, b: 20 },
+          constraints: [
+            { a: 5, b: 0, op: '<=', c: 400, color: '#3b82f6', label: 'Combustible Disponible' },
+            { a: 1, b: 1, op: '<=', c: 90, color: '#ec4899', label: 'Tope de Turnos Policiales' }
+          ],
+          labels: { x: 'Turnos Vehiculares', y: 'Turnos a Pie', goal: 'Kilómetros cuadrados vigilados' }
+        }
+      },
+      {
+        title: 'Reto 3: Mínimo Nutricional en Comedores Populares',
+        story: `
+          <strong>Caso:</strong> Un programa social debe garantizar un mínimo nutricional diario comprando raciones <strong>x</strong> y <strong>y</strong> al menor costo posible. 
+          La ración x cuesta $3 y la ración y cuesta $4. 
+          Se deben suministrar como mínimo 60 unidades de proteína (x aporta 2 y la ración y aporta 3) y como mínimo 40 unidades de vitaminas (x aporta 1 y la ración y aporta 1).
+        `,
+        solverExport: {
+          objective: { type: 'min', a: 3, b: 4 },
+          constraints: [
+            { a: 2, b: 3, op: '>=', c: 60, color: '#f97316', label: 'Mínimo Proteínas' },
+            { a: 1, b: 1, op: '>=', c: 40, color: '#3b82f6', label: 'Mínimo Vitaminas' }
+          ],
+          labels: { x: 'Raciones Tipo 1', y: 'Raciones Tipo 2', goal: 'Costo Monetario Total' }
+        }
+      }
+    ];
+
+    let currentChalIdx = 0;
+
+    function loadChallenge(idx) {
+      currentChalIdx = idx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`chal-btn-${i}`);
+        if (i === idx) {
+          btn.className = 'px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-sm';
+        } else {
+          btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200';
+        }
+      }
+
+      const chal = CHALLENGES[idx];
+      document.getElementById('challenge-story').innerHTML = chal.story;
+      document.getElementById('challenge-feedback').className = 'hidden';
+      document.getElementById('btn-transfer-challenge').disabled = true;
+
+      // Build interactive quiz form
+      const form = document.getElementById('challenge-form');
+      form.innerHTML = `
+        <div class="space-y-2 text-xs">
+          <label class="font-bold text-slate-800 block">1. ¿Cuál es el sentido de la optimización?</label>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="chal-obj-type" value="max" checked class="accent-indigo-600"> Maximizar
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="chal-obj-type" value="min" class="accent-indigo-600"> Minimizar
+            </label>
+          </div>
+        </div>
+        <div class="space-y-2 text-xs pt-2">
+          <label class="font-bold text-slate-800 block">2. Escribe los coeficientes de la Función Objetivo Z = a·x + b·y:</label>
+          <div class="flex items-center gap-2">
+            <span>a =</span>
+            <input id="chal-in-a" type="number" class="w-16 border rounded p-1 font-mono text-center" placeholder="a">
+            <span>b =</span>
+            <input id="chal-in-b" type="number" class="w-16 border rounded p-1 font-mono text-center" placeholder="b">
+          </div>
+        </div>
+      `;
+    }
+
+    function validateChallenge() {
+      const chal = CHALLENGES[currentChalIdx];
+      const fb = document.getElementById('challenge-feedback');
+      const selectedType = document.querySelector('input[name="chal-obj-type"]:checked').value;
+      const inA = parseFloat(document.getElementById('chal-in-a').value);
+      const inB = parseFloat(document.getElementById('chal-in-b').value);
+
+      const exp = chal.solverExport.objective;
+
+      if (isNaN(inA) || isNaN(inB)) {
+        fb.className = 'p-3 rounded-xl text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200 block';
+        fb.innerText = 'Por favor ingresa los dos coeficientes de la función objetivo.';
+        return;
+      }
+
+      if (selectedType === exp.type && inA === exp.a && inB === exp.b) {
+        fb.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-200 block';
+        fb.innerHTML = `
+          🎉 <strong>¡Excelente formulación!</strong> Has traducido con precisión el objetivo político del caso. 
+          Ahora pulsa el botón verde para transferir el modelo completo al solucionador gráfico y explorar la decisión óptima.
+        `;
+        document.getElementById('btn-transfer-challenge').disabled = false;
+      } else {
+        fb.className = 'p-3 rounded-xl text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200 block';
+        fb.innerHTML = `
+          💡 <strong>Revisemos juntos:</strong> ¿El caso busca maximizar impacto o reducir costos? 
+          Verifica en el enunciado cuánto aporta una unidad de X y cuánto una unidad de Y a la meta.
+        `;
+      }
+    }
+
+    function transferChallengeToSolver() {
+      const chal = CHALLENGES[currentChalIdx];
+      STATE.objective = JSON.parse(JSON.stringify(chal.solverExport.objective));
+      STATE.constraints = JSON.parse(JSON.stringify(chal.solverExport.constraints));
+      STATE.labels = JSON.parse(JSON.stringify(chal.solverExport.labels));
+
+      document.getElementById('obj-a').value = STATE.objective.a;
+      document.getElementById('obj-b').value = STATE.objective.b;
+      setObjectiveType(STATE.objective.type);
+
+      document.getElementById('label-x').value = STATE.labels.x;
+      document.getElementById('label-y').value = STATE.labels.y;
+      document.getElementById('label-goal').value = STATE.labels.goal;
+
+      STATE.isolineK = 0;
+
+      switchMainTab('solver');
+      renderConstraintInputs();
+      solveAndRender();
+      showToast('Modelo transferido exitosamente al solucionador.');
+    }
+
+    function switchMainTab(tab) {
+      document.getElementById('view-solver').classList.toggle('hidden', tab !== 'solver');
+      document.getElementById('view-explore').classList.toggle('hidden', tab !== 'explore');
+      document.getElementById('view-challenges').classList.toggle('hidden', tab !== 'challenges');
+
+      const tabs = ['solver', 'explore', 'challenges'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tab) {
+          btn.className = 'px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-white text-indigo-700 shadow-sm transition';
+        } else {
+          btn.className = 'px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-indigo-600 transition';
+        }
+      });
+
+      if (tab === 'explore') {
+        initExploreMode();
+      } else if (tab === 'challenges') {
+        loadChallenge(0);
+      } else if (tab === 'solver') {
+        // Redraw plot to adapt to dimensions
+        setTimeout(() => {
+          if (STATE.cachedResult) renderPlot(STATE.cachedResult);
+        }, 50);
+      }
+    }
+
+    // Modal micro-explanations
+    const EXPLANATIONS = {
+      why_lp: {
+        title: '¿Por qué modelos lineales en Ciencias Sociales?',
+        text: `
+          <p>Un modelo lineal asume que los costos y beneficios se acumulan proporcionalmente a la escala de intervención.</p>
+          <p class="mt-2">En políticas públicas, permite asignar de forma transparente recursos escasos (dinero, tiempo o personal) sin necesidad de recurrir a fórmulas oscuras o arbitrarias.</p>
+        `
+      },
+      why_vertices: {
+        title: '¿Por qué la respuesta siempre está en un vértice?',
+        text: `
+          <p>La región factible es un polígono convexo y la función objetivo es una línea recta plana.</p>
+          <p class="mt-2">Al desplazar la recta de nivel Z en la dirección de mejora, el último contacto posible antes de abandonar la región factible siempre ocurre en una esquina (vértice) o, a lo sumo, a lo largo de un borde completo que une dos vértices.</p>
+        `
+      },
+      why_table: {
+        title: 'Teorema Fundamental de la Programación Lineal',
+        text: `
+          <p>Establece que no necesitamos probar los infinitos puntos que existen dentro del área verde.</p>
+          <p class="mt-2">Basta con evaluar exclusivamente el conjunto finito de <strong>vértices</strong>. El vértice con el valor más favorable garantiza la solución matemáticamente óptima.</p>
+        `
+      }
+    };
+
+    function openExplainModal(key) {
+      const modal = document.getElementById('explain-modal');
+      const item = EXPLANATIONS[key];
+      if (!item) return;
+      document.getElementById('modal-title').innerText = item.title;
+      document.getElementById('modal-body').innerHTML = item.text;
+      modal.classList.remove('hidden');
+    }
+
+    function closeExplainModal() {
+      document.getElementById('explain-modal').classList.add('hidden');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-msg');
+      toast.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function round(num, decimals = 2) {
+      if (typeof num !== 'number' || isNaN(num)) return 0;
+      return Number(Math.round(num + 'e' + decimals) + 'e-' + decimals);
+    }
+
+    function formatNumber(num) {
+      return Number(num).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    window.onload = function() {
+      renderConstraintInputs();
+      solveAndRender();
+      // Handle responsive resize of canvas
+      window.addEventListener('resize', () => {
+        if (STATE.cachedResult) {
+          Plotly.Plots.resize('plot-canvas');
+        }
+      });
+    };
+  </script>
+</body>
+</html>
